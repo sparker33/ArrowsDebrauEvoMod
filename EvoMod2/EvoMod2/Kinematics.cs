@@ -6,27 +6,28 @@ namespace EvoMod2
 	public class Kinematics
     {
         // Private fields
-        private double[] acceleration;
-        private double[] velocity;
+        private float[] acceleration;
+        private float[] velocity;
 
 		// Public objects
-		public static double DAMPING;
-		public static double TIMESTEP;
+		public static float DAMPING;
+		public static float TIMESTEP;
 
         // Public properties
-        public double Speed { get { return Math.Sqrt(velocity[0] * velocity[0] + velocity[1] * velocity[1]); } }
+        public float Speed { get { return (float)Math.Sqrt(velocity[0] * velocity[0] + velocity[1] * velocity[1]); } }
+		public float GetVelocity(int dimension) { return velocity[dimension]; }
 
         // Class instantiation method
         public Kinematics(int dimension)
         {
-            acceleration = new double[dimension];
-            velocity = new double[dimension];
+            acceleration = new float[dimension];
+            velocity = new float[dimension];
         }
 
-        public IEnumerable<double> GetDisplacement(IEnumerable<double> forceVector, double mass)
+        public List<float> GetDisplacement(IEnumerable<float> forceVector, float mass)
         {
-            List<double> displacement = new List<double>();
-            IEnumerator<double> forcesEnumerator = forceVector.GetEnumerator();
+            List<float> displacement = new List<float>();
+            IEnumerator<float> forcesEnumerator = forceVector.GetEnumerator();
             for (int i = 0; forcesEnumerator.MoveNext(); i++)
             {
                 if (Double.IsInfinity(forcesEnumerator.Current)
@@ -38,11 +39,16 @@ namespace EvoMod2
                 {
                     acceleration[i] = (forcesEnumerator.Current - DAMPING * velocity[i]) / mass;
                 }
-                displacement.Add((velocity[i] * TIMESTEP + 0.5 * acceleration[i] * TIMESTEP * TIMESTEP));
+                displacement.Add((velocity[i] * TIMESTEP + 0.5f * acceleration[i] * TIMESTEP * TIMESTEP));
                 velocity[i] += acceleration[i] * TIMESTEP;
             }
 
             return displacement;
         }
+
+		public void ReverseDirection(int dimension)
+		{
+			velocity[dimension] *= -1.0f;
+		}
     }
 }

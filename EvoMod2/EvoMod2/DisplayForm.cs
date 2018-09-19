@@ -15,12 +15,13 @@ namespace EvoMod2
 	public partial class DisplayForm : Form
 	{
 		// Global values
-		public static Random GLOBALRANDOM = new Random();
+		public static Random GLOBALRANDOM;
 		public const int SCALE = 5000;   // Scale of domain for position
 							
 		// Private objects
 		private List<Element> elements;
 		private List<List<ResourceKernel>> resources;
+		private List<Color> resourceColorCode;
 		private BackgroundWorker worker = new BackgroundWorker();
 		private Bitmap displayBmp;
 
@@ -49,8 +50,20 @@ namespace EvoMod2
 				DialogResult result = settings.ShowDialog();
 				if (result == DialogResult.OK)
 				{
-					Random random = new Random();
+					GLOBALRANDOM = new Random();
 					displayBmp = new Bitmap(panel1.Width, panel1.Height);
+					elements = new List<Element>();
+					resources = new List<List<ResourceKernel>>();
+					resourceColorCode = new List<Color>();
+
+					resources.Add(new List<ResourceKernel>());
+					resourceColorCode.Add(Color.Green);
+					resources[0].Add(new ResourceKernel(300.0f, new PointF(200.0f, 250.0f)));
+					resources[0].Add(new ResourceKernel(100.0f, new PointF(300.0f, 250.0f)));
+					resources.Add(new List<ResourceKernel>());
+					resourceColorCode.Add(Color.Blue);
+					resources[1].Add(new ResourceKernel(300.0f, new PointF(250.0f, 150.0f)));
+					resources[1].Add(new ResourceKernel(100.0f, new PointF(250.0f, 350.0f)));
 					worker.RunWorkerAsync();
 					timer1.Start();
 				}
@@ -65,48 +78,61 @@ namespace EvoMod2
 
 			// Update elements
 			List<List<ResourceKernel>> droppedResources = new List<List<ResourceKernel>>();
-			for (int i = 0; i < resources.Count; i++)
-			{
-				droppedResources.Add(new List<ResourceKernel>());
-			}
 			foreach (Element element in elements)
 			{
-				List<float> resourceLevels = new List<float>();
-				for (int i = 0; i < resources.Count; i++)
-				{
-					resourceLevels.Add(0.0f);
-					foreach (ResourceKernel resourceNode in resources[i])
-					{
-						resourceLevels[i] += resourceNode.GetResourceLevelAt(element.Position);
-					}
-				}
-				element.Update(resourceLevels); // change this foreach to instead launch threads and then add to droppedResources on Join
+				element.UpdateLocalResourceLevels(resources);
+				droppedResources.Add(element.ExchangeResources());
+				element.Move();
 			}
 			// Update and draw resources
 			for (int i = 0; i < resources.Count; i++)
 			{
-				float dissipationVolume = 0.0f;
-				foreach (ResourceKernel resourceNode in resources[i])
+				foreach (List<ResourceKernel> drops in droppedResources)
 				{
-					// Update resources
-					dissipationVolume += resourceNode.Update(GLOBALRANDOM);
-
-					// Draw resources
-					//pathgradientbrush
+					resources[i].Add(drops[i]);
 				}
-				dissipationVolume /= resources[i].Count;
-				if (dissipationVolume > 0.0f)
+				int j = 0;
+				bool deleteFlag = false;
+				while (j < resources[i].Count)
 				{
-					foreach (ResourceKernel resourceNode in resources[i])
+					for (int k = 1; k < j; k++)
 					{
-						resourceNode.Volume += dissipationVolume;
+						if ((resources[i][j].PositionVector - resources[i][k].PositionVector).Magnitude
+							< resources[i][j].Smoothing / resources[i][j].Volume + resources[i][k].Smoothing / resources[i][k].Volume)
+						{
+							resources[i][k].Volume += resources[i][j].Volume;
+							PointF newPosition = new PointF();
+							newPosition.X = (resources[i][j].Volume * resources[i][j].Position.X + resources[i][k].Volume * resources[i][k].Position.X)
+								/ (resources[i][j].Volume + resources[i][k].Volume);
+							newPosition.Y = (resources[i][j].Volume * resources[i][j].Position.Y + resources[i][k].Volume * resources[i][k].Position.Y)
+								/ (resources[i][j].Volume + resources[i][k].Volume);
+							resources[i][k].Position = newPosition;
+							resources[i].RemoveAt(j);
+							deleteFlag = true;
+							break;
+						}
 					}
+					if (!deleteFlag)
+					{
+						j++;
+					}
+					deleteFlag = false;
 				}
-
-				// Add new drops
-				for (int j = 0; j < droppedResources[i].Count; j++)
+				foreach (ResourceKernel kernel in resources[i])
 				{
-					resources[i].Add(droppedResources[i][j]);
+					kernel.Update(GLOBALRANDOM);
+					int dia = (int)(Math.Sqrt(kernel.Smoothing) * kernel.Volume);
+					Rectangle rect = new Rectangle((int)((kernel.Position.X - dia) * panel1.Size.Width / SCALE),
+					(int)((kernel.Position.Y - dia) * panel1.Size.Height / SCALE),
+					dia,
+					dia);
+					GraphicsPath path = new GraphicsPath();
+					path.AddEllipse(rect);
+					PathGradientBrush grdBrush = new PathGradientBrush(path);
+					grdBrush.CenterColor = Color.FromArgb(200, resourceColorCode[i]);
+					Color[] pathColors = { Color.FromArgb(1, resourceColorCode[i]) };
+					grdBrush.SurroundColors = pathColors;
+					g.FillEllipse(grdBrush, rect);
 				}
 			}
 			// Draw Elements
@@ -114,12 +140,11 @@ namespace EvoMod2
 			{
 				Brush b = new SolidBrush(element.ElementColor);
 				g.FillEllipse(b,
-					(int)((element.Position.X + SCALE / 2.0f) * panel1.Size.Width / (float)SCALE),
-					(int)((element.Position.Y + SCALE / 2.0f) * panel1.Size.Height / (float)SCALE),
+					(int)(element.Position.X * panel1.Size.Width / SCALE),
+					(int)(element.Position.Y * panel1.Size.Height / SCALE),
 					element.Size,
 					element.Size);
 			}
-
 			e.Result = display;
 		}
 
