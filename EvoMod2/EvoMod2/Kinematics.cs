@@ -24,6 +24,12 @@ namespace EvoMod2
             velocity = new float[dimension];
         }
 
+		/// <summary>
+		/// Method to get displacement to next time step
+		/// </summary>
+		/// <param name="forceVector"> Forces </param>
+		/// <param name="mass"> Mass </param>
+		/// <returns> Displacement array (ordered by dimensions). </returns>
         public List<float> GetDisplacement(IEnumerable<float> forceVector, float mass)
         {
             List<float> displacement = new List<float>();

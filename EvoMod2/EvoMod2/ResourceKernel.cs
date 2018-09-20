@@ -42,6 +42,15 @@ namespace EvoMod2
 				mu[1] = value.Y;
 			}
 		}
+		public Rectangle GetBoundingBox(float widthScaling, float heightScaling)
+		{
+			int dia = (int)(Math.Sqrt(H[0][0]) * Volume);
+			Rectangle rect = new Rectangle((int)((mu[0] - dia / 2.0f) * widthScaling),
+			(int)((mu[1] - dia / 2.0f) * heightScaling),
+			(int)(dia * widthScaling),
+			(int)(dia * heightScaling));
+			return rect;
+		}
 
 		/// <summary>
 		/// Default constructor
@@ -102,7 +111,8 @@ namespace EvoMod2
 			Vector v = new Vector(2);
 			v[0] = location.X;
 			v[1] = location.Y;
-			return (this.Volume * this.ProbabilityAt(v));
+			float debug = this.ProbabilityAt(v);
+			return (this.Volume * debug);
 		}
 
 		public void Update(Random random)

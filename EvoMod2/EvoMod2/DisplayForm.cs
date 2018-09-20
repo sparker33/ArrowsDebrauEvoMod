@@ -17,11 +17,17 @@ namespace EvoMod2
 		// Global values
 		public static Random GLOBALRANDOM;
 		public const int SCALE = 5000;   // Scale of domain for position
-							
+		public static int ELEMENTCOUNT = 10; // Number of elements
+		public static float REPRODUCTIONCHANCE = 0.01f; // Likelihood of checking to see if an element can reproduce
+		public static float MUTATIONCHANCE = 0.01f; // Likelihood of element features mutating
+		public static float BASEDEATHCHANCE = 0.1f; // Scales likelihood of element death
+		public static float INITHOLDINGS = 10.0f; // Scales element initial holdings
+		public static float EXCHGRATE = 1.0f; // Scales element resource exchange rate
+		public static float ELESPEED = 10.0f; // Scales element move speed
+
 		// Private objects
 		private List<Element> elements;
-		private List<List<ResourceKernel>> resources;
-		private List<Color> resourceColorCode;
+		private List<Resource> resources;
 		private BackgroundWorker worker = new BackgroundWorker();
 		private Bitmap displayBmp;
 
@@ -51,23 +57,31 @@ namespace EvoMod2
 				if (result == DialogResult.OK)
 				{
 					GLOBALRANDOM = new Random();
+					Kinematics.DAMPING = 0.01f;
+					Kinematics.TIMESTEP = 0.01f;
+					ResourceKernel.RESOURCESPEED = 1.0f;
+					ResourceKernel.SPREADRATE = 0.01f;
+					ELEMENTCOUNT = 10;
+					REPRODUCTIONCHANCE = 0.01f;
+					MUTATIONCHANCE = 0.01f;
+					BASEDEATHCHANCE = 0.1f;
+					INITHOLDINGS = 10.0f;
+					EXCHGRATE = 1.0f;
+					ELESPEED = 10.0f;
 					displayBmp = new Bitmap(panel1.Width, panel1.Height);
 					elements = new List<Element>();
-					resources = new List<List<ResourceKernel>>();
-					resourceColorCode = new List<Color>();
+					resources = new List<Resource>();
 
-					resources.Add(new List<ResourceKernel>());
-					resourceColorCode.Add(Color.Green);
-					resources[0].Add(new ResourceKernel(300.0f, new PointF(200.0f, 250.0f)));
-					resources[0].Add(new ResourceKernel(100.0f, new PointF(300.0f, 250.0f)));
-					resources.Add(new List<ResourceKernel>());
-					resourceColorCode.Add(Color.Blue);
-					resources[1].Add(new ResourceKernel(300.0f, new PointF(250.0f, 150.0f)));
-					resources[1].Add(new ResourceKernel(100.0f, new PointF(250.0f, 350.0f)));
-					worker.RunWorkerAsync();
-					timer1.Start();
+					resources.Add(new Resource(Color.Blue, 3000.0f));
+					resources.Add(new Resource(Color.Red, 1000.0f));
+					resources[0].Add(0.75f, new PointF(2000.0f, 2500.0f));
+					resources[0].Add(0.25f, new PointF(3000.0f, 2500.0f));
+					resources[1].Add(0.75f, new PointF(2500.0f, 1500.0f));
+					resources[1].Add(0.25f, new PointF(2500.0f, 3500.0f));
 				}
 			}
+			worker.RunWorkerAsync();
+			timer1.Start();
 		}
 
 		private void worker_DoWork(object sender, DoWorkEventArgs e)
@@ -77,12 +91,34 @@ namespace EvoMod2
 			g.Clear(Color.DarkGray);
 
 			// Update elements
+			while (elements.Count < ELEMENTCOUNT)
+			{
+				elements.Add(new Element(GLOBALRANDOM, resources.Count, INITHOLDINGS, EXCHGRATE, ELESPEED));
+			}
 			List<List<ResourceKernel>> droppedResources = new List<List<ResourceKernel>>();
 			foreach (Element element in elements)
 			{
 				element.UpdateLocalResourceLevels(resources);
 				droppedResources.Add(element.ExchangeResources());
 				element.Move();
+			}
+			int ei = 0;
+			while (ei < elements.Count)
+			{
+				if (GLOBALRANDOM.NextDouble() < REPRODUCTIONCHANCE)
+				{
+					if (elements[ei].CheckForReproduction())
+					{
+						elements.Add(elements[ei].Reproduce(GLOBALRANDOM, MUTATIONCHANCE));
+					}
+				}
+				if (elements[ei].CheckForDeath(BASEDEATHCHANCE))
+				{
+					droppedResources.Add(elements[ei].Die());
+					elements.RemoveAt(ei);
+					continue;
+				}
+				ei++;
 			}
 			// Update and draw resources
 			for (int i = 0; i < resources.Count; i++)
@@ -91,59 +127,41 @@ namespace EvoMod2
 				{
 					resources[i].Add(drops[i]);
 				}
-				int j = 0;
-				bool deleteFlag = false;
-				while (j < resources[i].Count)
+				resources[i].Consolidate();
+				for (int j = 0; j < resources[i].Count; j++)
 				{
-					for (int k = 1; k < j; k++)
-					{
-						if ((resources[i][j].PositionVector - resources[i][k].PositionVector).Magnitude
-							< resources[i][j].Smoothing / resources[i][j].Volume + resources[i][k].Smoothing / resources[i][k].Volume)
-						{
-							resources[i][k].Volume += resources[i][j].Volume;
-							PointF newPosition = new PointF();
-							newPosition.X = (resources[i][j].Volume * resources[i][j].Position.X + resources[i][k].Volume * resources[i][k].Position.X)
-								/ (resources[i][j].Volume + resources[i][k].Volume);
-							newPosition.Y = (resources[i][j].Volume * resources[i][j].Position.Y + resources[i][k].Volume * resources[i][k].Position.Y)
-								/ (resources[i][j].Volume + resources[i][k].Volume);
-							resources[i][k].Position = newPosition;
-							resources[i].RemoveAt(j);
-							deleteFlag = true;
-							break;
-						}
-					}
-					if (!deleteFlag)
-					{
-						j++;
-					}
-					deleteFlag = false;
-				}
-				foreach (ResourceKernel kernel in resources[i])
-				{
-					kernel.Update(GLOBALRANDOM);
-					int dia = (int)(Math.Sqrt(kernel.Smoothing) * kernel.Volume);
-					Rectangle rect = new Rectangle((int)((kernel.Position.X - dia) * panel1.Size.Width / SCALE),
-					(int)((kernel.Position.Y - dia) * panel1.Size.Height / SCALE),
-					dia,
-					dia);
+					resources[i][j].Update(GLOBALRANDOM);
+					Rectangle rect = resources[i][j].GetBoundingBox((float)panel1.ClientRectangle.Width / SCALE, (float)panel1.ClientRectangle.Height / SCALE);
 					GraphicsPath path = new GraphicsPath();
 					path.AddEllipse(rect);
 					PathGradientBrush grdBrush = new PathGradientBrush(path);
-					grdBrush.CenterColor = Color.FromArgb(200, resourceColorCode[i]);
-					Color[] pathColors = { Color.FromArgb(1, resourceColorCode[i]) };
+					int o = resources[i].GetPeakOpacity(j);
+					if (o > 0)
+					{
+						grdBrush.CenterColor = Color.FromArgb(resources[i].GetPeakOpacity(j), resources[i].Color);
+					}
+					else
+					{
+						grdBrush.CenterColor = Color.FromArgb(100, Color.DarkGray);
+					}
+					Color[] pathColors = { Color.FromArgb(0, resources[i].Color) };
 					grdBrush.SurroundColors = pathColors;
 					g.FillEllipse(grdBrush, rect);
+					grdBrush.Dispose();
+					path.Dispose();
 				}
 			}
 			// Draw Elements
 			foreach (Element element in elements)
 			{
-				Brush b = new SolidBrush(element.ElementColor);
-				g.FillEllipse(b,
-					(int)(element.Position.X * panel1.Size.Width / SCALE),
-					(int)(element.Position.Y * panel1.Size.Height / SCALE),
-					element.Size,
-					element.Size);
+				using (Brush b = new SolidBrush(element.ElementColor))
+				{
+					g.FillEllipse(b,
+						(int)(element.Position.X * panel1.ClientRectangle.Width / SCALE),
+						(int)(element.Position.Y * panel1.ClientRectangle.Height / SCALE),
+						element.Size,
+						element.Size);
+				}
 			}
 			e.Result = display;
 		}

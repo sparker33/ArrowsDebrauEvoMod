@@ -58,6 +58,7 @@
     <Compile Include="Kinematics.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Resource.cs" />
     <Compile Include="ResourceKernel.cs" />
     <Compile Include="SettingsForm.cs">
       <SubType>Form</SubType>
