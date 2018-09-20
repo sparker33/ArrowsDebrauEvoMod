@@ -111,8 +111,7 @@ namespace EvoMod2
 			Vector v = new Vector(2);
 			v[0] = location.X;
 			v[1] = location.Y;
-			float debug = this.ProbabilityAt(v);
-			return (this.Volume * debug);
+			return (this.Volume * this.ProbabilityAt(v));
 		}
 
 		public void Update(Random random)
@@ -121,7 +120,14 @@ namespace EvoMod2
 			v[0] = 2.0f * (float)random.NextDouble() - 1.0f;
 			v[1] = 2.0f * (float)random.NextDouble() - 1.0f;
 			this.Move(v);
-			this.H = (1.0f + SPREADRATE / Volume) * this.H;
+			if (Volume != 0.0f)
+			{
+				this.H = (1.0f + SPREADRATE / Volume) * this.H;
+			}
+			else
+			{
+				this.H = 1000.0f * this.H;
+			}
 		}
 
 		private void Move(Vector v)

@@ -61,7 +61,7 @@ namespace EvoMod2
 					Kinematics.TIMESTEP = 0.01f;
 					ResourceKernel.RESOURCESPEED = 1.0f;
 					ResourceKernel.SPREADRATE = 0.01f;
-					ELEMENTCOUNT = 10;
+					ELEMENTCOUNT = 2;
 					REPRODUCTIONCHANCE = 0.01f;
 					MUTATIONCHANCE = 0.01f;
 					BASEDEATHCHANCE = 0.1f;
