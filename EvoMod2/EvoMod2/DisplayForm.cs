@@ -17,13 +17,13 @@ namespace EvoMod2
 		// Global values
 		public static Random GLOBALRANDOM;
 		public const int SCALE = 5000;   // Scale of domain for position
-		public static int ELEMENTCOUNT = 10; // Number of elements
-		public static float REPRODUCTIONCHANCE = 0.01f; // Likelihood of checking to see if an element can reproduce
-		public static float MUTATIONCHANCE = 0.01f; // Likelihood of element features mutating
-		public static float BASEDEATHCHANCE = 0.1f; // Scales likelihood of element death
-		public static float INITHOLDINGS = 10.0f; // Scales element initial holdings
-		public static float EXCHGRATE = 1.0f; // Scales element resource exchange rate
-		public static float ELESPEED = 10.0f; // Scales element move speed
+		public static int ELEMENTCOUNT; // Number of elements
+		public static float REPRODUCTIONCHANCE; // Likelihood of checking to see if an element can reproduce
+		public static float MUTATIONCHANCE; // Likelihood of element features mutating
+		public static float BASEDEATHCHANCE; // Scales likelihood of element death
+		public static float INITHOLDINGS; // Scales element initial holdings
+		public static float EXCHGRATE; // Scales element resource exchange rate
+		public static float ELESPEED; // Scales element move speed
 
 		// Private objects
 		private List<Element> elements;
@@ -61,23 +61,32 @@ namespace EvoMod2
 					Kinematics.TIMESTEP = 0.01f;
 					ResourceKernel.RESOURCESPEED = 1.0f;
 					ResourceKernel.SPREADRATE = 0.01f;
-					ELEMENTCOUNT = 2;
+					ELEMENTCOUNT = 5;
 					REPRODUCTIONCHANCE = 0.01f;
 					MUTATIONCHANCE = 0.01f;
 					BASEDEATHCHANCE = 0.1f;
 					INITHOLDINGS = 10.0f;
-					EXCHGRATE = 1.0f;
-					ELESPEED = 10.0f;
+					EXCHGRATE = 3.0f;
+					ELESPEED = 100000.0f;
 					displayBmp = new Bitmap(panel1.Width, panel1.Height);
 					elements = new List<Element>();
 					resources = new List<Resource>();
 
-					resources.Add(new Resource(Color.Blue, 3000.0f));
-					resources.Add(new Resource(Color.Red, 1000.0f));
-					resources[0].Add(0.75f, new PointF(2000.0f, 2500.0f));
-					resources[0].Add(0.25f, new PointF(3000.0f, 2500.0f));
-					resources[1].Add(0.75f, new PointF(2500.0f, 1500.0f));
-					resources[1].Add(0.25f, new PointF(2500.0f, 3500.0f));
+					resources.Add(new Resource(Color.Blue, 1500.0f));
+					resources.Add(new Resource(Color.Red, 5000.0f));
+					resources.Add(new Resource(Color.Green, 500.0f));
+					resources[0].Add(0.25f, new PointF((float)(GLOBALRANDOM.NextDouble() * SCALE), (float)(GLOBALRANDOM.NextDouble() * SCALE)));
+					resources[1].Add(0.25f, new PointF((float)(GLOBALRANDOM.NextDouble() * SCALE), (float)(GLOBALRANDOM.NextDouble() * SCALE)));
+					resources[2].Add(0.25f, new PointF((float)(GLOBALRANDOM.NextDouble() * SCALE), (float)(GLOBALRANDOM.NextDouble() * SCALE)));
+					resources[0].Add(0.25f, new PointF((float)(GLOBALRANDOM.NextDouble() * SCALE), (float)(GLOBALRANDOM.NextDouble() * SCALE)));
+					resources[1].Add(0.25f, new PointF((float)(GLOBALRANDOM.NextDouble() * SCALE), (float)(GLOBALRANDOM.NextDouble() * SCALE)));
+					resources[2].Add(0.25f, new PointF((float)(GLOBALRANDOM.NextDouble() * SCALE), (float)(GLOBALRANDOM.NextDouble() * SCALE)));
+					resources[0].Add(0.25f, new PointF((float)(GLOBALRANDOM.NextDouble() * SCALE), (float)(GLOBALRANDOM.NextDouble() * SCALE)));
+					resources[1].Add(0.25f, new PointF((float)(GLOBALRANDOM.NextDouble() * SCALE), (float)(GLOBALRANDOM.NextDouble() * SCALE)));
+					resources[2].Add(0.25f, new PointF((float)(GLOBALRANDOM.NextDouble() * SCALE), (float)(GLOBALRANDOM.NextDouble() * SCALE)));
+					resources[0].Add(0.25f, new PointF((float)(GLOBALRANDOM.NextDouble() * SCALE), (float)(GLOBALRANDOM.NextDouble() * SCALE)));
+					resources[1].Add(0.25f, new PointF((float)(GLOBALRANDOM.NextDouble() * SCALE), (float)(GLOBALRANDOM.NextDouble() * SCALE)));
+					resources[2].Add(0.25f, new PointF((float)(GLOBALRANDOM.NextDouble() * SCALE), (float)(GLOBALRANDOM.NextDouble() * SCALE)));
 				}
 			}
 			worker.RunWorkerAsync();
@@ -132,6 +141,10 @@ namespace EvoMod2
 				{
 					resources[i][j].Update(GLOBALRANDOM);
 					Rectangle rect = resources[i][j].GetBoundingBox((float)panel1.ClientRectangle.Width / SCALE, (float)panel1.ClientRectangle.Height / SCALE);
+					if (rect.Size.Height == 0 || rect.Size.Width == 0)
+					{
+						continue;
+					}
 					GraphicsPath path = new GraphicsPath();
 					path.AddEllipse(rect);
 					PathGradientBrush grdBrush = new PathGradientBrush(path);

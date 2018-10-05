@@ -71,8 +71,12 @@ namespace EvoMod2
 		/// <param name="index"> Index of ResourceKernel to remove. </param>
 		new public void RemoveAt(int index)
 		{
-			base.RemoveAt(index);
+			if (index == 0)
+			{
+				return;
+			}
 			volume -= this[index].Volume;
+			base.RemoveAt(index);
 		}
 
 		/// <summary>

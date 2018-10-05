@@ -130,20 +130,17 @@ namespace EvoMod2
 		public void Move()
 		{
 			float[] temp = new float[2];
-			try
+			if (kinematics.GetVelocity(0) != 0.0f)
 			{
 				temp[0] = (1.0f / kinematics.GetVelocity(0)) * moveRules[0] * deltaResources;
 			}
-			catch (DivideByZeroException)
-			{
-				temp[0] = moveRules[0].Magnitude;
-			}
-			try
+			if (kinematics.GetVelocity(1) != 0.0f)
 			{
 				temp[1] = (1.0f / kinematics.GetVelocity(1)) * moveRules[1] * deltaResources;
 			}
-			catch (DivideByZeroException)
+			if (temp[0] == 0.0f && temp[1] == 0.0f)
 			{
+				temp[0] = moveRules[0].Magnitude;
 				temp[1] = moveRules[1].Magnitude;
 			}
 			temp = kinematics.GetDisplacement(temp, ownedResourceVolumes.Magnitude).ToArray();
