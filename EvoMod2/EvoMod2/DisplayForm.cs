@@ -60,33 +60,24 @@ namespace EvoMod2
 					Kinematics.DAMPING = 0.01f;
 					Kinematics.TIMESTEP = 0.01f;
 					ResourceKernel.RESOURCESPEED = 1.0f;
-					ResourceKernel.SPREADRATE = 0.01f;
-					ELEMENTCOUNT = 5;
+					ResourceKernel.SPREADRATE = 0.1f;
+					ELEMENTCOUNT = 25;
 					REPRODUCTIONCHANCE = 0.01f;
 					MUTATIONCHANCE = 0.01f;
 					BASEDEATHCHANCE = 0.1f;
-					INITHOLDINGS = 10.0f;
-					EXCHGRATE = 3.0f;
-					ELESPEED = 100000.0f;
+					INITHOLDINGS = 100.0f;
+					EXCHGRATE = 30.0f;
+					ELESPEED = 200000.0f;
 					displayBmp = new Bitmap(panel1.Width, panel1.Height);
 					elements = new List<Element>();
 					resources = new List<Resource>();
 
-					resources.Add(new Resource(Color.Blue, 1500.0f));
-					resources.Add(new Resource(Color.Red, 5000.0f));
-					resources.Add(new Resource(Color.Green, 500.0f));
-					resources[0].Add(0.25f, new PointF((float)(GLOBALRANDOM.NextDouble() * SCALE), (float)(GLOBALRANDOM.NextDouble() * SCALE)));
-					resources[1].Add(0.25f, new PointF((float)(GLOBALRANDOM.NextDouble() * SCALE), (float)(GLOBALRANDOM.NextDouble() * SCALE)));
-					resources[2].Add(0.25f, new PointF((float)(GLOBALRANDOM.NextDouble() * SCALE), (float)(GLOBALRANDOM.NextDouble() * SCALE)));
-					resources[0].Add(0.25f, new PointF((float)(GLOBALRANDOM.NextDouble() * SCALE), (float)(GLOBALRANDOM.NextDouble() * SCALE)));
-					resources[1].Add(0.25f, new PointF((float)(GLOBALRANDOM.NextDouble() * SCALE), (float)(GLOBALRANDOM.NextDouble() * SCALE)));
-					resources[2].Add(0.25f, new PointF((float)(GLOBALRANDOM.NextDouble() * SCALE), (float)(GLOBALRANDOM.NextDouble() * SCALE)));
-					resources[0].Add(0.25f, new PointF((float)(GLOBALRANDOM.NextDouble() * SCALE), (float)(GLOBALRANDOM.NextDouble() * SCALE)));
-					resources[1].Add(0.25f, new PointF((float)(GLOBALRANDOM.NextDouble() * SCALE), (float)(GLOBALRANDOM.NextDouble() * SCALE)));
-					resources[2].Add(0.25f, new PointF((float)(GLOBALRANDOM.NextDouble() * SCALE), (float)(GLOBALRANDOM.NextDouble() * SCALE)));
-					resources[0].Add(0.25f, new PointF((float)(GLOBALRANDOM.NextDouble() * SCALE), (float)(GLOBALRANDOM.NextDouble() * SCALE)));
-					resources[1].Add(0.25f, new PointF((float)(GLOBALRANDOM.NextDouble() * SCALE), (float)(GLOBALRANDOM.NextDouble() * SCALE)));
-					resources[2].Add(0.25f, new PointF((float)(GLOBALRANDOM.NextDouble() * SCALE), (float)(GLOBALRANDOM.NextDouble() * SCALE)));
+					resources.Add(new Resource(Color.Blue, 2500.0f));
+					resources.Add(new Resource(Color.Red, 2500.0f));
+					resources[0].Add(0.5f, new PointF((float)(GLOBALRANDOM.NextDouble() * SCALE), (float)(GLOBALRANDOM.NextDouble() * SCALE)));
+					resources[1].Add(0.5f, new PointF((float)(GLOBALRANDOM.NextDouble() * SCALE), (float)(GLOBALRANDOM.NextDouble() * SCALE)));
+					resources[0].Add(0.5f, new PointF((float)(GLOBALRANDOM.NextDouble() * SCALE), (float)(GLOBALRANDOM.NextDouble() * SCALE)));
+					resources[1].Add(0.5f, new PointF((float)(GLOBALRANDOM.NextDouble() * SCALE), (float)(GLOBALRANDOM.NextDouble() * SCALE)));
 				}
 			}
 			worker.RunWorkerAsync();
