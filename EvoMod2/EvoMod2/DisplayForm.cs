@@ -61,7 +61,7 @@ namespace EvoMod2
 					Kinematics.TIMESTEP = 0.01f;
 					ResourceKernel.RESOURCESPEED = 1.0f;
 					ResourceKernel.SPREADRATE = 0.1f;
-					ELEMENTCOUNT = 25;
+					ELEMENTCOUNT = 250;
 					REPRODUCTIONCHANCE = 0.01f;
 					MUTATIONCHANCE = 0.01f;
 					BASEDEATHCHANCE = 0.1f;
@@ -72,12 +72,23 @@ namespace EvoMod2
 					elements = new List<Element>();
 					resources = new List<Resource>();
 
-					resources.Add(new Resource(Color.Blue, 2500.0f));
+					resources.Add(new Resource(Color.Blue, 5000.0f));
 					resources.Add(new Resource(Color.Red, 2500.0f));
+					resources.Add(new Resource(Color.Green, 3000.0f));
+
+					resources[0].Add(0.1f, new PointF((float)(GLOBALRANDOM.NextDouble() * SCALE), (float)(GLOBALRANDOM.NextDouble() * SCALE)));
+					resources[0].Add(0.25f, new PointF((float)(GLOBALRANDOM.NextDouble() * SCALE), (float)(GLOBALRANDOM.NextDouble() * SCALE)));
+					resources[0].Add(0.15f, new PointF((float)(GLOBALRANDOM.NextDouble() * SCALE), (float)(GLOBALRANDOM.NextDouble() * SCALE)));
 					resources[0].Add(0.5f, new PointF((float)(GLOBALRANDOM.NextDouble() * SCALE), (float)(GLOBALRANDOM.NextDouble() * SCALE)));
-					resources[1].Add(0.5f, new PointF((float)(GLOBALRANDOM.NextDouble() * SCALE), (float)(GLOBALRANDOM.NextDouble() * SCALE)));
-					resources[0].Add(0.5f, new PointF((float)(GLOBALRANDOM.NextDouble() * SCALE), (float)(GLOBALRANDOM.NextDouble() * SCALE)));
-					resources[1].Add(0.5f, new PointF((float)(GLOBALRANDOM.NextDouble() * SCALE), (float)(GLOBALRANDOM.NextDouble() * SCALE)));
+
+					resources[1].Add(0.65f, new PointF((float)(GLOBALRANDOM.NextDouble() * SCALE), (float)(GLOBALRANDOM.NextDouble() * SCALE)));
+					resources[1].Add(0.05f, new PointF((float)(GLOBALRANDOM.NextDouble() * SCALE), (float)(GLOBALRANDOM.NextDouble() * SCALE)));
+					resources[1].Add(0.05f, new PointF((float)(GLOBALRANDOM.NextDouble() * SCALE), (float)(GLOBALRANDOM.NextDouble() * SCALE)));
+					resources[1].Add(0.1f, new PointF((float)(GLOBALRANDOM.NextDouble() * SCALE), (float)(GLOBALRANDOM.NextDouble() * SCALE)));
+					resources[1].Add(0.15f, new PointF((float)(GLOBALRANDOM.NextDouble() * SCALE), (float)(GLOBALRANDOM.NextDouble() * SCALE)));
+
+					resources[2].Add(0.85f, new PointF((float)(GLOBALRANDOM.NextDouble() * SCALE), (float)(GLOBALRANDOM.NextDouble() * SCALE)));
+					resources[2].Add(0.15f, new PointF((float)(GLOBALRANDOM.NextDouble() * SCALE), (float)(GLOBALRANDOM.NextDouble() * SCALE)));
 				}
 			}
 			worker.RunWorkerAsync();
@@ -99,7 +110,9 @@ namespace EvoMod2
 			foreach (Element element in elements)
 			{
 				element.UpdateLocalResourceLevels(resources);
-				droppedResources.Add(element.ExchangeResources());
+				//droppedResources.Add(element.ExchangeResources());
+				element.ExchangeResources();
+				//
 				element.Move();
 			}
 			int ei = 0;
@@ -114,7 +127,9 @@ namespace EvoMod2
 				}
 				if (elements[ei].CheckForDeath(BASEDEATHCHANCE))
 				{
-					droppedResources.Add(elements[ei].Die());
+					//droppedResources.Add(elements[ei].Die());
+					elements[ei].Die();
+					//
 					elements.RemoveAt(ei);
 					continue;
 				}

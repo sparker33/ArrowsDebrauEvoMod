@@ -71,15 +71,15 @@ namespace EvoMod2
 			{
 				for (int j = 0; j < resourceTypesCount; j++)
 				{
-					resourceExchangeRules[i][j] = resourceExchangeRate * (float)random.NextDouble() - 1.0f;
+					resourceExchangeRules[i][j] = resourceExchangeRate * ((float)random.NextDouble() - 0.5f);
 				}
 			}
 
 			moveRules = new Matrix(2, resourceTypesCount);
 			for (int i = 0; i < resourceTypesCount; i++)
 			{
-				moveRules[0][i] = speed * (float)random.NextDouble() - 1.0f;
-				moveRules[1][i] = speed * (float)random.NextDouble() - 1.0f;
+				moveRules[0][i] = speed * ((float)random.NextDouble() - 0.5f);
+				moveRules[1][i] = speed * ((float)random.NextDouble() - 0.5f);
 			}
 		}
 
@@ -140,10 +140,17 @@ namespace EvoMod2
 			}
 			if (temp[0] == 0.0f && temp[1] == 0.0f)
 			{
-				temp[0] = moveRules[0].Magnitude;
-				temp[1] = moveRules[1].Magnitude;
+				temp[0] = Math.Sign(moveRules[0][0]) * moveRules[0].Magnitude;
+				temp[1] = Math.Sign(moveRules[1][1]) * moveRules[1].Magnitude;
 			}
-			temp = kinematics.GetDisplacement(temp, ownedResourceVolumes.Magnitude).ToArray();
+			if (ownedResourceVolumes.Magnitude <= 0.0f)
+			{
+				temp = kinematics.GetDisplacement(temp, Single.Epsilon).ToArray();
+			}
+			else
+			{
+				temp = kinematics.GetDisplacement(temp, ownedResourceVolumes.Magnitude).ToArray();
+			}
 			position.X += temp[0];
 			position.Y += temp[1];
 			if (position.X < 0.0f)
@@ -178,6 +185,10 @@ namespace EvoMod2
 		public bool CheckForDeath(float deathBaseLikelihood)
 		{
 			if ((ownedResourceVolumes * reproductionCost) < (deathBaseLikelihood * ownedResourceVolumes * ownedResourceVolumes))
+			{
+				return true;
+			}
+			else if (ownedResourceVolumes.Magnitude <= 0.0f)
 			{
 				return true;
 			}
