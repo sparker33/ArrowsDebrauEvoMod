@@ -57,7 +57,7 @@ namespace EvoMod2
 				if (result == DialogResult.OK)
 				{
 					GLOBALRANDOM = new Random();
-					Kinematics.DAMPING = 0.01f;
+					Kinematics.DEFAULTDAMPING = 0.01f;
 					Kinematics.TIMESTEP = 0.05f;
 					ResourceKernel.RESOURCESPEED = 1.0f;
 					ResourceKernel.SPREADRATE = 0.0f;
@@ -65,7 +65,7 @@ namespace EvoMod2
 					REPRODUCTIONCHANCE = 0.01f;
 					Element.BASEREPROCOST = 0.1f;
 					MUTATIONCHANCE = 0.01f;
-					Element.MUTATIONRATE = 0.01f;
+					Element.MUTATIONRATE = 0.1f;
 					BASEDEATHCHANCE = 0.1f;
 					INITHOLDINGS = 100.0f;
 					EXCHGRATE = 30.0f;
@@ -102,6 +102,11 @@ namespace EvoMod2
 					resources[4].Add(0.5f, new PointF((float)(GLOBALRANDOM.NextDouble() * SCALE), (float)(GLOBALRANDOM.NextDouble() * SCALE)));
 				}
 			}
+			// Populate initial generation of elements
+			while (elements.Count < ELEMENTCOUNT)
+			{
+				elements.Add(new Element(GLOBALRANDOM, resources.Count, INITHOLDINGS, EXCHGRATE, ELESPEED));
+			}
 			worker.RunWorkerAsync();
 			timer1.Start();
 		}
@@ -112,11 +117,12 @@ namespace EvoMod2
 			Graphics g = Graphics.FromImage(display);
 			g.Clear(Color.DarkGray);
 
+			// Repopulate elements if global population falls below threshold
+			//while (elements.Count < ELEMENTCOUNT)
+			//{
+			//	elements.Add(new Element(GLOBALRANDOM, resources.Count, INITHOLDINGS, EXCHGRATE, ELESPEED));
+			//}
 			// Update elements
-			while (elements.Count < ELEMENTCOUNT)
-			{
-				elements.Add(new Element(GLOBALRANDOM, resources.Count, INITHOLDINGS, EXCHGRATE, ELESPEED));
-			}
 			foreach (Element element in elements)
 			{
 				element.UpdateLocalResourceLevels(resources);

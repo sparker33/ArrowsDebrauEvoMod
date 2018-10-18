@@ -10,18 +10,20 @@ namespace EvoMod2
         private float[] velocity;
 
 		// Public objects
-		public static float DAMPING;
+		public static float DEFAULTDAMPING;
 		public static float TIMESTEP;
 
         // Public properties
         public float Speed { get { return (float)Math.Sqrt(velocity[0] * velocity[0] + velocity[1] * velocity[1]); } }
 		public float GetVelocity(int dimension) { return velocity[dimension]; }
+		public float Damping { get; set; }
 
         // Class instantiation method
         public Kinematics(int dimension)
         {
             acceleration = new float[dimension];
             velocity = new float[dimension];
+			Damping = DEFAULTDAMPING;
         }
 
 		/// <summary>
@@ -39,11 +41,11 @@ namespace EvoMod2
                 if (Double.IsInfinity(forcesEnumerator.Current)
                     || Double.IsNaN(forcesEnumerator.Current))
                 {
-                    acceleration[i] = -(DAMPING * velocity[i]) / mass;
+                    acceleration[i] = -(Damping * velocity[i]) / mass;
                 }
                 else
                 {
-                    acceleration[i] = (forcesEnumerator.Current - DAMPING * velocity[i]) / mass;
+                    acceleration[i] = (forcesEnumerator.Current - Damping * velocity[i]) / mass;
                 }
                 displacement.Add((velocity[i] * TIMESTEP + 0.5f * acceleration[i] * TIMESTEP * TIMESTEP));
                 velocity[i] += acceleration[i] * TIMESTEP;

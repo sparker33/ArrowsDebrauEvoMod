@@ -134,6 +134,7 @@ namespace EvoMod2
 		/// </summary>
 		public void Move()
 		{
+			// Determine driving force vector
 			float[] temp = new float[2];
 			if (kinematics.GetVelocity(0) != 0.0f)
 			{
@@ -148,16 +149,16 @@ namespace EvoMod2
 				temp[0] = Math.Sign(moveRules[0][0]) * moveRules[0].Magnitude;
 				temp[1] = Math.Sign(moveRules[1][1]) * moveRules[1].Magnitude;
 			}
-			if (ownedResourceVolumes.Magnitude <= 0.0f)
-			{
-				temp = kinematics.GetDisplacement(temp, Single.Epsilon).ToArray();
-			}
-			else
+
+			// Apply force vector to kinematics; get and apply displacements
+			if (ownedResourceVolumes.Magnitude != 0.0f)
 			{
 				temp = kinematics.GetDisplacement(temp, ownedResourceVolumes.Magnitude).ToArray();
 			}
 			position.X += temp[0];
 			position.Y += temp[1];
+
+			// Handle domain boundary collisions
 			if (position.X < 0.0f)
 			{
 				position.X = 0.0f;
