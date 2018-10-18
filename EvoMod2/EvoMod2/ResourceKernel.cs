@@ -11,8 +11,8 @@ namespace EvoMod2
 	public class ResourceKernel : GaussKernel
 	{
 		// Global values
-		public static float RESOURCESPEED;
-		public static float SPREADRATE;
+		public static float RESOURCESPEED;	// Movement speed for resource kernels
+		public static float SPREADRATE;		// Rate at which kernels spread out over time
 
 		// Private objects
 		private Matrix moveMatrix;
