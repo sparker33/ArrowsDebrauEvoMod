@@ -59,6 +59,7 @@ namespace EvoMod2
 		{
 			H[0][0] = 1.0f;
 			H[1][1] = 1.0f;
+			H[0][1] = 0.0f;
 			H[1][0] = 0.0f;
 			moveMatrix = new Matrix(2, 2);
 			for (int i = 0; i < 2; i++)

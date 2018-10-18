@@ -58,16 +58,16 @@ namespace EvoMod2
 				{
 					GLOBALRANDOM = new Random();
 					Kinematics.DAMPING = 0.01f;
-					Kinematics.TIMESTEP = 0.01f;
+					Kinematics.TIMESTEP = 0.05f;
 					ResourceKernel.RESOURCESPEED = 1.0f;
-					ResourceKernel.SPREADRATE = 0.1f;
+					ResourceKernel.SPREADRATE = 0.0f;
 					ELEMENTCOUNT = 250;
 					REPRODUCTIONCHANCE = 0.01f;
 					MUTATIONCHANCE = 0.01f;
 					BASEDEATHCHANCE = 0.1f;
 					INITHOLDINGS = 100.0f;
 					EXCHGRATE = 30.0f;
-					ELESPEED = 200000.0f;
+					ELESPEED = 40000.0f;
 					displayBmp = new Bitmap(panel1.Width, panel1.Height);
 					elements = new List<Element>();
 					resources = new List<Resource>();
@@ -106,7 +106,6 @@ namespace EvoMod2
 			{
 				elements.Add(new Element(GLOBALRANDOM, resources.Count, INITHOLDINGS, EXCHGRATE, ELESPEED));
 			}
-			List<List<ResourceKernel>> droppedResources = new List<List<ResourceKernel>>();
 			foreach (Element element in elements)
 			{
 				element.UpdateLocalResourceLevels(resources);
@@ -127,9 +126,7 @@ namespace EvoMod2
 				}
 				if (elements[ei].CheckForDeath(BASEDEATHCHANCE))
 				{
-					//droppedResources.Add(elements[ei].Die());
 					elements[ei].Die();
-					//
 					elements.RemoveAt(ei);
 					continue;
 				}
@@ -138,11 +135,6 @@ namespace EvoMod2
 			// Update and draw resources
 			for (int i = 0; i < resources.Count; i++)
 			{
-				foreach (List<ResourceKernel> drops in droppedResources)
-				{
-					resources[i].Add(drops[i]);
-				}
-				resources[i].Consolidate();
 				for (int j = 0; j < resources[i].Count; j++)
 				{
 					resources[i][j].Update(GLOBALRANDOM);
