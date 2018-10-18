@@ -199,18 +199,11 @@ namespace EvoMod2
 		}
 
 		/// <summary>
-		/// Method to kill this element
+		/// Method to kill this element.
 		/// </summary>
-		/// <returns> Dropped resources. </returns>
-		public List<ResourceKernel> Die()
+		public void Die()
 		{
-			List<ResourceKernel> drops = new List<ResourceKernel>(ownedResourceVolumes.Count);
-			for (int i = 0; i < ownedResourceVolumes.Count; i++)
-			{
-				drops.Add(new ResourceKernel(ownedResourceVolumes[i], this.Position));
-				drops[i].ZeroMoveMatrix();
-			}
-			return drops;
+
 		}
 
 		/// <summary>

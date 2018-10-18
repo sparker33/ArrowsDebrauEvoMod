@@ -61,7 +61,7 @@ namespace EvoMod2
 					Kinematics.TIMESTEP = 0.05f;
 					ResourceKernel.RESOURCESPEED = 1.0f;
 					ResourceKernel.SPREADRATE = 0.0f;
-					ELEMENTCOUNT = 250;
+					ELEMENTCOUNT = 225;
 					REPRODUCTIONCHANCE = 0.01f;
 					MUTATIONCHANCE = 0.01f;
 					BASEDEATHCHANCE = 0.1f;
@@ -72,9 +72,9 @@ namespace EvoMod2
 					elements = new List<Element>();
 					resources = new List<Resource>();
 
-					resources.Add(new Resource(Color.Blue, 5000.0f));
-					resources.Add(new Resource(Color.Red, 2500.0f));
-					resources.Add(new Resource(Color.Green, 3000.0f));
+					resources.Add(new Resource(Color.Blue, 2250.0f));
+					resources.Add(new Resource(Color.Red, 3500.0f));
+					resources.Add(new Resource(Color.Green, 1800.0f));
 
 					resources[0].Add(0.1f, new PointF((float)(GLOBALRANDOM.NextDouble() * SCALE), (float)(GLOBALRANDOM.NextDouble() * SCALE)));
 					resources[0].Add(0.25f, new PointF((float)(GLOBALRANDOM.NextDouble() * SCALE), (float)(GLOBALRANDOM.NextDouble() * SCALE)));
