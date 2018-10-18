@@ -122,7 +122,6 @@ namespace EvoMod2
 				element.UpdateLocalResourceLevels(resources);
 				//droppedResources.Add(element.ExchangeResources());
 				element.ExchangeResources();
-				//
 				element.Move();
 			}
 			int ei = 0;
