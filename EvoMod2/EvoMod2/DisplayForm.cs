@@ -15,12 +15,19 @@ namespace EvoMod2
 	public partial class DisplayForm : Form
 	{
 		// Global values
-		public static Random GLOBALRANDOM = new Random();
+		public static Random GLOBALRANDOM;
 		public const int SCALE = 5000;   // Scale of domain for position
-							
+		public static int ELEMENTCOUNT; // Number of elements
+		public static float REPRODUCTIONCHANCE; // Likelihood of checking to see if an element can reproduce
+		public static float MUTATIONCHANCE; // Likelihood of element features mutating
+		public static float BASEDEATHCHANCE; // Scales likelihood of element death
+		public static float INITHOLDINGS; // Scales element initial holdings
+		public static float EXCHGRATE; // Scales element resource exchange rate
+		public static float ELESPEED; // Scales element move speed
+
 		// Private objects
 		private List<Element> elements;
-		private List<List<ResourceKernel>> resources;
+		private List<Resource> resources;
 		private BackgroundWorker worker = new BackgroundWorker();
 		private Bitmap displayBmp;
 
@@ -49,12 +56,43 @@ namespace EvoMod2
 				DialogResult result = settings.ShowDialog();
 				if (result == DialogResult.OK)
 				{
-					Random random = new Random();
+					GLOBALRANDOM = new Random();
+					Kinematics.DAMPING = 0.01f;
+					Kinematics.TIMESTEP = 0.05f;
+					ResourceKernel.RESOURCESPEED = 1.0f;
+					ResourceKernel.SPREADRATE = 0.0f;
+					ELEMENTCOUNT = 250;
+					REPRODUCTIONCHANCE = 0.01f;
+					MUTATIONCHANCE = 0.01f;
+					BASEDEATHCHANCE = 0.1f;
+					INITHOLDINGS = 100.0f;
+					EXCHGRATE = 30.0f;
+					ELESPEED = 40000.0f;
 					displayBmp = new Bitmap(panel1.Width, panel1.Height);
-					worker.RunWorkerAsync();
-					timer1.Start();
+					elements = new List<Element>();
+					resources = new List<Resource>();
+
+					resources.Add(new Resource(Color.Blue, 5000.0f));
+					resources.Add(new Resource(Color.Red, 2500.0f));
+					resources.Add(new Resource(Color.Green, 3000.0f));
+
+					resources[0].Add(0.1f, new PointF((float)(GLOBALRANDOM.NextDouble() * SCALE), (float)(GLOBALRANDOM.NextDouble() * SCALE)));
+					resources[0].Add(0.25f, new PointF((float)(GLOBALRANDOM.NextDouble() * SCALE), (float)(GLOBALRANDOM.NextDouble() * SCALE)));
+					resources[0].Add(0.15f, new PointF((float)(GLOBALRANDOM.NextDouble() * SCALE), (float)(GLOBALRANDOM.NextDouble() * SCALE)));
+					resources[0].Add(0.5f, new PointF((float)(GLOBALRANDOM.NextDouble() * SCALE), (float)(GLOBALRANDOM.NextDouble() * SCALE)));
+
+					resources[1].Add(0.65f, new PointF((float)(GLOBALRANDOM.NextDouble() * SCALE), (float)(GLOBALRANDOM.NextDouble() * SCALE)));
+					resources[1].Add(0.05f, new PointF((float)(GLOBALRANDOM.NextDouble() * SCALE), (float)(GLOBALRANDOM.NextDouble() * SCALE)));
+					resources[1].Add(0.05f, new PointF((float)(GLOBALRANDOM.NextDouble() * SCALE), (float)(GLOBALRANDOM.NextDouble() * SCALE)));
+					resources[1].Add(0.1f, new PointF((float)(GLOBALRANDOM.NextDouble() * SCALE), (float)(GLOBALRANDOM.NextDouble() * SCALE)));
+					resources[1].Add(0.15f, new PointF((float)(GLOBALRANDOM.NextDouble() * SCALE), (float)(GLOBALRANDOM.NextDouble() * SCALE)));
+
+					resources[2].Add(0.85f, new PointF((float)(GLOBALRANDOM.NextDouble() * SCALE), (float)(GLOBALRANDOM.NextDouble() * SCALE)));
+					resources[2].Add(0.15f, new PointF((float)(GLOBALRANDOM.NextDouble() * SCALE), (float)(GLOBALRANDOM.NextDouble() * SCALE)));
 				}
 			}
+			worker.RunWorkerAsync();
+			timer1.Start();
 		}
 
 		private void worker_DoWork(object sender, DoWorkEventArgs e)
@@ -64,62 +102,78 @@ namespace EvoMod2
 			g.Clear(Color.DarkGray);
 
 			// Update elements
-			List<List<ResourceKernel>> droppedResources = new List<List<ResourceKernel>>();
-			for (int i = 0; i < resources.Count; i++)
+			while (elements.Count < ELEMENTCOUNT)
 			{
-				droppedResources.Add(new List<ResourceKernel>());
+				elements.Add(new Element(GLOBALRANDOM, resources.Count, INITHOLDINGS, EXCHGRATE, ELESPEED));
 			}
 			foreach (Element element in elements)
 			{
-				List<float> resourceLevels = new List<float>();
-				for (int i = 0; i < resources.Count; i++)
+				element.UpdateLocalResourceLevels(resources);
+				//droppedResources.Add(element.ExchangeResources());
+				element.ExchangeResources();
+				//
+				element.Move();
+			}
+			int ei = 0;
+			while (ei < elements.Count)
+			{
+				if (GLOBALRANDOM.NextDouble() < REPRODUCTIONCHANCE)
 				{
-					resourceLevels.Add(0.0f);
-					foreach (ResourceKernel resourceNode in resources[i])
+					if (elements[ei].CheckForReproduction())
 					{
-						resourceLevels[i] += resourceNode.GetResourceLevelAt(element.Position);
+						elements.Add(elements[ei].Reproduce(GLOBALRANDOM, MUTATIONCHANCE));
 					}
 				}
-				element.Update(resourceLevels); // change this foreach to instead launch threads and then add to droppedResources on Join
+				if (elements[ei].CheckForDeath(BASEDEATHCHANCE))
+				{
+					elements[ei].Die();
+					elements.RemoveAt(ei);
+					continue;
+				}
+				ei++;
 			}
 			// Update and draw resources
 			for (int i = 0; i < resources.Count; i++)
 			{
-				float dissipationVolume = 0.0f;
-				foreach (ResourceKernel resourceNode in resources[i])
+				for (int j = 0; j < resources[i].Count; j++)
 				{
-					// Update resources
-					dissipationVolume += resourceNode.Update(GLOBALRANDOM);
-
-					// Draw resources
-					//pathgradientbrush
-				}
-				dissipationVolume /= resources[i].Count;
-				if (dissipationVolume > 0.0f)
-				{
-					foreach (ResourceKernel resourceNode in resources[i])
+					resources[i][j].Update(GLOBALRANDOM);
+					Rectangle rect = resources[i][j].GetBoundingBox((float)panel1.ClientRectangle.Width / SCALE, (float)panel1.ClientRectangle.Height / SCALE);
+					if (rect.Size.Height == 0 || rect.Size.Width == 0)
 					{
-						resourceNode.Volume += dissipationVolume;
+						continue;
 					}
-				}
-
-				// Add new drops
-				for (int j = 0; j < droppedResources[i].Count; j++)
-				{
-					resources[i].Add(droppedResources[i][j]);
+					GraphicsPath path = new GraphicsPath();
+					path.AddEllipse(rect);
+					PathGradientBrush grdBrush = new PathGradientBrush(path);
+					int o = resources[i].GetPeakOpacity(j);
+					if (o > 0)
+					{
+						grdBrush.CenterColor = Color.FromArgb(resources[i].GetPeakOpacity(j), resources[i].Color);
+					}
+					else
+					{
+						grdBrush.CenterColor = Color.FromArgb(100, Color.DarkGray);
+					}
+					Color[] pathColors = { Color.FromArgb(0, resources[i].Color) };
+					grdBrush.SurroundColors = pathColors;
+					g.FillEllipse(grdBrush, rect);
+					grdBrush.Dispose();
+					path.Dispose();
 				}
 			}
 			// Draw Elements
 			foreach (Element element in elements)
 			{
-				Brush b = new SolidBrush(element.ElementColor);
-				g.FillEllipse(b,
-					(int)((element.Position.X + SCALE / 2.0f) * panel1.Size.Width / (float)SCALE),
-					(int)((element.Position.Y + SCALE / 2.0f) * panel1.Size.Height / (float)SCALE),
-					element.Size,
-					element.Size);
+				using (Brush b = new SolidBrush(element.ElementColor))
+				{
+					g.FillEllipse(b,
+						(int)(element.Position.X * panel1.ClientRectangle.Width / SCALE),
+						(int)(element.Position.Y * panel1.ClientRectangle.Height / SCALE),
+						element.Size,
+						element.Size);
+				}
 			}
-
 			e.Result = display;
 		}
 
