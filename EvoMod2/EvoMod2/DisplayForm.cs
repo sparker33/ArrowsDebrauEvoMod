@@ -20,7 +20,8 @@ namespace EvoMod2
 		public static int ELEMENTCOUNT; // Number of elements
 		public static float REPRODUCTIONCHANCE; // Likelihood of checking to see if an element can reproduce
 		public static float MUTATIONCHANCE; // Likelihood of element features mutating
-		public static float BASEDEATHCHANCE; // Scales likelihood of element death
+		public static float BASEDEATHCHANCE; // Sets baseline random chance of death
+		public static float DEATHCHANCESCALE; // Scales likelihood of element death with unused resource inventory
 		public static float INITHOLDINGS; // Scales element initial holdings
 		public static float EXCHGRATE; // Scales element resource exchange rate
 		public static float ELESPEED; // Scales element move speed
@@ -62,14 +63,15 @@ namespace EvoMod2
 					ResourceKernel.RESOURCESPEED = 1.0f;
 					ResourceKernel.SPREADRATE = 0.0f;
 					ELEMENTCOUNT = 225;
-					REPRODUCTIONCHANCE = 0.01f;
+					REPRODUCTIONCHANCE = 0.1f;
 					Element.BASEREPROCOST = 0.1f;
-					MUTATIONCHANCE = 0.01f;
-					Element.MUTATIONRATE = 0.1f;
-					BASEDEATHCHANCE = 0.1f;
+					MUTATIONCHANCE = 0.9f;
+					Element.MUTATIONRATE = 0.01f;
+					BASEDEATHCHANCE = 0.00000000000000001f;
+					DEATHCHANCESCALE = 0.1f;
 					INITHOLDINGS = 100.0f;
 					EXCHGRATE = 30.0f;
-					ELESPEED = 40000.0f;
+					ELESPEED = 10000.0f;
 					displayBmp = new Bitmap(panel1.Width, panel1.Height);
 					elements = new List<Element>();
 					resources = new List<Resource>();
@@ -117,21 +119,15 @@ namespace EvoMod2
 			Graphics g = Graphics.FromImage(display);
 			g.Clear(Color.DarkGray);
 
-			// Repopulate elements if global population falls below threshold
-			//while (elements.Count < ELEMENTCOUNT)
-			//{
-			//	elements.Add(new Element(GLOBALRANDOM, resources.Count, INITHOLDINGS, EXCHGRATE, ELESPEED));
-			//}
 			// Update elements
 			foreach (Element element in elements)
 			{
 				element.UpdateLocalResourceLevels(resources);
-				//droppedResources.Add(element.ExchangeResources());
 				element.ExchangeResources();
 				element.Move();
 			}
 			int ei = 0;
-			float deathChance = BASEDEATHCHANCE * (1.0f + (float)Math.Exp(elements.Count / ELEMENTCOUNT - 1.0));
+			float deathScaling = DEATHCHANCESCALE * (1.0f + (float)Math.Exp(elements.Count / ELEMENTCOUNT - 1.0));
 			while (ei < elements.Count)
 			{
 				if (GLOBALRANDOM.NextDouble() < REPRODUCTIONCHANCE)
@@ -141,9 +137,8 @@ namespace EvoMod2
 						elements.Add(elements[ei].Reproduce(GLOBALRANDOM, MUTATIONCHANCE));
 					}
 				}
-				if (elements[ei].CheckForDeath(deathChance))
+				if (elements[ei].CheckForDeath(deathScaling) || GLOBALRANDOM.NextDouble() < BASEDEATHCHANCE)
 				{
-					elements[ei].Die();
 					elements.RemoveAt(ei);
 					continue;
 				}
@@ -182,13 +177,14 @@ namespace EvoMod2
 			// Draw Elements
 			foreach (Element element in elements)
 			{
+				int size = element.Size;
 				using (Brush b = new SolidBrush(element.ElementColor))
 				{
 					g.FillEllipse(b,
-						(int)(element.Position.X * panel1.ClientRectangle.Width / SCALE),
-						(int)(element.Position.Y * panel1.ClientRectangle.Height / SCALE),
-						element.Size,
-						element.Size);
+						(int)(element.Position.X * panel1.ClientRectangle.Width / SCALE) - size / 2,
+						(int)(element.Position.Y * panel1.ClientRectangle.Height / SCALE) - size / 2,
+						size,
+						size);
 				}
 			}
 			e.Result = display;

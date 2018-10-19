@@ -29,7 +29,7 @@ namespace EvoMod2
 		// Public accessors
 		public Color ElementColor { get; private set; }
 		public PointF Position { get => position; private set => position = value; }
-		public readonly int Size = 10;
+		public int Size { get => Math.Max(3, (int)(10 * ownedResourceVolumes.Magnitude / DisplayForm.INITHOLDINGS)); }
 
 		/// <summary>
 		/// Default class constructor
@@ -147,7 +147,7 @@ namespace EvoMod2
 			if (temp[0] == 0.0f && temp[1] == 0.0f)
 			{
 				temp[0] = Math.Sign(moveRules[0][0]) * moveRules[0].Magnitude;
-				temp[1] = Math.Sign(moveRules[1][1]) * moveRules[1].Magnitude;
+				temp[1] = Math.Sign(moveRules[1][0]) * moveRules[1].Magnitude;
 			}
 
 			// Apply force vector to kinematics; get and apply displacements
@@ -202,14 +202,6 @@ namespace EvoMod2
 			{
 				return false;
 			}
-		}
-
-		/// <summary>
-		/// Method to kill this element.
-		/// </summary>
-		public void Die()
-		{
-
 		}
 
 		/// <summary>
