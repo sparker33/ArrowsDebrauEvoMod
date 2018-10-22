@@ -11,6 +11,11 @@ namespace EvoMod2
 {
 	public class Element
 	{
+		// Public static fields
+		/* DisplayForm.MUTATIONCHANCE affects frequency with which mutations occur; MUTATIONRATE affects max magnitude of attribute change per mutation incident. */
+		public static float MUTATIONRATE; // Decimal percent rate of attribute mutations.
+		public static float BASEREPROCOST; // Decimal percent reproduction overhead costs
+
 		// Private fields
 		private PointF position = new PointF();
 		private Kinematics kinematics = new Kinematics(2);
@@ -24,7 +29,7 @@ namespace EvoMod2
 		// Public accessors
 		public Color ElementColor { get; private set; }
 		public PointF Position { get => position; private set => position = value; }
-		public readonly int Size = 10;
+		public int Size { get => Math.Max(3, (int)(10 * ownedResourceVolumes.Magnitude / DisplayForm.INITHOLDINGS)); }
 
 		/// <summary>
 		/// Default class constructor
@@ -63,7 +68,7 @@ namespace EvoMod2
 			for (int i = 0; i < resourceTypesCount; i++)
 			{
 				ownedResourceVolumes[i] = maxInitialHoldings * (float)random.NextDouble();
-				reproductionCost[i] = 1.1f * ownedResourceVolumes[i];
+				reproductionCost[i] = (1.0f + BASEREPROCOST) * ownedResourceVolumes[i];
 			}
 
 			resourceExchangeRules = new Matrix(resourceTypesCount, resourceTypesCount);
@@ -129,6 +134,7 @@ namespace EvoMod2
 		/// </summary>
 		public void Move()
 		{
+			// Determine driving force vector
 			float[] temp = new float[2];
 			if (kinematics.GetVelocity(0) != 0.0f)
 			{
@@ -141,18 +147,18 @@ namespace EvoMod2
 			if (temp[0] == 0.0f && temp[1] == 0.0f)
 			{
 				temp[0] = Math.Sign(moveRules[0][0]) * moveRules[0].Magnitude;
-				temp[1] = Math.Sign(moveRules[1][1]) * moveRules[1].Magnitude;
+				temp[1] = Math.Sign(moveRules[1][0]) * moveRules[1].Magnitude;
 			}
-			if (ownedResourceVolumes.Magnitude <= 0.0f)
-			{
-				temp = kinematics.GetDisplacement(temp, Single.Epsilon).ToArray();
-			}
-			else
+
+			// Apply force vector to kinematics; get and apply displacements
+			if (ownedResourceVolumes.Magnitude != 0.0f)
 			{
 				temp = kinematics.GetDisplacement(temp, ownedResourceVolumes.Magnitude).ToArray();
 			}
 			position.X += temp[0];
 			position.Y += temp[1];
+
+			// Handle domain boundary collisions
 			if (position.X < 0.0f)
 			{
 				position.X = 0.0f;
@@ -184,11 +190,11 @@ namespace EvoMod2
 		/// <returns> Boolean indicating true (should die) or false (shouldn't). </returns>
 		public bool CheckForDeath(float deathBaseLikelihood)
 		{
-			if ((ownedResourceVolumes * reproductionCost) < (deathBaseLikelihood * ownedResourceVolumes * ownedResourceVolumes))
+			if (ownedResourceVolumes.Magnitude == 0.0f)
 			{
 				return true;
 			}
-			else if (ownedResourceVolumes.Magnitude <= 0.0f)
+			else if ((ownedResourceVolumes * reproductionCost) < (deathBaseLikelihood * ownedResourceVolumes * ownedResourceVolumes))
 			{
 				return true;
 			}
@@ -196,21 +202,6 @@ namespace EvoMod2
 			{
 				return false;
 			}
-		}
-
-		/// <summary>
-		/// Method to kill this element
-		/// </summary>
-		/// <returns> Dropped resources. </returns>
-		public List<ResourceKernel> Die()
-		{
-			List<ResourceKernel> drops = new List<ResourceKernel>(ownedResourceVolumes.Count);
-			for (int i = 0; i < ownedResourceVolumes.Count; i++)
-			{
-				drops.Add(new ResourceKernel(ownedResourceVolumes[i], this.Position));
-				drops[i].ZeroMoveMatrix();
-			}
-			return drops;
 		}
 
 		/// <summary>
@@ -238,14 +229,12 @@ namespace EvoMod2
 		/// <returns> The progeny element. </returns>
 		public Element Reproduce(Random random, float mutationChance)
 		{
-			this.ownedResourceVolumes = this.ownedResourceVolumes - reproductionCost;
-
 			Vector newReproductionCost = new Vector(reproductionCost);
 			for (int i = 0; i < reproductionCost.Count; i++)
 			{
 				if (random.NextDouble() < mutationChance)
 				{
-					newReproductionCost[i] *= 0.1f * (float)random.NextDouble() + 1.0f;
+					newReproductionCost[i] += MUTATIONRATE * ownedResourceVolumes[i] * ((float)random.NextDouble() - 0.5f);
 				}
 			}
 			Matrix newResourceExchangeRules = new Matrix(resourceExchangeRules);
@@ -255,7 +244,7 @@ namespace EvoMod2
 				{
 					if (random.NextDouble() < mutationChance)
 					{
-						newResourceExchangeRules[i][j] *= 0.1f * (float)random.NextDouble() + 1.0f;
+						newResourceExchangeRules[i][j] += MUTATIONRATE * ownedResourceVolumes[i] * ((float)random.NextDouble() - 0.5f);
 					}
 				}
 			}
@@ -264,15 +253,16 @@ namespace EvoMod2
 			{
 				if (random.NextDouble() < mutationChance)
 				{
-					newMoveRules[0][i] *= 0.1f * (float)random.NextDouble() + 1.0f;
+					newMoveRules[0][i] += MUTATIONRATE * ownedResourceVolumes[i] * ((float)random.NextDouble() - 0.5f);
 				}
 				if (random.NextDouble() < mutationChance)
 				{
-					newMoveRules[1][i] *= 0.1f * (float)random.NextDouble() + 1.0f;
+					newMoveRules[1][i] += MUTATIONRATE * ownedResourceVolumes[i] * ((float)random.NextDouble() - 0.5f);
 				}
 			}
 
-			return new Element(this, reproductionCost, newReproductionCost, newResourceExchangeRules, newMoveRules);
+			this.ownedResourceVolumes = this.ownedResourceVolumes - newReproductionCost;
+			return new Element(this, (1.0f / (1.0f + BASEREPROCOST)) * newReproductionCost, newReproductionCost, newResourceExchangeRules, newMoveRules);
 		}
 
 		/// <summary>

@@ -16,11 +16,12 @@ namespace EvoMod2
 	{
 		// Global values
 		public static Random GLOBALRANDOM;
-		public const int SCALE = 5000;   // Scale of domain for position
+		public const int SCALE = 5000;   // Scale of domain for positions
 		public static int ELEMENTCOUNT; // Number of elements
 		public static float REPRODUCTIONCHANCE; // Likelihood of checking to see if an element can reproduce
 		public static float MUTATIONCHANCE; // Likelihood of element features mutating
-		public static float BASEDEATHCHANCE; // Scales likelihood of element death
+		public static float BASEDEATHCHANCE; // Sets baseline random chance of death
+		public static float DEATHCHANCESCALE; // Scales likelihood of element death with unused resource inventory
 		public static float INITHOLDINGS; // Scales element initial holdings
 		public static float EXCHGRATE; // Scales element resource exchange rate
 		public static float ELESPEED; // Scales element move speed
@@ -57,24 +58,29 @@ namespace EvoMod2
 				if (result == DialogResult.OK)
 				{
 					GLOBALRANDOM = new Random();
-					Kinematics.DAMPING = 0.01f;
+					Kinematics.DEFAULTDAMPING = 0.01f;
 					Kinematics.TIMESTEP = 0.05f;
 					ResourceKernel.RESOURCESPEED = 1.0f;
 					ResourceKernel.SPREADRATE = 0.0f;
-					ELEMENTCOUNT = 250;
-					REPRODUCTIONCHANCE = 0.01f;
-					MUTATIONCHANCE = 0.01f;
-					BASEDEATHCHANCE = 0.1f;
+					ELEMENTCOUNT = 225;
+					REPRODUCTIONCHANCE = 0.1f;
+					Element.BASEREPROCOST = 0.1f;
+					MUTATIONCHANCE = 0.9f;
+					Element.MUTATIONRATE = 0.01f;
+					BASEDEATHCHANCE = 0.00000000000000001f;
+					DEATHCHANCESCALE = 0.1f;
 					INITHOLDINGS = 100.0f;
 					EXCHGRATE = 30.0f;
-					ELESPEED = 40000.0f;
+					ELESPEED = 10000.0f;
 					displayBmp = new Bitmap(panel1.Width, panel1.Height);
 					elements = new List<Element>();
 					resources = new List<Resource>();
 
-					resources.Add(new Resource(Color.Blue, 5000.0f));
-					resources.Add(new Resource(Color.Red, 2500.0f));
-					resources.Add(new Resource(Color.Green, 3000.0f));
+					resources.Add(new Resource(Color.Blue, 2250.0f));
+					resources.Add(new Resource(Color.Red, 3500.0f));
+					resources.Add(new Resource(Color.Green, 1800.0f));
+					resources.Add(new Resource(Color.Black, 2000.0f));
+					resources.Add(new Resource(Color.White, 1300.0f));
 
 					resources[0].Add(0.1f, new PointF((float)(GLOBALRANDOM.NextDouble() * SCALE), (float)(GLOBALRANDOM.NextDouble() * SCALE)));
 					resources[0].Add(0.25f, new PointF((float)(GLOBALRANDOM.NextDouble() * SCALE), (float)(GLOBALRANDOM.NextDouble() * SCALE)));
@@ -89,7 +95,19 @@ namespace EvoMod2
 
 					resources[2].Add(0.85f, new PointF((float)(GLOBALRANDOM.NextDouble() * SCALE), (float)(GLOBALRANDOM.NextDouble() * SCALE)));
 					resources[2].Add(0.15f, new PointF((float)(GLOBALRANDOM.NextDouble() * SCALE), (float)(GLOBALRANDOM.NextDouble() * SCALE)));
+
+					resources[3].Add(0.5f, new PointF((float)(GLOBALRANDOM.NextDouble() * SCALE), (float)(GLOBALRANDOM.NextDouble() * SCALE)));
+					resources[3].Add(0.35f, new PointF((float)(GLOBALRANDOM.NextDouble() * SCALE), (float)(GLOBALRANDOM.NextDouble() * SCALE)));
+					resources[3].Add(0.15f, new PointF((float)(GLOBALRANDOM.NextDouble() * SCALE), (float)(GLOBALRANDOM.NextDouble() * SCALE)));
+
+					resources[4].Add(0.5f, new PointF((float)(GLOBALRANDOM.NextDouble() * SCALE), (float)(GLOBALRANDOM.NextDouble() * SCALE)));
+					resources[4].Add(0.5f, new PointF((float)(GLOBALRANDOM.NextDouble() * SCALE), (float)(GLOBALRANDOM.NextDouble() * SCALE)));
 				}
+			}
+			// Populate initial generation of elements
+			while (elements.Count < ELEMENTCOUNT)
+			{
+				elements.Add(new Element(GLOBALRANDOM, resources.Count, INITHOLDINGS, EXCHGRATE, ELESPEED));
 			}
 			worker.RunWorkerAsync();
 			timer1.Start();
@@ -102,19 +120,14 @@ namespace EvoMod2
 			g.Clear(Color.DarkGray);
 
 			// Update elements
-			while (elements.Count < ELEMENTCOUNT)
-			{
-				elements.Add(new Element(GLOBALRANDOM, resources.Count, INITHOLDINGS, EXCHGRATE, ELESPEED));
-			}
 			foreach (Element element in elements)
 			{
 				element.UpdateLocalResourceLevels(resources);
-				//droppedResources.Add(element.ExchangeResources());
 				element.ExchangeResources();
-				//
 				element.Move();
 			}
 			int ei = 0;
+			float deathScaling = DEATHCHANCESCALE * (1.0f + (float)Math.Exp(elements.Count / ELEMENTCOUNT - 1.0));
 			while (ei < elements.Count)
 			{
 				if (GLOBALRANDOM.NextDouble() < REPRODUCTIONCHANCE)
@@ -124,9 +137,8 @@ namespace EvoMod2
 						elements.Add(elements[ei].Reproduce(GLOBALRANDOM, MUTATIONCHANCE));
 					}
 				}
-				if (elements[ei].CheckForDeath(BASEDEATHCHANCE))
+				if (elements[ei].CheckForDeath(deathScaling) || GLOBALRANDOM.NextDouble() < BASEDEATHCHANCE)
 				{
-					elements[ei].Die();
 					elements.RemoveAt(ei);
 					continue;
 				}
@@ -165,13 +177,14 @@ namespace EvoMod2
 			// Draw Elements
 			foreach (Element element in elements)
 			{
+				int size = element.Size;
 				using (Brush b = new SolidBrush(element.ElementColor))
 				{
 					g.FillEllipse(b,
-						(int)(element.Position.X * panel1.ClientRectangle.Width / SCALE),
-						(int)(element.Position.Y * panel1.ClientRectangle.Height / SCALE),
-						element.Size,
-						element.Size);
+						(int)(element.Position.X * panel1.ClientRectangle.Width / SCALE) - size / 2,
+						(int)(element.Position.Y * panel1.ClientRectangle.Height / SCALE) - size / 2,
+						size,
+						size);
 				}
 			}
 			e.Result = display;
