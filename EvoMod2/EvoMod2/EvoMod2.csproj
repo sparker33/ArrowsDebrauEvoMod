@@ -66,6 +66,7 @@
     <Compile Include="SettingsForm.Designer.cs">
       <DependentUpon>SettingsForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="TraderModule.cs" />
     <EmbeddedResource Include="DisplayForm.resx">
       <DependentUpon>DisplayForm.cs</DependentUpon>
     </EmbeddedResource>

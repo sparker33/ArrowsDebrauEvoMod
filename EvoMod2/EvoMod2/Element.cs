@@ -12,121 +12,57 @@ namespace EvoMod2
 	public class Element
 	{
 		// Public static fields
-		/* DisplayForm.MUTATIONCHANCE affects frequency with which mutations occur; MUTATIONRATE affects max magnitude of attribute change per mutation incident. */
-		public static float MUTATIONRATE; // Decimal percent rate of attribute mutations.
-		public static float BASEREPROCOST; // Decimal percent reproduction overhead costs
 
 		// Private fields
 		private PointF position = new PointF();
 		private Kinematics kinematics = new Kinematics(2);
-		private Vector deltaResources;
-		private Vector localResourceLevels;
-		private Vector ownedResourceVolumes;
-		private Vector reproductionCost;
-		private Matrix resourceExchangeRules;
-		private Matrix moveRules;
+		private PointF destination;
+		private float health;
+		private float mobility;
+		private float intelligence;
+		private float conscientiousness;
+		private float agreeableness;
+		private float openness;
+		private float extraversion;
+		private float neuroticism;
+		private float happinessBonus;
+		private float[] happinessWeights = new float[2]; // 0: wealth, 1: health
+		private TraderModule trader;
+		private MatrixMath.Matrix resourceUseHistory;
+		private Vector happinessPercentChangeHistory;
+		private Vector percentTradesSuccessfulHistory;
 
 		// Public accessors
-		public Color ElementColor { get; private set; }
+		public float Happiness { get => (happinessBonus + happinessWeights[0] * trader.Value + happinessWeights[1] * health); }
+		public int Age { get; private set; }
+		public List<PointF> KnownLocations { get; set; }
 		public PointF Position { get => position; private set => position = value; }
-		public int Size { get => Math.Max(3, (int)(10 * ownedResourceVolumes.Magnitude / DisplayForm.INITHOLDINGS)); }
+		public int Size { get => 10; }
+		public Color ElementColor { get; private set; }
 
 		/// <summary>
-		/// Default class constructor
+		/// Default class constructor. Not intended for use
 		/// </summary>
-		public Element()
+		private Element()
 		{
-			deltaResources = new Vector();
-			localResourceLevels = new Vector();
-			ownedResourceVolumes = new Vector();
-			reproductionCost = new Vector();
-			resourceExchangeRules = new Matrix();
-			moveRules = new Matrix();
-			ElementColor = Color.Blue;
+
 		}
 
 		/// <summary>
 		/// Basic class constructor with initial physics configuration
 		/// </summary>
 		/// <param name="random"> Randomizer. </param>
-		/// <param name="resourceTypesCount"> Specifies number of different types of resources in environment. </param>
-		/// <param name="maxInitialHoldings"> Controls amount of resources initially provided to element. </param>
-		/// <param name="resourceExchangeRate"> Controls rate of resource pickup/drop. </param>
-		/// <param name="speed"> Controls element movement speed. </param>
-		public Element(Random random, int resourceTypesCount, float maxInitialHoldings, float resourceExchangeRate, float speed)
+		public Element(Random random)
 		{
-			deltaResources = new Vector(resourceTypesCount);
-			localResourceLevels = new Vector(resourceTypesCount);
+			Age = 0;
 
 			position.X = (float)(random.NextDouble() * DisplayForm.SCALE);
 			position.Y = (float)(random.NextDouble() * DisplayForm.SCALE);
-
-			ElementColor = Color.FromArgb(255, random.Next(256), random.Next(256), random.Next(256));
-
-			ownedResourceVolumes = new Vector(resourceTypesCount);
-			reproductionCost = new Vector(resourceTypesCount);
-			for (int i = 0; i < resourceTypesCount; i++)
-			{
-				ownedResourceVolumes[i] = maxInitialHoldings * (float)random.NextDouble();
-				reproductionCost[i] = (1.0f + BASEREPROCOST) * ownedResourceVolumes[i];
-			}
-
-			resourceExchangeRules = new Matrix(resourceTypesCount, resourceTypesCount);
-			for (int i = 0; i < resourceTypesCount; i++)
-			{
-				for (int j = 0; j < resourceTypesCount; j++)
-				{
-					resourceExchangeRules[i][j] = resourceExchangeRate * ((float)random.NextDouble() - 0.5f);
-				}
-			}
-
-			moveRules = new Matrix(2, resourceTypesCount);
-			for (int i = 0; i < resourceTypesCount; i++)
-			{
-				moveRules[0][i] = speed * ((float)random.NextDouble() - 0.5f);
-				moveRules[1][i] = speed * ((float)random.NextDouble() - 0.5f);
-			}
-		}
-
-		/// <summary>
-		/// Method to update the local resource level vector
-		/// </summary>
-		/// <param name="nodes"> Collection of resources in environment. </param>
-		public void UpdateLocalResourceLevels(List<Resource> nodes)
-		{
-			for (int i = 0; i < nodes.Count; i++)
-			{
-				deltaResources[i] = localResourceLevels[i];
-				localResourceLevels[i] = 0.0f;
-				for (int j = 0; j < nodes[i].Count; j++)
-				{
-					localResourceLevels[i] += nodes[i][j].GetResourceLevelAt(this.Position);
-				}
-				localResourceLevels.Magnitude = 1.0f;
-				deltaResources = localResourceLevels - deltaResources;
-			}
-		}
-
-		/// <summary>
-		/// Method to exchange resources with environment based on local concentration levels
-		/// </summary>
-		/// <returns> List of dropped kernels. Resource pickups reflected as negative-volume drops. </returns>
-		public List<ResourceKernel> ExchangeResources()
-		{
-			Vector exchangeVolumes = resourceExchangeRules * localResourceLevels;
-			List<ResourceKernel> drops = new List<ResourceKernel>(localResourceLevels.Count);
-			for (int i = 0; i < exchangeVolumes.Count; i++)
-			{
-				if (exchangeVolumes[i] + ownedResourceVolumes[i] < 0.0f)
-				{
-					exchangeVolumes[i] = -ownedResourceVolumes[i];
-				}
-				drops.Add(new ResourceKernel(-exchangeVolumes[i], this.Position));
-				drops[i].ZeroMoveMatrix();
-			}
-			ownedResourceVolumes = ownedResourceVolumes + exchangeVolumes;
-
-			return drops;
+			KnownLocations.Add(position);
+			int r = (int)(255.0 / (1.0 + Math.Exp((15.0 / DisplayForm.SCALE) * (position.X - DisplayForm.SCALE / 2.0))));
+			int g = (int)(255.0 / (1.0 + Math.Exp((15.0 / DisplayForm.SCALE) * (position.X * position.Y / (2 * DisplayForm.SCALE * DisplayForm.SCALE)))));
+			int b = (int)(255.0 / (1.0 + Math.Exp((15.0 / DisplayForm.SCALE) * (position.Y - DisplayForm.SCALE / 2.0))));
+			ElementColor = Color.FromArgb(r, g, b);
 		}
 
 		/// <summary>
@@ -182,103 +118,23 @@ namespace EvoMod2
 		}
 
 		/// <summary>
-		/// Checks whether or not this element should dia.
-		/// </summary>
-		/// <param name="deathBaseLikelihood"> Specifies how close to being able to 
-		/// reproduce this element must be in order to remain alive.
-		/// </param>
-		/// <returns> Boolean indicating true (should die) or false (shouldn't). </returns>
-		public bool CheckForDeath(float deathBaseLikelihood)
-		{
-			if (ownedResourceVolumes.Magnitude == 0.0f)
-			{
-				return true;
-			}
-			else if ((ownedResourceVolumes * reproductionCost) < (deathBaseLikelihood * ownedResourceVolumes * ownedResourceVolumes))
-			{
-				return true;
-			}
-			else
-			{
-				return false;
-			}
-		}
-
-		/// <summary>
-		/// Method to determine whether or not this element can reproduce
-		/// </summary>
-		/// <returns> Boolean indicating true (can reproduce) or false (cannot). </returns>
-		public bool CheckForReproduction()
-		{
-			for (int i = 0; i < ownedResourceVolumes.Count; i++)
-			{
-				if (ownedResourceVolumes[i] < reproductionCost[i])
-				{
-					return false;
-				}
-			}
-
-			return true;
-		}
-
-		/// <summary>
 		/// Method to make this element reproduce
 		/// </summary>
 		/// <param name="random"> Random variable for mutation. </param>
 		/// <param name="mutationChance"> Decimal chance of random mutation. </param>
 		/// <returns> The progeny element. </returns>
-		public Element Reproduce(Random random, float mutationChance)
+		public Element Reproduce(Element mate, Random random, float mutationChance)
 		{
-			Vector newReproductionCost = new Vector(reproductionCost);
-			for (int i = 0; i < reproductionCost.Count; i++)
-			{
-				if (random.NextDouble() < mutationChance)
-				{
-					newReproductionCost[i] += MUTATIONRATE * ownedResourceVolumes[i] * ((float)random.NextDouble() - 0.5f);
-				}
-			}
-			Matrix newResourceExchangeRules = new Matrix(resourceExchangeRules);
-			for (int i = 0; i < resourceExchangeRules.Count; i++)
-			{
-				for (int j = 0; j < resourceExchangeRules[i].Count; j++)
-				{
-					if (random.NextDouble() < mutationChance)
-					{
-						newResourceExchangeRules[i][j] += MUTATIONRATE * ownedResourceVolumes[i] * ((float)random.NextDouble() - 0.5f);
-					}
-				}
-			}
-			Matrix newMoveRules = new Matrix(moveRules);
-			for (int i = 0; i < moveRules[0].Count; i++)
-			{
-				if (random.NextDouble() < mutationChance)
-				{
-					newMoveRules[0][i] += MUTATIONRATE * ownedResourceVolumes[i] * ((float)random.NextDouble() - 0.5f);
-				}
-				if (random.NextDouble() < mutationChance)
-				{
-					newMoveRules[1][i] += MUTATIONRATE * ownedResourceVolumes[i] * ((float)random.NextDouble() - 0.5f);
-				}
-			}
-
-			this.ownedResourceVolumes = this.ownedResourceVolumes - newReproductionCost;
-			return new Element(this, (1.0f / (1.0f + BASEREPROCOST)) * newReproductionCost, newReproductionCost, newResourceExchangeRules, newMoveRules);
+			return new Element(this, mate);
 		}
 
 		/// <summary>
 		/// Class constructor for reproduction method
 		/// </summary>
-		private Element(Element parent, Vector newOwnedResourceVolumes, Vector newReproductionCost, Matrix newResourceExchangeRules, Matrix newMoveRules)
+		public Element(Element parent1, Element parent2)
 		{
-			position.X = parent.Position.X;
-			position.Y = parent.Position.Y;
-			ElementColor = parent.ElementColor;
-			deltaResources = new Vector(newOwnedResourceVolumes);
-			localResourceLevels = new Vector(newOwnedResourceVolumes);
-			ownedResourceVolumes = new Vector(newOwnedResourceVolumes);
-			reproductionCost = new Vector(newReproductionCost);
-			resourceExchangeRules = new Matrix(newResourceExchangeRules);
-			moveRules = new Matrix(newMoveRules);
+			position.X = parent1.Position.X;
+			position.Y = parent1.Position.Y;
 		}
 	}
 }
