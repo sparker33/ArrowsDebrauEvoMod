@@ -18,12 +18,6 @@ namespace EvoMod2
 		public static Random GLOBALRANDOM;
 		public const int SCALE = 5000;   // Scale of domain for positions
 		public static int ELEMENTCOUNT; // Number of elements
-		public static float REPRODUCTIONCHANCE; // Likelihood of checking to see if an element can reproduce
-		public static float MUTATIONCHANCE; // Likelihood of element features mutating
-		public static float BASEDEATHCHANCE; // Sets baseline random chance of death
-		public static float DEATHCHANCESCALE; // Scales likelihood of element death with unused resource inventory
-		public static float INITHOLDINGS; // Scales element initial holdings
-		public static float EXCHGRATE; // Scales element resource exchange rate
 		public static float ELESPEED; // Scales element move speed
 
 		// Private objects
@@ -63,14 +57,7 @@ namespace EvoMod2
 					ResourceKernel.RESOURCESPEED = 1.0f;
 					ResourceKernel.SPREADRATE = 0.0f;
 					ELEMENTCOUNT = 225;
-					REPRODUCTIONCHANCE = 0.1f;
-					Element.BASEREPROCOST = 0.1f;
-					MUTATIONCHANCE = 0.9f;
-					Element.MUTATIONRATE = 0.01f;
-					BASEDEATHCHANCE = 0.00000000000000001f;
-					DEATHCHANCESCALE = 0.1f;
-					INITHOLDINGS = 100.0f;
-					EXCHGRATE = 30.0f;
+					Element.TRAITSPREAD = 10.0f;
 					ELESPEED = 10000.0f;
 					displayBmp = new Bitmap(panel1.Width, panel1.Height);
 					elements = new List<Element>();
@@ -107,7 +94,7 @@ namespace EvoMod2
 			// Populate initial generation of elements
 			while (elements.Count < ELEMENTCOUNT)
 			{
-				elements.Add(new Element(GLOBALRANDOM, resources.Count, INITHOLDINGS, EXCHGRATE, ELESPEED));
+				elements.Add(new Element(GLOBALRANDOM));
 			}
 			worker.RunWorkerAsync();
 			timer1.Start();

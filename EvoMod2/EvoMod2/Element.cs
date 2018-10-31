@@ -12,6 +12,7 @@ namespace EvoMod2
 	public class Element
 	{
 		// Public static fields
+		public static float TRAITSPREAD;
 
 		// Private fields
 		private PointF position = new PointF();
@@ -71,15 +72,22 @@ namespace EvoMod2
 			int b = (int)(255.0 / (1.0 + Math.Exp((15.0 / DisplayForm.SCALE) * (position.Y - DisplayForm.SCALE / 2.0))));
 			ElementColor = Color.FromArgb(r, g, b);
 
-			intelligence = (float)(Math.Sqrt(-2.0 * Math.Log(1.0 - random.NextDouble())));
-			conscientiousness = (float)(Math.Sqrt(-2.0 * Math.Log(1.0 - random.NextDouble())));
-			agreeableness = (float)(Math.Sqrt(-2.0 * Math.Log(1.0 - random.NextDouble())));
-			neuroticism = (float)(Math.Sqrt(-2.0 * Math.Log(1.0 - random.NextDouble())));
-			openness = (float)(Math.Sqrt(-2.0 * Math.Log(1.0 - random.NextDouble())));
-			extraversion = (float)(Math.Sqrt(-2.0 * Math.Log(1.0 - random.NextDouble())));
+			double rand = random.NextDouble();
+			intelligence = (float)StatFunctions.GaussRandom(rand, TRAITSPREAD);
+			rand = random.NextDouble();
+			conscientiousness = (float)StatFunctions.GaussRandom(rand, TRAITSPREAD);
+			rand = random.NextDouble();
+			agreeableness = (float)StatFunctions.GaussRandom(rand, TRAITSPREAD);
+			rand = random.NextDouble();
+			neuroticism = (float)StatFunctions.GaussRandom(rand, TRAITSPREAD);
+			rand = random.NextDouble();
+			openness = (float)StatFunctions.GaussRandom(rand, TRAITSPREAD);
+			rand = random.NextDouble();
+			extraversion = (float)StatFunctions.GaussRandom(rand, TRAITSPREAD);
 
-			health = 3000.0f * (float)(Math.Sqrt(-2.0 * Math.Log(1.0 - random.NextDouble())));
-			mobility = DisplayForm.SCALE / 1000.0f;
+			rand = random.NextDouble();
+			health = 3000.0f * (float)StatFunctions.GaussRandom(rand, TRAITSPREAD);
+			mobility = DisplayForm.ELESPEED;
 			actionsPerTurn = 1 + (int)(10.0f * conscientiousness);
 			interactionsPerTurn = 1 + (int)(10.0f * extraversion);
 		}
@@ -169,6 +177,20 @@ namespace EvoMod2
 			}
 		}
 
+		public void DoAction()
+		{
+			ActionCount--;
+			// Make decision
+			// Execute action
+		}
+
+		public void DoInteraction()
+		{
+			InteractionCount--;
+			// Make decision
+			// Execute interaction
+		}
+
 		/// <summary>
 		/// Method to make this element reproduce
 		/// </summary>
@@ -189,13 +211,19 @@ namespace EvoMod2
 			position.Y = parent1.Position.Y;
 		}
 
-
+		/// <summary>
+		/// Method to update this element's decision matrices
+		/// </summary>
+		/// <param name="environmentHappiness"></param>
 		public void Learn(float environmentHappiness)
 		{
-			float nextHappiness = 1.0f; // add formula (bonus + weights * values)
+			// Update happiness
+			float nextHappiness = 1.0f; // add formula ?(bonus + weights * values)?
 			happinessPercentChangeHistory.RemoveAt(happinessPercentChangeHistory.Count);
 			happinessPercentChangeHistory.Insert(0, (nextHappiness - happiness) / happiness);
 			happiness = nextHappiness;
+			// Train decision matrices
+			trader.Train(resourceUseHistory, happinessPercentChangeHistory, percentTradesSuccessfulHistory);
 		}
 	}
 }
