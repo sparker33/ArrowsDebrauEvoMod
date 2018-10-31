@@ -16,24 +16,31 @@ namespace EvoMod2
 		// Private fields
 		private PointF position = new PointF();
 		private Kinematics kinematics = new Kinematics(2);
-		private PointF destination;
+		private Destination destination = new Destination();
+		// Dynamic traits
+		private float happiness;
 		private float health;
 		private float mobility;
+		private int actionsPerTurn;
+		private int interactionsPerTurn;
+		// Fixed traits
 		private float intelligence;
 		private float conscientiousness;
 		private float agreeableness;
+		private float neuroticism;
 		private float openness;
 		private float extraversion;
-		private float neuroticism;
+			// Additional objects
 		private float happinessBonus;
-		private float[] happinessWeights = new float[2]; // 0: wealth, 1: health
+		private float[] happinessWeights = new float[4]; // 0: wealth, 1: health, 2: location, 3: neuroticism
 		private TraderModule trader;
 		private MatrixMath.Matrix resourceUseHistory;
 		private Vector happinessPercentChangeHistory;
 		private Vector percentTradesSuccessfulHistory;
 
-		// Public accessors
-		public float Happiness { get => (happinessBonus + happinessWeights[0] * trader.Value + happinessWeights[1] * health); }
+		// Public
+		public int ActionCount { get; private set; }
+		public int InteractionCount { get; private set; }
 		public int Age { get; private set; }
 		public List<PointF> KnownLocations { get; set; }
 		public PointF Position { get => position; private set => position = value; }
@@ -63,6 +70,28 @@ namespace EvoMod2
 			int g = (int)(255.0 / (1.0 + Math.Exp((15.0 / DisplayForm.SCALE) * (position.X * position.Y / (2 * DisplayForm.SCALE * DisplayForm.SCALE)))));
 			int b = (int)(255.0 / (1.0 + Math.Exp((15.0 / DisplayForm.SCALE) * (position.Y - DisplayForm.SCALE / 2.0))));
 			ElementColor = Color.FromArgb(r, g, b);
+
+			intelligence = (float)(Math.Sqrt(-2.0 * Math.Log(1.0 - random.NextDouble())));
+			conscientiousness = (float)(Math.Sqrt(-2.0 * Math.Log(1.0 - random.NextDouble())));
+			agreeableness = (float)(Math.Sqrt(-2.0 * Math.Log(1.0 - random.NextDouble())));
+			neuroticism = (float)(Math.Sqrt(-2.0 * Math.Log(1.0 - random.NextDouble())));
+			openness = (float)(Math.Sqrt(-2.0 * Math.Log(1.0 - random.NextDouble())));
+			extraversion = (float)(Math.Sqrt(-2.0 * Math.Log(1.0 - random.NextDouble())));
+
+			health = 3000.0f * (float)(Math.Sqrt(-2.0 * Math.Log(1.0 - random.NextDouble())));
+			mobility = DisplayForm.SCALE / 1000.0f;
+			actionsPerTurn = 1 + (int)(10.0f * conscientiousness);
+			interactionsPerTurn = 1 + (int)(10.0f * extraversion);
+		}
+
+		public void ResetActions()
+		{
+			ActionCount = actionsPerTurn;
+		}
+
+		public void ResetInteractions()
+		{
+			InteractionCount = interactionsPerTurn;
 		}
 
 		/// <summary>
@@ -70,26 +99,49 @@ namespace EvoMod2
 		/// </summary>
 		public void Move()
 		{
+			float[] temp = new float[2]; // Utility array to hold destination distance, accelleration, and displacement
+
+			// Check for destination acquisition
+			if (destination.IsEmpty && /*meet criteria for new destination == */true)
+			{
+				PointF newLocation = new PointF();
+				destination.Set(this.position, newLocation);
+			}
+			else if (!destination.IsEmpty && /*meet criteria to cancel destination == */true)
+			{
+				destination.Clear();
+			}
+
+			if (destination.IsEmpty)
+			{
+				kinematics.Damping = Kinematics.DEFAULTDAMPING;
+				temp[0] = 0.0f;
+				temp[1] = 0.0f;
+			}
+			else
+			{
+				kinematics.Damping = 1.0f / destination.GetProgress(position);
+				temp[0] = destination.X - position.X;
+				temp[1] = destination.Y - position.Y;
+			}
+
 			// Determine driving force vector
-			float[] temp = new float[2];
-			if (kinematics.GetVelocity(0) != 0.0f)
+			float speed = kinematics.Speed;
+			if (speed != 0.0f)
 			{
-				temp[0] = (1.0f / kinematics.GetVelocity(0)) * moveRules[0] * deltaResources;
+				temp[0] = happinessPercentChangeHistory[0] * kinematics.GetVelocity(0) / speed + temp[0] / DisplayForm.SCALE;
+				temp[1] = happinessPercentChangeHistory[0] * kinematics.GetVelocity(1) / speed + temp[1] / DisplayForm.SCALE;
 			}
-			if (kinematics.GetVelocity(1) != 0.0f)
+			else
 			{
-				temp[1] = (1.0f / kinematics.GetVelocity(1)) * moveRules[1] * deltaResources;
-			}
-			if (temp[0] == 0.0f && temp[1] == 0.0f)
-			{
-				temp[0] = Math.Sign(moveRules[0][0]) * moveRules[0].Magnitude;
-				temp[1] = Math.Sign(moveRules[1][0]) * moveRules[1].Magnitude;
+				temp[0] = 0.0f;
+				temp[1] = 0.0f;
 			}
 
 			// Apply force vector to kinematics; get and apply displacements
-			if (ownedResourceVolumes.Magnitude != 0.0f)
+			if (mobility != 0.0f)
 			{
-				temp = kinematics.GetDisplacement(temp, ownedResourceVolumes.Magnitude).ToArray();
+				temp = kinematics.GetDisplacement(temp, 1.0f / mobility).ToArray();
 			}
 			position.X += temp[0];
 			position.Y += temp[1];
@@ -135,6 +187,15 @@ namespace EvoMod2
 		{
 			position.X = parent1.Position.X;
 			position.Y = parent1.Position.Y;
+		}
+
+
+		public void Learn(float environmentHappiness)
+		{
+			float nextHappiness = 1.0f; // add formula (bonus + weights * values)
+			happinessPercentChangeHistory.RemoveAt(happinessPercentChangeHistory.Count);
+			happinessPercentChangeHistory.Insert(0, (nextHappiness - happiness) / happiness);
+			happiness = nextHappiness;
 		}
 	}
 }

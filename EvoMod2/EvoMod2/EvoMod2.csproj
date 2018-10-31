@@ -48,6 +48,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Destination.cs" />
     <Compile Include="Element.cs" />
     <Compile Include="DisplayForm.cs">
       <SubType>Form</SubType>
