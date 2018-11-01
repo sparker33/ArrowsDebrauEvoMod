@@ -21,25 +21,22 @@ namespace EvoMod2
 		private float happinessSpread;
 		private float happinessShift;
 
-		private MatrixMath.Vector targetInventory;
 		private MatrixMath.Matrix brain;
 
 		// Public objects
-		public float Value { get; }
-		public MatrixMath.Vector Inventory { get; set; }
-		public MatrixMath.Vector DesiredTrade { get => (targetInventory - Inventory); }
+		public MatrixMath.Vector TargetInventory { get; private set; }
 
 		// Methods to add and remove resourcess from this TraderModule
 		public void AddResource()
 		{
-			targetInventory.Add(0.0f);
+			TargetInventory.Add(0.0f);
 
 			brain.InsertColumn(brain.ColumnCount);
 			brain.Add(new Vector(brain.ColumnCount));
 		}
 		public void RemoveResourceAt(int index)
 		{
-			targetInventory.Add(0.0f);
+			TargetInventory.Add(0.0f);
 
 			brain.InsertColumn(brain.ColumnCount);
 			brain.Add(new Vector(brain.ColumnCount));
@@ -69,24 +66,26 @@ namespace EvoMod2
 		}
 
 		/// <summary>
+		/// Returns this TraderModule's evaluation of the input inventory's value.
+		/// </summary>
+		/// <param name="inventory"> Vector inventory input. </param>
+		/// <returns> Float indicating the assessed inventory's value. </returns>
+		public float GetInventoryValue(Vector inventory)
+		{
+			float targetInventoryMagnitude = TargetInventory.Magnitude;
+			return ((inventory * TargetInventory) / (targetInventoryMagnitude * targetInventoryMagnitude));
+		}
+
+		/// <summary>
 		/// Determines trade willingness
 		/// </summary>
 		/// <param name="tradeProposal"> Trade to evaluate. </param>
 		/// <returns> Willingness to trade. Values greater than one indicate good direction but too high magnitude. </returns>
-		public float GetTradeWillingness(Vector tradeProposal)
+		public float GetTradeWillingness(Vector tradeProposal, Vector inventory)
 		{
-			Vector desiredTrade = this.DesiredTrade;
+			Vector desiredTrade = TargetInventory - inventory;
 			float desiredTradeMagnitude = desiredTrade.Magnitude;
 			return (-(tradeProposal * desiredTrade) / (desiredTradeMagnitude * desiredTradeMagnitude));
-		}
-
-		/// <summary>
-		/// Adds the traded resources to this TraderModule's inventory.
-		/// </summary>
-		/// <param name="trade"> Vector of resources being exchanged. </param>
-		public void Trade(Vector trade)
-		{
-			Inventory += trade;
 		}
 
 		/// <summary>
@@ -95,7 +94,7 @@ namespace EvoMod2
 		/// <param name="resourcePreferences"> Resource preferences. </param>
 		public void UpdateTargetVector(MatrixMath.Matrix resourcePreferences)
 		{
-			targetInventory = MatrixMath.Matrix.Transpose(brain * resourcePreferences)[0];
+			TargetInventory = MatrixMath.Matrix.Transpose(brain * resourcePreferences)[0];
 		}
 
 		/// <summary>

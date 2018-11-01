@@ -40,7 +40,7 @@ namespace EvoMod2
 
 		// Public
 		public int Age { get; private set; }
-		public List<PointF> KnownLocations { get; set; }
+		public List<PointF> KnownLocations { get; private set; }
 		public PointF Position { get => position; private set => position = value; }
 		public int Size { get => 10; }
 		public Color ElementColor { get; private set; }
@@ -85,6 +85,16 @@ namespace EvoMod2
 			rand = random.NextDouble();
 			health = 3000.0f * (float)StatFunctions.GaussRandom(rand, TRAITSPREAD, TRAITSPREAD);
 			mobility = DisplayForm.ELESPEED;
+		}
+
+		/// <summary>
+		/// Method to add a resource to the list of possible resources and all affected components.
+		/// </summary>
+		public void AddResource()
+		{
+			trader.AddResource();
+			resourceUseHistory.InsertColumn(resourceUseHistory.Count);
+			resourceUseHistory.Add(new Vector(resourceUseHistory.Count));
 		}
 
 		/// <summary>
