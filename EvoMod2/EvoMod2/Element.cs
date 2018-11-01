@@ -22,8 +22,6 @@ namespace EvoMod2
 		private float happiness;
 		private float health;
 		private float mobility;
-		private int actionsPerTurn;
-		private int interactionsPerTurn;
 		// Fixed traits
 		private float intelligence;
 		private float conscientiousness;
@@ -31,17 +29,16 @@ namespace EvoMod2
 		private float neuroticism;
 		private float openness;
 		private float extraversion;
-			// Additional objects
+		// Additional objects
 		private float happinessBonus;
-		private float[] happinessWeights = new float[4]; // 0: wealth, 1: health, 2: location, 3: neuroticism
+		private float[] happinessWeights = new float[3]; // 0: wealth, 1: health, 2: location
+		private float[] interactionCoefficients = new float[2];
 		private TraderModule trader;
 		private MatrixMath.Matrix resourceUseHistory;
 		private Vector happinessPercentChangeHistory;
 		private Vector percentTradesSuccessfulHistory;
 
 		// Public
-		public int ActionCount { get; private set; }
-		public int InteractionCount { get; private set; }
 		public int Age { get; private set; }
 		public List<PointF> KnownLocations { get; set; }
 		public PointF Position { get => position; private set => position = value; }
@@ -73,33 +70,21 @@ namespace EvoMod2
 			ElementColor = Color.FromArgb(r, g, b);
 
 			double rand = random.NextDouble();
-			intelligence = (float)StatFunctions.GaussRandom(rand, TRAITSPREAD);
+			intelligence = (float)StatFunctions.GaussRandom(rand, TRAITSPREAD, TRAITSPREAD);
 			rand = random.NextDouble();
-			conscientiousness = (float)StatFunctions.GaussRandom(rand, TRAITSPREAD);
+			conscientiousness = (float)StatFunctions.GaussRandom(rand, TRAITSPREAD, TRAITSPREAD);
 			rand = random.NextDouble();
-			agreeableness = (float)StatFunctions.GaussRandom(rand, TRAITSPREAD);
+			agreeableness = (float)StatFunctions.GaussRandom(rand, TRAITSPREAD, TRAITSPREAD);
 			rand = random.NextDouble();
-			neuroticism = (float)StatFunctions.GaussRandom(rand, TRAITSPREAD);
+			neuroticism = (float)StatFunctions.GaussRandom(rand, TRAITSPREAD, TRAITSPREAD);
 			rand = random.NextDouble();
-			openness = (float)StatFunctions.GaussRandom(rand, TRAITSPREAD);
+			openness = (float)StatFunctions.GaussRandom(rand, TRAITSPREAD, TRAITSPREAD);
 			rand = random.NextDouble();
-			extraversion = (float)StatFunctions.GaussRandom(rand, TRAITSPREAD);
+			extraversion = (float)StatFunctions.GaussRandom(rand, TRAITSPREAD, TRAITSPREAD);
 
 			rand = random.NextDouble();
-			health = 3000.0f * (float)StatFunctions.GaussRandom(rand, TRAITSPREAD);
+			health = 3000.0f * (float)StatFunctions.GaussRandom(rand, TRAITSPREAD, TRAITSPREAD);
 			mobility = DisplayForm.ELESPEED;
-			actionsPerTurn = 1 + (int)(10.0f * conscientiousness);
-			interactionsPerTurn = 1 + (int)(10.0f * extraversion);
-		}
-
-		public void ResetActions()
-		{
-			ActionCount = actionsPerTurn;
-		}
-
-		public void ResetInteractions()
-		{
-			InteractionCount = interactionsPerTurn;
 		}
 
 		/// <summary>
@@ -177,17 +162,17 @@ namespace EvoMod2
 			}
 		}
 
-		public void DoAction()
+		public void DoAction(List<Resource> environmentResources)
 		{
-			ActionCount--;
 			// Make decision
+
 			// Execute action
 		}
 
-		public void DoInteraction()
+		public void DoInteraction(Random random, Element otherElement)
 		{
-			InteractionCount--;
 			// Make decision
+
 			// Execute interaction
 		}
 
@@ -218,7 +203,7 @@ namespace EvoMod2
 		public void Learn(float environmentHappiness)
 		{
 			// Update happiness
-			float nextHappiness = 1.0f; // add formula ?(bonus + weights * values)?
+			float nextHappiness = happinessBonus; // add formula ?(bonus + weights * values)?
 			happinessPercentChangeHistory.RemoveAt(happinessPercentChangeHistory.Count);
 			happinessPercentChangeHistory.Insert(0, (nextHappiness - happiness) / happiness);
 			happiness = nextHappiness;

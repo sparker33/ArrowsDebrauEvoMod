@@ -25,7 +25,7 @@ namespace EvoMod2
 		private MatrixMath.Matrix brain;
 
 		// Public objects
-		public float Value;
+		public float Value { get; }
 		public MatrixMath.Vector Inventory { get; set; }
 		public MatrixMath.Vector DesiredTrade { get => (targetInventory - Inventory); }
 
