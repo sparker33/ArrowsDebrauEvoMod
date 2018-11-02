@@ -21,13 +21,13 @@ namespace EvoMod2
 		public static float ELESPEED; // Scales element move speed
 
 		// Private objects
-		private List<Element> elements;
-		private List<Resource> resources;
+		private static List<Element> elements;
+		private static List<Resource> resources;
 		private BackgroundWorker worker = new BackgroundWorker();
 		private Bitmap displayBmp;
 
 		// Public objects
-
+		public static int NaturalResourceTypesCount { get => resources.Count; }
 
 		/// <summary>
 		/// Set up threading
@@ -107,11 +107,11 @@ namespace EvoMod2
 			g.Clear(Color.DarkGray);
 
 			// Update elements
-			foreach (Element element in elements)
+			for (int i = 0; i < elements.Count; i++)
 			{
-				element.UpdateLocalResourceLevels(resources);
-				element.ExchangeResources();
-				element.Move();
+				elements[i].UpdateLocalResourceLevels(resources);
+				elements[i].ExchangeResources();
+				elements[i].Move();
 			}
 			int ei = 0;
 			float deathScaling = DEATHCHANCESCALE * (1.0f + (float)Math.Exp(elements.Count / ELEMENTCOUNT - 1.0));

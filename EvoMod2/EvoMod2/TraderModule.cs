@@ -72,8 +72,7 @@ namespace EvoMod2
 		/// <returns> Float indicating the assessed inventory's value. </returns>
 		public float GetInventoryValue(Vector inventory)
 		{
-			float targetInventoryMagnitude = TargetInventory.Magnitude;
-			return ((inventory * TargetInventory) / (targetInventoryMagnitude * targetInventoryMagnitude));
+			return (inventory * TargetInventory / TargetInventory.Magnitude);
 		}
 
 		/// <summary>
@@ -98,10 +97,10 @@ namespace EvoMod2
 		}
 
 		/// <summary>
-		/// Train this TraderModule to ascend the happiness gradient
+		/// Train this TraderModule to ascend the Happiness gradient
 		/// </summary>
 		/// <param name="preferenceHistory"> Matrix history of resource preference inputs by agent. Rows: resources, Columns: number of turns ago. </param>
-		/// <param name="happinessHistory"> Vector history of cumulative percent change in happiness. Each 'i'th entry is change since i turns ago. </param>
+		/// <param name="happinessHistory"> Vector history of cumulative percent change in Happiness. Each 'i'th entry is change since i turns ago. </param>
 		/// <param name="tradeSuccessHistory"> Vector history of percent, [0.0,1.0], proposed trades that were accepted. Each 'i'th entry is success i turns ago. </param>
 		public void Train(MatrixMath.Matrix preferenceHistory, Vector happinessHistory, Vector tradeSuccessHistory)
 		{

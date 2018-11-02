@@ -48,6 +48,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Action.cs" />
     <Compile Include="Destination.cs" />
     <Compile Include="Element.cs" />
     <Compile Include="DisplayForm.cs">
@@ -56,9 +57,11 @@
     <Compile Include="DisplayForm.Designer.cs">
       <DependentUpon>DisplayForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="HarvestAction.cs" />
     <Compile Include="Kinematics.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RefinementAction.cs" />
     <Compile Include="Resource.cs" />
     <Compile Include="ResourceKernel.cs" />
     <Compile Include="SettingsForm.cs">
