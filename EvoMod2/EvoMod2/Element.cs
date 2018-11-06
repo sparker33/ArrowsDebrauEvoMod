@@ -13,13 +13,16 @@ namespace EvoMod2
 	{
 		// Public static fields
 		public static float TRAITSPREAD;
+		public static float INTERACTCOUNT;
+		public static int INTERACTRANGE;
+		public static double RELATIONSHIPSCALE;
 
 		// Private fields
 		private PointF position = new PointF();
 		private Kinematics kinematics = new Kinematics(2);
 		private Destination destination = new Destination();
 		private float happinessBonus;
-		private float[] happinessWeights = new float[3]; // 0: wealth, 1: Health, 2: location
+		private HappinessWeights happinessWeights= new HappinessWeights(); // 0: wealth, 1: Health, 2: location
 		private Dictionary<Element, float> relationships = new Dictionary<Element, float>();
 		private TraderModule trader;
 		private Vector inventory;
@@ -59,7 +62,7 @@ namespace EvoMod2
 		/// Basic class constructor with initial physics configuration
 		/// </summary>
 		/// <param name="random"> Randomizer. </param>
-		public Element(Random random)
+		public Element(Random random, List<Resource> environmentResources)
 		{
 			Age = 0;
 
@@ -100,6 +103,7 @@ namespace EvoMod2
 			happinessPercentChangeHistory = new Vector(memoryLength);
 			percentTradesSuccessfulHistory = new Vector(memoryLength);
 			KnownActions = new List<Action>();
+			KnownActions.Add(new HarvestAction(inventory.Count, DisplayForm.GLOBALRANDOM, GetLocalResourceLevels(environmentResources)));
 		}
 
 		/// <summary>
@@ -193,6 +197,24 @@ namespace EvoMod2
 		}
 
 		/// <summary>
+		/// Helper function to turn the list of environment resources into a vector of resource levels at this element's location
+		/// </summary>
+		/// <param name="resources"> List of Resource entities reflecting all environment resources. </param>
+		/// <returns> Vector of local resource levels. </returns>
+		private Vector GetLocalResourceLevels(List<Resource> resources)
+		{
+			Vector localResourceLevels = new Vector(resources.Count);
+			for (int i = 0; i < resources.Count; i++)
+			{
+				foreach (ResourceKernel k in resources[i])
+				{
+					localResourceLevels[i] += k.GetResourceLevelAt(position);
+				}
+			}
+			return localResourceLevels;
+		}
+
+		/// <summary>
 		/// Method to handle all checking and execution of actions for this element
 		/// </summary>
 		/// <param name="environmentResources"> List of Resource objects in the environment. </param>
@@ -203,14 +225,7 @@ namespace EvoMod2
 			{
 				bool discoveryOccurred = false;
 				// Populate the local resource levels
-				Vector localResourceLevels = new Vector(environmentResources.Count);
-				for (int i = 0; i < environmentResources.Count; i++)
-				{
-					foreach (ResourceKernel k in environmentResources[i])
-					{
-						localResourceLevels[i] += k.GetResourceLevelAt(position);
-					}
-				}
+				Vector localResourceLevels = GetLocalResourceLevels(environmentResources);
 				// Decide which action to do
 				float maxActionPriority = -1.0f;
 				int actionChoice = 0;
@@ -272,11 +287,92 @@ namespace EvoMod2
 			}
 		}
 
-		public void DoInteraction(Random random, Element otherElement)
+		public void DoInteraction(Random random, List<Element> otherElements)
 		{
-			// Make decision
+			int interactionsPerTurn = (int)(Extraversion * INTERACTCOUNT);
+			while (interactionsPerTurn-- > 0)
+			{
+				Element otherElement = otherElements[random.Next(otherElements.Count - 1)];
+				if ((Math.Sqrt((position.X - otherElement.Position.X) * (position.X - otherElement.Position.X)
+					+ (position.Y - otherElement.Position.Y) * (position.Y - otherElement.Position.Y))) < (INTERACTRANGE * Mobility))
+				{
+					if (!relationships.ContainsKey(otherElement))
+					{
+						this.Mingle(otherElement, otherElement.Mingle(this, happinessWeights));
+					}
+					double actionChoice = StatFunctions.GaussRandom(random.NextDouble(),
+						RELATIONSHIPSCALE + relationships[otherElement],
+						RELATIONSHIPSCALE - relationships[otherElement]);
+					if (actionChoice > 0.9)
+					{
+						// Mate
+					}
+					else if (actionChoice > 0.6)
+					{
+						// Mingle. Also check for learning actions, locations, and relationships.
+						this.Mingle(otherElement, otherElement.Mingle(this, happinessWeights));
+						if (random.NextDouble() < Intelligence)
+						{
+							this.LearnAction(otherElement.KnownActions[random.Next(otherElement.KnownActions.Count - 1)]);
+						}
+						if (random.NextDouble() < Openness)
+						{
+							this.LearnLocation(otherElement.KnownLocations[random.Next(otherElement.KnownLocations.Count - 1)]);
+						}
+						if (random.NextDouble() < Extraversion)
+						{
+							Element subject = relationships.Keys.ToArray()[random.Next(relationships.Count() - 1)];
+							this.LearnRelationshipRating(subject, otherElement.LearnRelationshipRating(subject, relationships[subject]));
+						}
+					}
+					else if (actionChoice > 0.4)
+					{
+						// Trade
+						//tradeWillingness to be modified by agreeableness; relationship decreases by radius from 1 if trade goes through
+					}
+					else if (actionChoice < 0.1)
+					{
+						//attack
+					}
+				}
+			}
+		}
 
-			// Execute interaction
+		/// <summary>
+		/// Gain relationiship based upon happinessWeights similarity.
+		/// </summary>
+		/// <param name="values"></param>
+		/// <returns></returns>
+		public HappinessWeights Mingle(Element otherElement, HappinessWeights values)
+		{
+			if (!relationships.ContainsKey(otherElement))
+			{
+				relationships.Add(otherElement, Openness - Neuroticism);
+			}
+			relationships[otherElement] += (values[0] * happinessWeights[0] + values[1] * happinessWeights[1] + values[2] * happinessWeights[2]);
+
+			happinessWeights[0] *= (1.0f + Agreeableness * Openness * values[0]) / (1.0f + Agreeableness * Openness);
+			happinessWeights[1] *= (1.0f + Agreeableness * Openness * values[1]) / (1.0f + Agreeableness * Openness);
+			happinessWeights[2] *= (1.0f + Agreeableness * Openness * values[2]) / (1.0f + Agreeableness * Openness);
+
+			return this.happinessWeights;
+		}
+
+		/// <summary>
+		/// Method to learn from another element information about their relationship with a third element.
+		/// </summary>
+		/// <param name="subject"> The third element being "talked about". </param>
+		/// <param name="otherElementRelationship"> The other element's relationship toward the third element. </param>
+		/// <returns> The relationship of this element towards the third after being modified. </returns>
+		public float LearnRelationshipRating(Element subject, float otherElementRelationship)
+		{
+			if (!relationships.ContainsKey(subject))
+			{
+				relationships.Add(subject, 0.0f);
+			}
+			relationships[subject] *= (1.0f + Agreeableness * Extraversion * otherElementRelationship) / (1.0f + Agreeableness * Extraversion);
+
+			return relationships[subject];
 		}
 
 		/// <summary>
@@ -317,9 +413,9 @@ namespace EvoMod2
 			float environmentHappiness = 0.0f;
 			foreach (Element e in otherElements)
 			{
-				if (relationships.ContainsKey(e))
+				if (relationships.ContainsKey(e) && ((position.X - e.Position.X) != 0.0f || (position.Y - e.Position.Y) != 0.0f))
 				{
-					environmentHappiness += relationships[e]
+					environmentHappiness += relationships[e] / DisplayForm.DomainMaxDistance
 						* (float)Math.Sqrt((position.X - e.Position.X) * (position.X - e.Position.X) + (position.Y - e.Position.Y) * (position.Y - e.Position.Y));
 				}
 			}

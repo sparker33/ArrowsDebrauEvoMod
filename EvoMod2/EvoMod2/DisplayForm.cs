@@ -28,6 +28,7 @@ namespace EvoMod2
 
 		// Public objects
 		public static int NaturalResourceTypesCount { get => resources.Count; }
+		public static float DomainMaxDistance;
 
 		/// <summary>
 		/// Set up threading
@@ -35,6 +36,7 @@ namespace EvoMod2
 		public DisplayForm()
 		{
 			InitializeComponent();
+			DomainMaxDistance = (float)Math.Sqrt(2.0) * SCALE;
 			worker.DoWork += worker_DoWork;
 			worker.RunWorkerCompleted += worker_RunWorkerCompleted;
 		}
@@ -94,7 +96,7 @@ namespace EvoMod2
 			// Populate initial generation of elements
 			while (elements.Count < ELEMENTCOUNT)
 			{
-				elements.Add(new Element(GLOBALRANDOM));
+				elements.Add(new Element(GLOBALRANDOM, resources));
 			}
 			worker.RunWorkerAsync();
 			timer1.Start();

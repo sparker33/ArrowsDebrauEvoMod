@@ -57,6 +57,7 @@
     <Compile Include="DisplayForm.Designer.cs">
       <DependentUpon>DisplayForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="HappinessWeights.cs" />
     <Compile Include="HarvestAction.cs" />
     <Compile Include="Kinematics.cs" />
     <Compile Include="Program.cs" />
