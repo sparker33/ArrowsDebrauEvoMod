@@ -65,32 +65,29 @@ namespace EvoMod2
 					elements = new List<Element>();
 					resources = new List<Resource>();
 
-					resources.Add(new Resource(Color.Blue, 2250.0f));
-					resources.Add(new Resource(Color.Red, 3500.0f));
-					resources.Add(new Resource(Color.Green, 1800.0f));
-					resources.Add(new Resource(Color.Black, 2000.0f));
-					resources.Add(new Resource(Color.White, 1300.0f));
+					for (int i = 0; i < settings.NaturalResourcesDataGridView.Rows.Count; i++)
+					{
+						resources.Add(new Resource(Color.FromName(settings.NaturalResourcesDataGridView.Rows[i].Cells[1].Value.ToString()),
+							Single.Parse(settings.NaturalResourcesDataGridView.Rows[i].Cells[0].Value.ToString())));
 
-					resources[0].Add(0.1f, new PointF((float)(GLOBALRANDOM.NextDouble() * SCALE), (float)(GLOBALRANDOM.NextDouble() * SCALE)));
-					resources[0].Add(0.25f, new PointF((float)(GLOBALRANDOM.NextDouble() * SCALE), (float)(GLOBALRANDOM.NextDouble() * SCALE)));
-					resources[0].Add(0.15f, new PointF((float)(GLOBALRANDOM.NextDouble() * SCALE), (float)(GLOBALRANDOM.NextDouble() * SCALE)));
-					resources[0].Add(0.5f, new PointF((float)(GLOBALRANDOM.NextDouble() * SCALE), (float)(GLOBALRANDOM.NextDouble() * SCALE)));
+						float[] pcts = new float[Int32.Parse(settings.NaturalResourcesDataGridView.Rows[i].Cells[2].Value.ToString())];
+						float sum = 0.0f;
+						for (int j = 0; j < pcts.Length; j++)
+						{
+							pcts[j] = (float)GLOBALRANDOM.NextDouble();
+							sum += pcts[j];
+						}
+						for (int j = 0; j < pcts.Length; j++)
+						{
+							resources[i].Add(pcts[j] / sum, new PointF((float)(GLOBALRANDOM.NextDouble() * SCALE), (float)(GLOBALRANDOM.NextDouble() * SCALE)));
+						}
 
-					resources[1].Add(0.65f, new PointF((float)(GLOBALRANDOM.NextDouble() * SCALE), (float)(GLOBALRANDOM.NextDouble() * SCALE)));
-					resources[1].Add(0.05f, new PointF((float)(GLOBALRANDOM.NextDouble() * SCALE), (float)(GLOBALRANDOM.NextDouble() * SCALE)));
-					resources[1].Add(0.05f, new PointF((float)(GLOBALRANDOM.NextDouble() * SCALE), (float)(GLOBALRANDOM.NextDouble() * SCALE)));
-					resources[1].Add(0.1f, new PointF((float)(GLOBALRANDOM.NextDouble() * SCALE), (float)(GLOBALRANDOM.NextDouble() * SCALE)));
-					resources[1].Add(0.15f, new PointF((float)(GLOBALRANDOM.NextDouble() * SCALE), (float)(GLOBALRANDOM.NextDouble() * SCALE)));
-
-					resources[2].Add(0.85f, new PointF((float)(GLOBALRANDOM.NextDouble() * SCALE), (float)(GLOBALRANDOM.NextDouble() * SCALE)));
-					resources[2].Add(0.15f, new PointF((float)(GLOBALRANDOM.NextDouble() * SCALE), (float)(GLOBALRANDOM.NextDouble() * SCALE)));
-
-					resources[3].Add(0.5f, new PointF((float)(GLOBALRANDOM.NextDouble() * SCALE), (float)(GLOBALRANDOM.NextDouble() * SCALE)));
-					resources[3].Add(0.35f, new PointF((float)(GLOBALRANDOM.NextDouble() * SCALE), (float)(GLOBALRANDOM.NextDouble() * SCALE)));
-					resources[3].Add(0.15f, new PointF((float)(GLOBALRANDOM.NextDouble() * SCALE), (float)(GLOBALRANDOM.NextDouble() * SCALE)));
-
-					resources[4].Add(0.5f, new PointF((float)(GLOBALRANDOM.NextDouble() * SCALE), (float)(GLOBALRANDOM.NextDouble() * SCALE)));
-					resources[4].Add(0.5f, new PointF((float)(GLOBALRANDOM.NextDouble() * SCALE), (float)(GLOBALRANDOM.NextDouble() * SCALE)));
+						DataGridViewCheckBoxCell isFoodCell = settings.NaturalResourcesDataGridView.Rows[i].Cells[3] as DataGridViewCheckBoxCell;
+						if ((bool)isFoodCell.Value)
+						{
+							Element.FoodResources.Add(new FoodResourceData(i, 1.0f - (float)GLOBALRANDOM.NextDouble()));
+						}
+					}
 				}
 			}
 			// Populate initial generation of elements

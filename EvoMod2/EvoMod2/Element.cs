@@ -16,6 +16,8 @@ namespace EvoMod2
 		public static float INTERACTCOUNT;
 		public static int INTERACTRANGE;
 		public static double RELATIONSHIPSCALE;
+		public static float FOODREQUIREMENT;
+		public static List<FoodResourceData> FoodResources = new List<FoodResourceData>();
 
 		// Private fields
 		private PointF position = new PointF();
@@ -26,6 +28,8 @@ namespace EvoMod2
 		private Dictionary<Element, float> relationships = new Dictionary<Element, float>();
 		private TraderModule trader;
 		private Vector inventory;
+		private Vector prices;
+		private Vector foodConsumptionRates;
 		private MatrixMath.Matrix resourceUseHistory;
 		private Vector happinessPercentChangeHistory;
 		private Vector percentTradesSuccessfulHistory;
@@ -75,17 +79,17 @@ namespace EvoMod2
 			int b = (int)(255.0 / (1.0 + Math.Exp((15.0 / DisplayForm.SCALE) * (position.Y - DisplayForm.SCALE / 2.0))));
 			ElementColor = Color.FromArgb(r, g, b);
 
-			double rand = random.NextDouble();
+			double rand = 1.0 - random.NextDouble();
 			Intelligence = (float)StatFunctions.GaussRandom(rand, TRAITSPREAD, TRAITSPREAD);
-			rand = random.NextDouble();
+			rand = 1.0 - random.NextDouble();
 			Conscientiousness = (float)StatFunctions.GaussRandom(rand, TRAITSPREAD, TRAITSPREAD);
-			rand = random.NextDouble();
+			rand = 1.0 - random.NextDouble();
 			Agreeableness = (float)StatFunctions.GaussRandom(rand, TRAITSPREAD, TRAITSPREAD);
-			rand = random.NextDouble();
+			rand = 1.0 - random.NextDouble();
 			Neuroticism = (float)StatFunctions.GaussRandom(rand, TRAITSPREAD, TRAITSPREAD);
-			rand = random.NextDouble();
+			rand = 1.0 - random.NextDouble();
 			Openness = (float)StatFunctions.GaussRandom(rand, TRAITSPREAD, TRAITSPREAD);
-			rand = random.NextDouble();
+			rand = 1.0 - random.NextDouble();
 			Extraversion = (float)StatFunctions.GaussRandom(rand, TRAITSPREAD, TRAITSPREAD);
 
 			rand = random.NextDouble();
@@ -98,6 +102,8 @@ namespace EvoMod2
 
 			trader = new TraderModule(random);
 			inventory = new Vector(DisplayForm.NaturalResourceTypesCount);
+			prices = new Vector(DisplayForm.NaturalResourceTypesCount);
+			foodConsumptionRates = new Vector(FoodResources.Count);
 			int memoryLength = (int)(10.0f * Intelligence);
 			resourceUseHistory = new MatrixMath.Matrix(DisplayForm.NaturalResourceTypesCount, memoryLength);
 			happinessPercentChangeHistory = new Vector(memoryLength);
@@ -109,16 +115,47 @@ namespace EvoMod2
 		/// <summary>
 		/// Method to add a resource to the list of possible resources and all affected components.
 		/// </summary>
-		public void AddResource()
+		public void AddResource(bool isFood)
 		{
 			trader.AddResource();
 			resourceUseHistory.InsertColumn(resourceUseHistory.Count);
 			resourceUseHistory.Add(new Vector(resourceUseHistory.Count));
 			inventory.Add(0.0f);
+			prices.Add(0.0f);
 			for (int i = 0; i < KnownActions.Count; i++)
 			{
 				KnownActions[i].AddResource();
 			}
+			if (isFood)
+			{
+				foodConsumptionRates.Add(0.01f);
+			}
+		}
+
+		/// <summary>
+		/// Method to have this element consume food, experience effects from hunger/stiation, and train consumption habits accordingly.
+		/// </summary>
+		public void Eat()
+		{
+			float healthHappiness = happinessWeights.Health * Health;
+			float wealthHappiness = happinessWeights.Wealth * (inventory * prices);
+			float hunger = FOODREQUIREMENT;
+			foreach (FoodResourceData food in FoodResources)
+			{
+				float consumption = foodConsumptionRates[food.ResourceIndex] * prices[food.ResourceIndex] / food.Nourishment;
+				if (consumption > inventory[food.ResourceIndex])
+				{
+					consumption = inventory[food.ResourceIndex];
+				}
+				inventory[food.ResourceIndex] -= consumption;
+				hunger -= consumption * food.Nourishment;
+				if (hunger < 0.0f)
+				{
+					break;
+				}
+			}
+
+			float trainingMetric = -(happinessWeights.Health * Health - healthHappiness) / (happinessWeights.Wealth * (inventory * prices) - wealthHappiness);
 		}
 
 		/// <summary>
@@ -260,9 +297,15 @@ namespace EvoMod2
 					// Check for new Resource discovery
 					if (0.5 < StatFunctions.GaussRandom(DisplayForm.GLOBALRANDOM.NextDouble(), 50.0 * Intelligence * Openness, 50.0 / (Intelligence * Openness)))
 					{
+						bool newResourceIsFood = false;
+						if (DisplayForm.GLOBALRANDOM.NextDouble() > 0.8)
+						{
+							FoodResources.Add(new FoodResourceData(inventory.Count - 1, 1.0f - (float)DisplayForm.GLOBALRANDOM.NextDouble()));
+							newResourceIsFood = true;
+						}
 						for (int i = 0; i < elements.Count; i++)
 						{
-							elements[i].AddResource();
+							elements[i].AddResource(newResourceIsFood);
 						}
 					}
 					// Check for new Action discovery (can discover either Harvest or Refinement Action)
@@ -415,7 +458,7 @@ namespace EvoMod2
 			{
 				if (relationships.ContainsKey(e) && ((position.X - e.Position.X) != 0.0f || (position.Y - e.Position.Y) != 0.0f))
 				{
-					environmentHappiness += relationships[e] / DisplayForm.DomainMaxDistance
+					environmentHappiness += relationships[e] / ((float)RELATIONSHIPSCALE * DisplayForm.DomainMaxDistance)
 						* (float)Math.Sqrt((position.X - e.Position.X) * (position.X - e.Position.X) + (position.Y - e.Position.Y) * (position.Y - e.Position.Y));
 				}
 			}
