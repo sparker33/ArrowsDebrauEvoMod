@@ -26,7 +26,6 @@ namespace EvoMod2
 		private float happinessBonus;
 		private HappinessWeights happinessWeights= new HappinessWeights(); // 0: wealth, 1: Health, 2: location
 		private Dictionary<Element, float> relationships = new Dictionary<Element, float>();
-		private TraderModule trader;
 		private Vector inventory;
 		private Vector prices;
 		private Vector foodConsumptionRates;
@@ -51,7 +50,7 @@ namespace EvoMod2
 		public List<Action> KnownActions { get; private set; }
 			// Display data
 		public PointF Position { get => position; }
-		public int Size { get => (int)Math.Max(Math.Min(25.0f, trader.GetInventoryValue(inventory)), 3.0f); }
+		public int Size { get => (int)Math.Max(Math.Min(25.0f, prices * inventory), 3.0f); }
 		public Color ElementColor { get; private set; }
 
 		/// <summary>
@@ -100,7 +99,6 @@ namespace EvoMod2
 			happinessWeights[1] = (float)StatFunctions.GaussRandom(rand, TRAITSPREAD, TRAITSPREAD);
 			happinessWeights[2] = (float)StatFunctions.GaussRandom(rand, TRAITSPREAD, TRAITSPREAD);
 
-			trader = new TraderModule(random);
 			inventory = new Vector(DisplayForm.NaturalResourceTypesCount);
 			prices = new Vector(DisplayForm.NaturalResourceTypesCount);
 			foodConsumptionRates = new Vector(FoodResources.Count);
@@ -117,7 +115,6 @@ namespace EvoMod2
 		/// </summary>
 		public void AddResource(bool isFood)
 		{
-			trader.AddResource();
 			resourceUseHistory.InsertColumn(resourceUseHistory.Count);
 			resourceUseHistory.Add(new Vector(resourceUseHistory.Count));
 			inventory.Add(0.0f);
@@ -128,7 +125,7 @@ namespace EvoMod2
 			}
 			if (isFood)
 			{
-				foodConsumptionRates.Add(0.01f);
+				foodConsumptionRates.Add(0.0f);
 			}
 		}
 
@@ -140,22 +137,30 @@ namespace EvoMod2
 			float healthHappiness = happinessWeights.Health * Health;
 			float wealthHappiness = happinessWeights.Wealth * (inventory * prices);
 			float hunger = FOODREQUIREMENT;
-			foreach (FoodResourceData food in FoodResources)
+			float[] consumption = new float[FoodResources.Count];
+			for (int i = 0; i < FoodResources.Count; i++)
 			{
-				float consumption = foodConsumptionRates[food.ResourceIndex] * prices[food.ResourceIndex] / food.Nourishment;
-				if (consumption > inventory[food.ResourceIndex])
+				consumption[i] = foodConsumptionRates[FoodResources[i].ResourceIndex] * prices[FoodResources[i].ResourceIndex] / FoodResources[i].Nourishment;
+				if (consumption[i] > inventory[FoodResources[i].ResourceIndex])
 				{
-					consumption = inventory[food.ResourceIndex];
+					consumption[i] = inventory[FoodResources[i].ResourceIndex];
 				}
-				inventory[food.ResourceIndex] -= consumption;
-				hunger -= consumption * food.Nourishment;
-				if (hunger < 0.0f)
-				{
-					break;
-				}
+				inventory[FoodResources[i].ResourceIndex] -= consumption[i];
+				hunger -= consumption[i] * FoodResources[i].Nourishment;
 			}
 
-			float trainingMetric = -(happinessWeights.Health * Health - healthHappiness) / (happinessWeights.Wealth * (inventory * prices) - wealthHappiness);
+			float trainingMetric = (happinessWeights.Health * Health - healthHappiness) / (wealthHappiness - happinessWeights.Wealth * (inventory * prices));
+			for (int i = 0; i < foodConsumptionRates.Count; i++)
+			{
+				if (foodConsumptionRates[i] == 0.0f)
+				{
+					foodConsumptionRates[i] += consumption[i] * (float)StatFunctions.Sigmoid(trainingMetric, Math.Abs(hunger), 0.0) * Math.Sign(hunger) / (FOODREQUIREMENT - hunger);
+				}
+				else
+				{
+					foodConsumptionRates[i] *= (1.0f + consumption[i] * (float)StatFunctions.Sigmoid(trainingMetric, Math.Abs(hunger), 0.0) * Math.Sign(hunger) / (FOODREQUIREMENT - hunger));
+				}
+			}
 		}
 
 		/// <summary>
@@ -279,9 +284,9 @@ namespace EvoMod2
 					// Apply action effects
 					inventory -= KnownActions[actionChoice].Cost;
 					Vector productionUtilityVector = KnownActions[actionChoice].DoAction(localResourceLevels, Intelligence);
-					float inventoryValueUtilityVar = trader.GetInventoryValue(inventory);
+					float inventoryValueUtilityVar = inventory * prices;
 					inventory += productionUtilityVector;
-					inventoryValueUtilityVar = (inventoryValueUtilityVar - trader.GetInventoryValue(inventory)) / inventoryValueUtilityVar;
+					inventoryValueUtilityVar = (inventoryValueUtilityVar - inventory * prices) / inventoryValueUtilityVar;
 					happinessBonus += KnownActions[actionChoice].HappinessBonus;
 					Health += KnownActions[actionChoice].HealthBonus;
 					Mobility += KnownActions[actionChoice].MobilityBonus;
@@ -465,7 +470,7 @@ namespace EvoMod2
 
 			// Update Happiness
 			float nextHappiness = (0.5f + Neuroticism) * (happinessBonus
-				+ trader.GetInventoryValue(inventory) * happinessWeights[0]
+				+ inventory * prices * happinessWeights[0]
 				+ Health * happinessWeights[1]
 				+ environmentHappiness * happinessWeights[2]);
 			happinessPercentChangeHistory.RemoveAt(happinessPercentChangeHistory.Count);
@@ -473,7 +478,7 @@ namespace EvoMod2
 			Happiness = nextHappiness;
 
 			// Train decision matrices
-			trader.Train(resourceUseHistory, happinessPercentChangeHistory, percentTradesSuccessfulHistory);
+			//reserved
 		}
 	}
 }
