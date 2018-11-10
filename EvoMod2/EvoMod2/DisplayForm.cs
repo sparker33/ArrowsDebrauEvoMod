@@ -15,10 +15,9 @@ namespace EvoMod2
 	public partial class DisplayForm : Form
 	{
 		// Global values
-		public static Random GLOBALRANDOM;
 		public const int SCALE = 5000;   // Scale of domain for positions
+		public static Random GLOBALRANDOM; // Global random number generator
 		public static int ELEMENTCOUNT; // Number of elements
-		public static float ELESPEED; // Scales element move speed
 
 		// Private objects
 		private static List<Element> elements;
@@ -54,13 +53,18 @@ namespace EvoMod2
 				if (result == DialogResult.OK)
 				{
 					GLOBALRANDOM = new Random();
+					ELEMENTCOUNT = 100;
 					Kinematics.DEFAULTDAMPING = 0.01f;
 					Kinematics.TIMESTEP = 0.05f;
 					ResourceKernel.RESOURCESPEED = 1.0f;
 					ResourceKernel.SPREADRATE = 0.0f;
-					ELEMENTCOUNT = 225;
 					Element.TRAITSPREAD = 10.0f;
-					ELESPEED = 10000.0f;
+					Element.INTERACTCOUNT = ELEMENTCOUNT / 2;
+					Element.INTERACTRANGE = SCALE / 100;
+					Element.ELESPEED = 100.0f;
+					Element.RELATIONSHIPSCALE = 1.0f;
+					Element.FOODREQUIREMENT = 1.0f;
+					Element.MIDDLEAGE = 5000;
 					displayBmp = new Bitmap(panel1.Width, panel1.Height);
 					elements = new List<Element>();
 					resources = new List<Resource>();
@@ -106,29 +110,20 @@ namespace EvoMod2
 			g.Clear(Color.DarkGray);
 
 			// Update elements
-			for (int i = 0; i < elements.Count; i++)
+			int n = 0;
+			while (n < elements.Count)
 			{
-				elements[i].UpdateLocalResourceLevels(resources);
-				elements[i].ExchangeResources();
-				elements[i].Move();
-			}
-			int ei = 0;
-			float deathScaling = DEATHCHANCESCALE * (1.0f + (float)Math.Exp(elements.Count / ELEMENTCOUNT - 1.0));
-			while (ei < elements.Count)
-			{
-				if (GLOBALRANDOM.NextDouble() < REPRODUCTIONCHANCE)
+				elements[n].CheckForDeath(0.0f);
+				if (elements[n].IsDead)
 				{
-					if (elements[ei].CheckForReproduction())
-					{
-						elements.Add(elements[ei].Reproduce(GLOBALRANDOM, MUTATIONCHANCE));
-					}
-				}
-				if (elements[ei].CheckForDeath(deathScaling) || GLOBALRANDOM.NextDouble() < BASEDEATHCHANCE)
-				{
-					elements.RemoveAt(ei);
+					elements.RemoveAt(n);
 					continue;
 				}
-				ei++;
+				elements[n].Eat();
+				elements[n].DoAction(resources, elements);
+				elements[n].DoInteraction(GLOBALRANDOM, elements);
+				elements[n].Move();
+				n++;
 			}
 			// Update and draw resources
 			for (int i = 0; i < resources.Count; i++)

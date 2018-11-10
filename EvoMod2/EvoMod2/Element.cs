@@ -12,6 +12,8 @@ namespace EvoMod2
 	public class Element
 	{
 		// Public static fields
+		public static float MIDDLEAGE;
+		public static float ELESPEED;
 		public static float TRAITSPREAD;
 		public static float INTERACTCOUNT;
 		public static int INTERACTRANGE;
@@ -23,15 +25,16 @@ namespace EvoMod2
 		private PointF position = new PointF();
 		private Kinematics kinematics = new Kinematics(2);
 		private Destination destination = new Destination();
+		private float timePreference;
+		private float lethalityBonus;
+		private float happinessPercentChangeHistory;
 		private float happinessBonus;
-		private HappinessWeights happinessWeights= new HappinessWeights(); // 0: wealth, 1: Health, 2: location
+		private HappinessWeights happinessWeights= new HappinessWeights(); // 0: Wealth, 1: Health, 2: Location
 		private Dictionary<Element, float> relationships = new Dictionary<Element, float>();
 		private Vector inventory;
 		private Vector prices;
 		private Vector foodConsumptionRates;
-		private MatrixMath.Matrix resourceUseHistory;
-		private Vector happinessPercentChangeHistory;
-		private Vector percentTradesSuccessfulHistory;
+		private Vector resourceUse;
 
 		// Public objects
 			// Fixed traits
@@ -48,6 +51,9 @@ namespace EvoMod2
 		public int Age { get; private set; }
 		public List<PointF> KnownLocations { get; private set; }
 		public List<Action> KnownActions { get; private set; }
+		public bool IsDead { get; private set; }
+		public int TurnsSinceMurder { get; private set; }
+		public float Lethality { get => Health + lethalityBonus; }
 			// Display data
 		public PointF Position { get => position; }
 		public int Size { get => (int)Math.Max(Math.Min(25.0f, prices * inventory), 3.0f); }
@@ -68,6 +74,9 @@ namespace EvoMod2
 		public Element(Random random, List<Resource> environmentResources)
 		{
 			Age = 0;
+			IsDead = false;
+			lethalityBonus = 0.0f;
+			TurnsSinceMurder = 0;
 
 			position.X = (float)(random.NextDouble() * DisplayForm.SCALE);
 			position.Y = (float)(random.NextDouble() * DisplayForm.SCALE);
@@ -93,7 +102,7 @@ namespace EvoMod2
 
 			rand = random.NextDouble();
 			Health = 100.0f * (float)StatFunctions.GaussRandom(rand, TRAITSPREAD, TRAITSPREAD);
-			Mobility = DisplayForm.ELESPEED;
+			Mobility = 1.0f;
 
 			happinessWeights[0] = (float)StatFunctions.GaussRandom(rand, TRAITSPREAD, TRAITSPREAD);
 			happinessWeights[1] = (float)StatFunctions.GaussRandom(rand, TRAITSPREAD, TRAITSPREAD);
@@ -102,10 +111,8 @@ namespace EvoMod2
 			inventory = new Vector(DisplayForm.NaturalResourceTypesCount);
 			prices = new Vector(DisplayForm.NaturalResourceTypesCount);
 			foodConsumptionRates = new Vector(FoodResources.Count);
-			int memoryLength = (int)(10.0f * Intelligence);
-			resourceUseHistory = new MatrixMath.Matrix(DisplayForm.NaturalResourceTypesCount, memoryLength);
-			happinessPercentChangeHistory = new Vector(memoryLength);
-			percentTradesSuccessfulHistory = new Vector(memoryLength);
+			timePreference = (float)StatFunctions.GaussRandom(Intelligence, TRAITSPREAD, TRAITSPREAD);
+			resourceUse = new Vector(DisplayForm.NaturalResourceTypesCount);
 			KnownActions = new List<Action>();
 			KnownActions.Add(new HarvestAction(inventory.Count, DisplayForm.GLOBALRANDOM, GetLocalResourceLevels(environmentResources)));
 		}
@@ -115,8 +122,7 @@ namespace EvoMod2
 		/// </summary>
 		public void AddResource(bool isFood)
 		{
-			resourceUseHistory.InsertColumn(resourceUseHistory.Count);
-			resourceUseHistory.Add(new Vector(resourceUseHistory.Count));
+			resourceUse.Add(0.0f);
 			inventory.Add(0.0f);
 			prices.Add(0.0f);
 			for (int i = 0; i < KnownActions.Count; i++)
@@ -148,8 +154,10 @@ namespace EvoMod2
 				inventory[FoodResources[i].ResourceIndex] -= consumption[i];
 				hunger -= consumption[i] * FoodResources[i].Nourishment;
 			}
+			Health -= hunger * hunger;
+			happinessBonus -= hunger;
 
-			float trainingMetric = (happinessWeights.Health * Health - healthHappiness) / (wealthHappiness - happinessWeights.Wealth * (inventory * prices));
+			float trainingMetric = (happinessWeights.Health * Health - healthHappiness - hunger) / (wealthHappiness - happinessWeights.Wealth * (inventory * prices));
 			for (int i = 0; i < foodConsumptionRates.Count; i++)
 			{
 				if (foodConsumptionRates[i] == 0.0f)
@@ -160,6 +168,11 @@ namespace EvoMod2
 				{
 					foodConsumptionRates[i] *= (1.0f + consumption[i] * (float)StatFunctions.Sigmoid(trainingMetric, Math.Abs(hunger), 0.0) * Math.Sign(hunger) / (FOODREQUIREMENT - hunger));
 				}
+			}
+			// Reflect food eaten in resourceUse record
+			for (int i = 0; i < FoodResources.Count; i++)
+			{
+				resourceUse[FoodResources[i].ResourceIndex] = timePreference * consumption[i] + (1.0f - timePreference) * resourceUse[FoodResources[i].ResourceIndex];
 			}
 		}
 
@@ -198,19 +211,36 @@ namespace EvoMod2
 			float speed = kinematics.Speed;
 			if (speed != 0.0f)
 			{
-				temp[0] = happinessPercentChangeHistory[0] * kinematics.GetVelocity(0) / speed + temp[0] / DisplayForm.SCALE;
-				temp[1] = happinessPercentChangeHistory[0] * kinematics.GetVelocity(1) / speed + temp[1] / DisplayForm.SCALE;
+				// Update Happiness
+				float environmentHappiness = 0.0f;
+				foreach (Element e in relationships.Keys)
+				{
+					environmentHappiness += relationships[e]
+							* (float)Math.Sqrt((position.X - e.Position.X) * (position.X - e.Position.X) + (position.Y - e.Position.Y) * (position.Y - e.Position.Y))
+							 / ((float)RELATIONSHIPSCALE * DisplayForm.DomainMaxDistance);
+				}
+
+				float nextHappiness = timePreference * (happinessBonus
+					+ inventory * prices * happinessWeights[0]
+					+ Health * happinessWeights[1]
+					+ environmentHappiness * happinessWeights[2])
+					+ (1.0f - timePreference) * Happiness;
+				happinessPercentChangeHistory = (nextHappiness - Happiness) / Happiness;
+				Happiness = nextHappiness;
+				// Update acceleratons
+				temp[0] = ELESPEED * (happinessPercentChangeHistory * kinematics.GetVelocity(0) / speed + temp[0] / DisplayForm.SCALE);
+				temp[1] = ELESPEED * (happinessPercentChangeHistory * kinematics.GetVelocity(1) / speed + temp[1] / DisplayForm.SCALE);
 			}
 			else
 			{
-				temp[0] = (float)DisplayForm.GLOBALRANDOM.NextDouble();
-				temp[1] = (float)DisplayForm.GLOBALRANDOM.NextDouble();
+				temp[0] = ELESPEED * (float)DisplayForm.GLOBALRANDOM.NextDouble();
+				temp[1] = ELESPEED * (float)DisplayForm.GLOBALRANDOM.NextDouble();
 			}
 
 			// Apply force vector to kinematics; get and apply displacements
 			if (Mobility != 0.0f)
 			{
-				temp = kinematics.GetDisplacement(temp, DisplayForm.ELESPEED / Mobility).ToArray();
+				temp = kinematics.GetDisplacement(temp, 1.0f / Mobility).ToArray();
 			}
 			position.X += temp[0];
 			position.Y += temp[1];
@@ -290,15 +320,11 @@ namespace EvoMod2
 					happinessBonus += KnownActions[actionChoice].HappinessBonus;
 					Health += KnownActions[actionChoice].HealthBonus;
 					Mobility += KnownActions[actionChoice].MobilityBonus;
+					lethalityBonus += KnownActions[actionChoice].LethalityBonus;
 					// Update resource usage information and apply learning to action
 					KnownActions[actionChoice].Learn(Math.Sign(Happiness) * (happinessBonus + happinessWeights[0] * inventoryValueUtilityVar) / Happiness);
-					resourceUseHistory.RemoveColumnAt(resourceUseHistory.ColumnCount - 1);
-					resourceUseHistory.InsertColumn(0);
 					productionUtilityVector = productionUtilityVector - KnownActions[actionChoice].Cost;
-					for (int i = 0; i < resourceUseHistory.RowCount; i++)
-					{
-						resourceUseHistory[i][0] = productionUtilityVector[i];
-					}
+					resourceUse = timePreference * productionUtilityVector + (1.0f - timePreference) * productionUtilityVector;
 					// Check for new Resource discovery
 					if (0.5 < StatFunctions.GaussRandom(DisplayForm.GLOBALRANDOM.NextDouble(), 50.0 * Intelligence * Openness, 50.0 / (Intelligence * Openness)))
 					{
@@ -335,8 +361,14 @@ namespace EvoMod2
 			}
 		}
 
+		/// <summary>
+		/// Method to check for and do interactions
+		/// </summary>
+		/// <param name="random"> A random number generator. </param>
+		/// <param name="otherElements"> The list of all other elements in this simulation. </param>
 		public void DoInteraction(Random random, List<Element> otherElements)
 		{
+			TurnsSinceMurder++;
 			int interactionsPerTurn = (int)(Extraversion * INTERACTCOUNT);
 			while (interactionsPerTurn-- > 0)
 			{
@@ -357,7 +389,7 @@ namespace EvoMod2
 					}
 					else if (actionChoice > 0.6)
 					{
-						// Mingle. Also check for learning actions, locations, and relationships.
+						// Mingle and check for learning actions, locations, and relationships.
 						this.Mingle(otherElement, otherElement.Mingle(this, happinessWeights));
 						if (random.NextDouble() < Intelligence)
 						{
@@ -376,14 +408,55 @@ namespace EvoMod2
 					else if (actionChoice > 0.4)
 					{
 						// Trade
-						//tradeWillingness to be modified by agreeableness; relationship decreases by radius from 1 if trade goes through
+						// 1. Create trade proposal based on resource desires (use) and prices
+						// 2. Invoke otherElement's public bool EvaluateTradeProposal(Element sender, ref Vector tradeProposal) method with the proposal
+						// 3. If otherElement.EvaluateTradeProposal returns false,
+						//		invoke this Element's public bool EvaluateTradeProposal(Element sender, ref Vector tradeProposal) method with the returned proposal
+						// 4. If otherElement.EvaluateTradeProposal returns true or the reply this.EvaluateTradeProposal returns true, execute the trade
+						// 4a. If trade goes through, update resourceUse
+						// **EvaluateTradeProposal method affects relationships[sender]
+						// **Trade willingness to be modified by agreeableness
 					}
-					else if (actionChoice < 0.1)
+					else if (actionChoice < 0.1 && Lethality > otherElement.Health)
 					{
-						//attack
+						// Attack
+						if (random.NextDouble() * Lethality > random.NextDouble() * otherElement.Lethality)
+						{
+							inventory = inventory + otherElement.GetRobbed();
+							otherElement.Die();
+							lethalityBonus *= (1.0f + 5.0f / (1.0f + (float)Math.Exp(lethalityBonus)));
+							TurnsSinceMurder = 1;
+						}
+						else if (random.NextDouble() * Lethality < random.NextDouble() * otherElement.Lethality)
+						{
+							this.Die();
+							return;
+						}
+						TurnsSinceMurder--;
 					}
 				}
 			}
+		}
+
+		/// <summary>
+		/// Method to evaluate a reference trade proposal suggested by the input Element
+		/// </summary>
+		/// <param name="sender"> Element suggesting the proposed trade. </param>
+		/// <param name="tradeProposal"> Proposed trade. Will be changed to a counter-offer if method return value is false. </param>
+		/// <returns> Indicates that trade is acceptable (true) or unacceptable (false). If trade is unacceptable,
+		/// tradeProposal will be modified to reflect an acceptable counter-offer. </returns>
+		public bool EvaluateTradeProposal(Element sender, ref Vector tradeProposal)
+		{
+			
+		}
+
+		/// <summary>
+		/// Method to carry out the input trade. Trade will be added to this Element's inventory.
+		/// </summary>
+		/// <param name="trade"> Input trade to be added to this Element's inventory. </param>
+		public void ExecuteTrade(Vector trade)
+		{
+			inventory += trade;
 		}
 
 		/// <summary>
@@ -398,6 +471,9 @@ namespace EvoMod2
 				relationships.Add(otherElement, Openness - Neuroticism);
 			}
 			relationships[otherElement] += (values[0] * happinessWeights[0] + values[1] * happinessWeights[1] + values[2] * happinessWeights[2]);
+
+			relationships[otherElement] -= (float)RELATIONSHIPSCALE * (otherElement.TurnsSinceMurder - otherElement.Age) / otherElement.Age;
+
 
 			happinessWeights[0] *= (1.0f + Agreeableness * Openness * values[0]) / (1.0f + Agreeableness * Openness);
 			happinessWeights[1] *= (1.0f + Agreeableness * Openness * values[1]) / (1.0f + Agreeableness * Openness);
@@ -453,32 +529,51 @@ namespace EvoMod2
 		}
 
 		/// <summary>
-		/// Method to update this element's trader decision matrices
+		/// Method to inflict a robbery on this Element.
 		/// </summary>
-		/// <param name="environmentHappiness"></param>
-		public void TrainTrader(List<Element> otherElements)
+		/// <returns> Retruns Vector of loot obtained by the robber. </returns>
+		public Vector GetRobbed()
 		{
-			float environmentHappiness = 0.0f;
-			foreach (Element e in otherElements)
+			Vector losses = new Vector(inventory.Count);
+			for (int i = 0; i < inventory.Count; i++)
 			{
-				if (relationships.ContainsKey(e) && ((position.X - e.Position.X) != 0.0f || (position.Y - e.Position.Y) != 0.0f))
+				losses[i] = inventory[i] * (float)DisplayForm.GLOBALRANDOM.NextDouble();
+			}
+			inventory = inventory - losses;
+			return losses;
+		}
+
+		/// <summary>
+		/// Method to increment element age and check for death.
+		/// </summary>
+		/// <returns></returns>
+		public void CheckForDeath(float deathChance)
+		{
+			Age++;
+			Health += 1.0f - Age / (1.5f * MIDDLEAGE) - (Age - MIDDLEAGE) * (Age - MIDDLEAGE) / (MIDDLEAGE * MIDDLEAGE);
+			if (Health < deathChance)
+			{
+				this.Die();
+			}
+		}
+
+		/// <summary>
+		/// Triggers any on-death effects such as inheritance.
+		/// </summary>
+		public void Die()
+		{
+			float maxOpinion = Single.MinValue;
+			Element inheretor= this;
+			foreach (Element e in relationships.Keys)
+			{
+				if (relationships[e] > maxOpinion)
 				{
-					environmentHappiness += relationships[e] / ((float)RELATIONSHIPSCALE * DisplayForm.DomainMaxDistance)
-						* (float)Math.Sqrt((position.X - e.Position.X) * (position.X - e.Position.X) + (position.Y - e.Position.Y) * (position.Y - e.Position.Y));
+					inheretor = e;
+					maxOpinion = relationships[e];
 				}
 			}
-
-			// Update Happiness
-			float nextHappiness = (0.5f + Neuroticism) * (happinessBonus
-				+ inventory * prices * happinessWeights[0]
-				+ Health * happinessWeights[1]
-				+ environmentHappiness * happinessWeights[2]);
-			happinessPercentChangeHistory.RemoveAt(happinessPercentChangeHistory.Count);
-			happinessPercentChangeHistory.Insert(0, (nextHappiness - Happiness) / Happiness);
-			Happiness = nextHappiness;
-
-			// Train decision matrices
-			//reserved
+			inheretor.ExecuteTrade(inventory);
+			this.IsDead = true;
 		}
 	}
 }

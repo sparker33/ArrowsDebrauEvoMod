@@ -44,6 +44,7 @@ namespace EvoMod2
 			HappinessBonus = 2.0f * (float)StatFunctions.GaussRandom(random.NextDouble(), 10.0, 10.0) - 1.0f;
 			HealthBonus = 2.0f * (float)StatFunctions.GaussRandom(random.NextDouble(), 10.0, 10.0) - 1.0f;
 			MobilityBonus = 2.0f * (float)StatFunctions.GaussRandom(random.NextDouble(), 10.0, 10.0) - 1.0f;
+			LethalityBonus = 10.0f * (float)StatFunctions.GaussRandom(random.NextDouble(), 0.0, 10.0);
 		}
 	}
 }

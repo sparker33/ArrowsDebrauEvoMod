@@ -29,6 +29,7 @@ namespace EvoMod2
 		public float HappinessBonus { get; protected set; }
 		public float HealthBonus { get; protected set; }
 		public float MobilityBonus { get; protected set; }
+		public float LethalityBonus { get; protected set; }
 
 		/// <summary>
 		/// Class constructor for generic action.
@@ -73,6 +74,7 @@ namespace EvoMod2
 			HappinessBonus = baseAction.HappinessBonus;
 			HealthBonus = baseAction.HealthBonus;
 			MobilityBonus = baseAction.MobilityBonus;
+			LethalityBonus = baseAction.LethalityBonus;
 		}
 
 		/// <summary>
