@@ -25,6 +25,7 @@ namespace EvoMod2
 		private void NatResourcesDataGrid_UserAddedRow(object sender, DataGridViewRowEventArgs e)
 		{
 			e.Row.Cells[1] = new DataGridViewColorDropDownCell();
+			e.Row.Cells[3].Value = false;
 		}
 
 		public class DataGridViewColorDropDownCell : DataGridViewComboBoxCell

@@ -84,6 +84,7 @@
 			// 
 			this.IsFood.FalseValue = "false";
 			this.IsFood.HeaderText = "Is Food";
+			this.IsFood.IndeterminateValue = "false";
 			this.IsFood.Name = "IsFood";
 			this.IsFood.Resizable = System.Windows.Forms.DataGridViewTriState.True;
 			this.IsFood.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;

@@ -18,6 +18,7 @@ namespace EvoMod2
 		public const int SCALE = 5000;   // Scale of domain for positions
 		public static Random GLOBALRANDOM; // Global random number generator
 		public static int ELEMENTCOUNT; // Number of elements
+		public static float DEATHCHANCE; // Scales the health treashold for death
 
 		// Private objects
 		private static List<Element> elements;
@@ -54,6 +55,7 @@ namespace EvoMod2
 				{
 					GLOBALRANDOM = new Random();
 					ELEMENTCOUNT = 100;
+					DEATHCHANCE = -5000.0f;
 					Kinematics.DEFAULTDAMPING = 0.01f;
 					Kinematics.TIMESTEP = 0.05f;
 					ResourceKernel.RESOURCESPEED = 1.0f;
@@ -64,17 +66,30 @@ namespace EvoMod2
 					Element.ELESPEED = 100.0f;
 					Element.RELATIONSHIPSCALE = 1.0f;
 					Element.FOODREQUIREMENT = 1.0f;
-					Element.MIDDLEAGE = 5000;
+					Element.MIDDLEAGE = 99999;
 					displayBmp = new Bitmap(panel1.Width, panel1.Height);
 					elements = new List<Element>();
 					resources = new List<Resource>();
 
 					for (int i = 0; i < settings.NaturalResourcesDataGridView.Rows.Count; i++)
 					{
-						resources.Add(new Resource(Color.FromName(settings.NaturalResourcesDataGridView.Rows[i].Cells[1].Value.ToString()),
-							Single.Parse(settings.NaturalResourcesDataGridView.Rows[i].Cells[0].Value.ToString())));
+						float resourceVolume;
+						int nodeCount;
+						try
+						{
+							if (!Single.TryParse(settings.NaturalResourcesDataGridView.Rows[i].Cells[0].Value.ToString(), out resourceVolume)
+								|| !Int32.TryParse(settings.NaturalResourcesDataGridView.Rows[i].Cells[2].Value.ToString(), out nodeCount))
+							{
+								continue;
+							}
+						}
+						catch (NullReferenceException)
+						{
+							continue;
+						}
+						resources.Add(new Resource(Color.FromName(settings.NaturalResourcesDataGridView.Rows[i].Cells[1].Value.ToString()), resourceVolume));
 
-						float[] pcts = new float[Int32.Parse(settings.NaturalResourcesDataGridView.Rows[i].Cells[2].Value.ToString())];
+						float[] pcts = new float[nodeCount];
 						float sum = 0.0f;
 						for (int j = 0; j < pcts.Length; j++)
 						{
@@ -87,7 +102,7 @@ namespace EvoMod2
 						}
 
 						DataGridViewCheckBoxCell isFoodCell = settings.NaturalResourcesDataGridView.Rows[i].Cells[3] as DataGridViewCheckBoxCell;
-						if ((bool)isFoodCell.Value)
+						if (bool.Parse(isFoodCell.Value.ToString()))
 						{
 							Element.FoodResources.Add(new FoodResourceData(i, 1.0f - (float)GLOBALRANDOM.NextDouble()));
 						}
@@ -121,8 +136,9 @@ namespace EvoMod2
 				}
 				elements[n].Eat();
 				elements[n].DoAction(resources, elements);
-				elements[n].DoInteraction(GLOBALRANDOM, elements);
+				elements[n].DoInteraction(GLOBALRANDOM, ref elements);
 				elements[n].Move();
+				elements[n].CheckForDeath(DEATHCHANCE * (float)GLOBALRANDOM.NextDouble());
 				n++;
 			}
 			// Update and draw resources
