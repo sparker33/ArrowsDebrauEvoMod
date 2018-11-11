@@ -127,9 +127,9 @@ namespace EvoMod2
 			cumulativePriceExperience = new Vector(DisplayForm.NaturalResourceTypesCount);
 			for (int i = 0; i < inventory.Count; i++)
 			{
-				rand = random.NextDouble();
+				rand = 1.0 - random.NextDouble();
 				prices[i] = 10.0f * (float)StatFunctions.GaussRandom(rand, TRAITSPREAD, TRAITSPREAD);
-				pricesUncertainty[i] = 10.0f * (float)StatFunctions.GaussRandom(rand, TRAITSPREAD, TRAITSPREAD);
+				pricesUncertainty[i] = prices[i];
 				cumulativePriceExperience[i] = inventory[i];
 			}
 			foodConsumptionRates = new Vector(FoodResources.Count);
@@ -252,7 +252,14 @@ namespace EvoMod2
 					+ Health * happinessWeights[1]
 					+ environmentHappiness * happinessWeights[2])
 					+ (1.0f - timePreference) * Happiness;
-				happinessPercentChangeHistory = (nextHappiness - Happiness) / Happiness;
+				if (Happiness == 0.0f)
+				{
+					happinessPercentChangeHistory = 0.0f;
+				}
+				else
+				{
+					happinessPercentChangeHistory = (nextHappiness - Happiness) / Happiness;
+				}
 				Happiness = nextHappiness;
 				// Update acceleratons
 				temp[0] = ELESPEED * (happinessPercentChangeHistory * kinematics.GetVelocity(0) / speed + temp[0] / DisplayForm.SCALE);
@@ -349,7 +356,7 @@ namespace EvoMod2
 					Mobility += KnownActions[actionChoice].MobilityBonus;
 					lethalityBonus += KnownActions[actionChoice].LethalityBonus;
 					// Update resource usage information and apply learning to action
-					KnownActions[actionChoice].Learn(Math.Sign(Happiness) * (happinessBonus + happinessWeights[0] * inventoryValueUtilityVar) / Happiness);
+					KnownActions[actionChoice].Learn(Math.Sign(Happiness) * (happinessBonus + happinessWeights[0] * inventoryValueUtilityVar) / (Happiness + Single.Epsilon));
 					productionUtilityVector = KnownActions[actionChoice].Cost - productionUtilityVector;
 					resourceUse += timePreference * productionUtilityVector;
 					// Check for new Resource discovery
@@ -400,6 +407,11 @@ namespace EvoMod2
 			while (interactionsPerTurn-- > 0)
 			{
 				Element otherElement = otherElements[random.Next(otherElements.Count - 1)];
+				if (otherElement == this)
+				{
+					interactionsPerTurn++;
+					continue;
+				}
 				if ((Math.Sqrt((position.X - otherElement.Position.X) * (position.X - otherElement.Position.X)
 					+ (position.Y - otherElement.Position.Y) * (position.Y - otherElement.Position.Y))) < (INTERACTRANGE * Mobility))
 				{
@@ -497,8 +509,17 @@ namespace EvoMod2
 			Vector effectivePrices = new Vector(tradeProposal.Count);
 			for (int i = 0; i < effectivePrices.Count; i++)
 			{
+				if (prices[i] == 0.0f)
+				{
+					effectivePrices[i] = 0.0f;
+					continue;
+				}
 				for (int j = 0; j < tradeProposal.Count; j++)
 				{
+					if (prices[j] == 0.0f)
+					{
+						continue;
+					}
 					if (i < j)
 					{
 						effectivePrices[i] += effectivePrices[j] * tradeProposal[j];
@@ -573,6 +594,10 @@ namespace EvoMod2
 				&& (-relationships[otherElement] < netValue
 					&& netValue < initialValueMagnitude * (1.0f - Agreeableness)))
 			{
+				if (netValue == 0.0f)
+				{
+					break;
+				}
 				for (int i = 0; i < tradeProposal.Count; i++)
 				{
 					tradeProposal[i] *= (1.0f - tradeProposal[i] * prices[i] / netValue);
@@ -795,25 +820,23 @@ namespace EvoMod2
 				+ 0.25f * parent1.HappinessWeights[2]
 				+ 0.25f * parent2.HappinessWeights[2];
 
-			inventory = new Vector(DisplayForm.NaturalResourceTypesCount);
-			Vector startResources = new Vector(inventory.Count);
+			Vector startResources = new Vector(parent1.Inventory.Count);
 			startResources += (parent1.Conscientiousness / 10.0f) * parent1.Inventory;
 			parent1.ExecuteTrade(-1.0f * startResources);
 			startResources += (parent2.Conscientiousness / 10.0f) * parent2.Inventory;
 			parent2.ExecuteTrade(-1.0f * (parent2.Conscientiousness / 10.0f) * parent2.Inventory);
 
-			prices = new Vector(DisplayForm.NaturalResourceTypesCount);
-			pricesUncertainty = new Vector(DisplayForm.NaturalResourceTypesCount);
-			cumulativePriceExperience = new Vector(DisplayForm.NaturalResourceTypesCount);
-			for (int i = 0; i < inventory.Count; i++)
+			prices = new Vector(parent1.Inventory.Count);
+			pricesUncertainty = new Vector(parent1.Inventory.Count);
+			for (int i = 0; i < prices.Count; i++)
 			{
-				rand = DisplayForm.GLOBALRANDOM.NextDouble();
+				rand = 1.0 - DisplayForm.GLOBALRANDOM.NextDouble();
 				prices[i] = 10.0f * (float)StatFunctions.GaussRandom(rand, TRAITSPREAD, TRAITSPREAD);
-				pricesUncertainty[i] = 10.0f * (float)StatFunctions.GaussRandom(rand, TRAITSPREAD, TRAITSPREAD);
+				pricesUncertainty[i] = prices[i];
 			}
 			foodConsumptionRates = new Vector(FoodResources.Count);
 			timePreference = (float)StatFunctions.GaussRandom(Intelligence, TRAITSPREAD, TRAITSPREAD);
-			resourceUse = new Vector(DisplayForm.NaturalResourceTypesCount);
+			resourceUse = new Vector(parent1.Inventory.Count);
 			KnownActions = new List<Action>();
 			foreach (Action action in parent1.KnownActions)
 			{
@@ -829,7 +852,9 @@ namespace EvoMod2
 					KnownActions.Add(action.Copy());
 				}
 			}
+			inventory = new Vector(parent1.Inventory.Count);
 			ExecuteTrade(startResources);
+			cumulativePriceExperience = new Vector(parent1.Inventory.Count);
 			for (int i = 0; i < inventory.Count; i++)
 			{
 				cumulativePriceExperience[i] = inventory[i];

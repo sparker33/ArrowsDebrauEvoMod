@@ -54,7 +54,7 @@ namespace EvoMod2
 				if (result == DialogResult.OK)
 				{
 					GLOBALRANDOM = new Random();
-					ELEMENTCOUNT = 100;
+					ELEMENTCOUNT = 125;
 					DEATHCHANCE = -5000.0f;
 					Kinematics.DEFAULTDAMPING = 0.01f;
 					Kinematics.TIMESTEP = 0.05f;
@@ -71,6 +71,7 @@ namespace EvoMod2
 					elements = new List<Element>();
 					resources = new List<Resource>();
 
+					/* COMMENTED OUT IN LIEU OF PROGRAMMATIC VERSION FOR DEBUGGING SPEED
 					for (int i = 0; i < settings.NaturalResourcesDataGridView.Rows.Count; i++)
 					{
 						float resourceVolume;
@@ -105,6 +106,26 @@ namespace EvoMod2
 						if (bool.Parse(isFoodCell.Value.ToString()))
 						{
 							Element.FoodResources.Add(new FoodResourceData(i, 1.0f - (float)GLOBALRANDOM.NextDouble()));
+						}
+					}
+					*/
+
+					resources.Add(new Resource(Color.Blue, 8000));
+					resources.Add(new Resource(Color.Red, 5000));
+					resources.Add(new Resource(Color.White, 1200));
+					resources.Add(new Resource(Color.Black, 3000));
+					for (int i = 0; i < resources.Count; i++)
+					{
+						float[] pcts = new float[3];
+						float sum = 0.0f;
+						for (int j = 0; j < pcts.Length; j++)
+						{
+							pcts[j] = (float)GLOBALRANDOM.NextDouble();
+							sum += pcts[j];
+						}
+						for (int j = 0; j < pcts.Length; j++)
+						{
+							resources[i].Add(pcts[j] / sum, new PointF((float)(GLOBALRANDOM.NextDouble() * SCALE), (float)(GLOBALRANDOM.NextDouble() * SCALE)));
 						}
 					}
 				}
