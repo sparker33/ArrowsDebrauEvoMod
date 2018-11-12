@@ -376,19 +376,19 @@ namespace EvoMod2
 					productionUtilityVector = KnownActions[actionChoice].Cost - productionUtilityVector;
 					resourceUse += timePreference * productionUtilityVector;
 					// Check for new Resource discovery
-					if (0.5 < StatFunctions.GaussRandom(DisplayForm.GLOBALRANDOM.NextDouble(), 25.0 * (Intelligence + Openness), 100.0 / (Intelligence + Openness)))
-					{
-						bool newResourceIsFood = false;
-						if (DisplayForm.GLOBALRANDOM.NextDouble() > 0.8)
-						{
-							FoodResources.Add(new FoodResourceData(inventory.Count - 1, 1.0f - (float)DisplayForm.GLOBALRANDOM.NextDouble()));
-							newResourceIsFood = true;
-						}
-						for (int i = 0; i < elements.Count; i++)
-						{
-							elements[i].AddResource(newResourceIsFood);
-						}
-					}
+					//if (0.5 < StatFunctions.GaussRandom(DisplayForm.GLOBALRANDOM.NextDouble(), 25.0 * (Intelligence + Openness), 100.0 / (Intelligence + Openness)))
+					//{
+					//	bool newResourceIsFood = false;
+					//	if (DisplayForm.GLOBALRANDOM.NextDouble() > 0.8)
+					//	{
+					//		FoodResources.Add(new FoodResourceData(inventory.Count - 1, 1.0f - (float)DisplayForm.GLOBALRANDOM.NextDouble()));
+					//		newResourceIsFood = true;
+					//	}
+					//	for (int i = 0; i < elements.Count; i++)
+					//	{
+					//		elements[i].AddResource(newResourceIsFood);
+					//	}
+					//}
 					// Check for new Action discovery (can discover either Harvest or Refinement Action)
 					if (0.5 < StatFunctions.GaussRandom(DisplayForm.GLOBALRANDOM.NextDouble(), 5.0 * (Intelligence + Openness), 20.0 / (Intelligence + Openness)))
 					{
@@ -446,10 +446,10 @@ namespace EvoMod2
 						&& this.Parents[1] != otherElement)
 					{
 						// Mate
-						//Element child = new Element(this, otherElement);
-						//relationships.Add(child, 10.0f * Conscientiousness);
-						//otherElement.relationships.Add(child, 10.0f * Conscientiousness);
-						//otherElements.Add(child);
+						Element child = new Element(this, otherElement);
+						relationships.Add(child, 10.0f * Conscientiousness);
+						otherElement.relationships.Add(child, 10.0f * Conscientiousness);
+						otherElements.Add(child);
 					}
 					else if (actionChoice > 0.6)
 					{

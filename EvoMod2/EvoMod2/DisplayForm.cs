@@ -159,7 +159,7 @@ namespace EvoMod2
 				}
 				elements[n].Eat();
 				elements[n].DoAction(resources, elements);
-				elements[n].DoInteraction(GLOBALRANDOM, ref elements);
+				//elements[n].DoInteraction(GLOBALRANDOM, ref elements);
 				elements[n].Move();
 				n++;
 			}

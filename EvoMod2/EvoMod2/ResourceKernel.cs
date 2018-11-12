@@ -44,7 +44,7 @@ namespace EvoMod2
 		}
 		public Rectangle GetBoundingBox(float widthScaling, float heightScaling)
 		{
-			int dia = (int)(Math.Sqrt(H[0][0]) * Volume);
+			int dia = (int)(Volume / DisplayForm.SCALE);
 			Rectangle rect = new Rectangle((int)((mu[0] - dia / 2.0f) * widthScaling),
 			(int)((mu[1] - dia / 2.0f) * heightScaling),
 			(int)(dia * widthScaling),
