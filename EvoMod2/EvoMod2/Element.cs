@@ -19,6 +19,7 @@ namespace EvoMod2
 		public static int INTERACTRANGE;
 		public static double RELATIONSHIPSCALE;
 		public static float FOODREQUIREMENT;
+		public static float STARTRESOURCES;
 		public static List<FoodResourceData> FoodResources = new List<FoodResourceData>();
 
 		// Private fields
@@ -59,7 +60,7 @@ namespace EvoMod2
 		public float Lethality { get => Health + lethalityBonus; }
 			// Display data and general accessors
 		public PointF Position { get => position; }
-		public int Size { get => (int)Math.Max(Math.Min(25.0f, prices * inventory), 3.0f); }
+		public int Size { get => (int)Math.Max(3.0f, Math.Min(25.0f, (prices * inventory) / (0.5f * STARTRESOURCES))); }
 		public Color ElementColor { get; private set; }
 		public HappinessWeights HappinessWeights { get => happinessWeights; }
 		public Vector Inventory { get => inventory; }
@@ -120,7 +121,7 @@ namespace EvoMod2
 			for (int i = 0; i < inventory.Count; i++)
 			{
 				rand = random.NextDouble();
-				inventory[i] = 10.0f * (float)StatFunctions.GaussRandom(rand, TRAITSPREAD, TRAITSPREAD);
+				inventory[i] = STARTRESOURCES * (float)StatFunctions.GaussRandom(rand, TRAITSPREAD, TRAITSPREAD);
 			}
 			prices = new Vector(DisplayForm.NaturalResourceTypesCount);
 			pricesUncertainty = new Vector(DisplayForm.NaturalResourceTypesCount);
@@ -128,7 +129,7 @@ namespace EvoMod2
 			for (int i = 0; i < inventory.Count; i++)
 			{
 				rand = 1.0 - random.NextDouble();
-				prices[i] = 10.0f * (float)StatFunctions.GaussRandom(rand, TRAITSPREAD, TRAITSPREAD);
+				prices[i] = (float)StatFunctions.GaussRandom(rand, TRAITSPREAD, TRAITSPREAD);
 				pricesUncertainty[i] = prices[i];
 				cumulativePriceExperience[i] = inventory[i];
 			}
@@ -144,10 +145,10 @@ namespace EvoMod2
 		/// </summary>
 		public void AddResource(bool isFood)
 		{
-			resourceUse.Add(0.001f);
+			resourceUse.Add(0.0f);
 			inventory.Add(0.0f);
 			prices.Add(Openness);
-			pricesUncertainty.Add(2.0f * MIDDLEAGE - Age);
+			pricesUncertainty.Add(Openness);
 			cumulativePriceExperience.Add(Intelligence);
 			for (int i = 0; i < KnownActions.Count; i++)
 			{
@@ -181,7 +182,12 @@ namespace EvoMod2
 			Health -= hunger * hunger;
 			happinessBonus -= hunger;
 
-			float trainingMetric = (happinessWeights.Health * Health - healthHappiness - hunger) / (wealthHappiness - happinessWeights.Wealth * (inventory * prices));
+			float deltaWealth = wealthHappiness - happinessWeights.Wealth * (inventory * prices);
+			float trainingMetric = 0.0f;
+			if (deltaWealth != 0.0f)
+			{
+				trainingMetric = (happinessWeights.Health * Health - healthHappiness - hunger) / deltaWealth;
+			}
 			if ((FOODREQUIREMENT - hunger) != 0.0f)
 			{
 				for (int i = 0; i < foodConsumptionRates.Count; i++)
@@ -216,7 +222,8 @@ namespace EvoMod2
 				PointF newLocation = new PointF();
 				destination.Set(this.position, newLocation);
 			}
-			else if (!destination.IsEmpty && StatFunctions.Sigmoid(DisplayForm.GLOBALRANDOM.NextDouble(), 100.0 * destination.GetProgress(position), 0.0) > 0.45)
+			float progress = destination.GetProgress(position);
+			if (!destination.IsEmpty && StatFunctions.Sigmoid(DisplayForm.GLOBALRANDOM.NextDouble(), 100.0 * progress, 0.0) > 0.45)
 			{
 				destination.Clear();
 			}
@@ -227,9 +234,13 @@ namespace EvoMod2
 				temp[0] = 0.0f;
 				temp[1] = 0.0f;
 			}
+			else if (progress == 0.0f)
+			{
+				destination.Clear();
+			}
 			else
 			{
-				kinematics.Damping = 1.0f / destination.GetProgress(position);
+				kinematics.Damping = 1.0f / progress;
 				temp[0] = destination.X - position.X;
 				temp[1] = destination.Y - position.Y;
 			}
@@ -337,9 +348,11 @@ namespace EvoMod2
 				int actionChoice = 0;
 				for (int i = 0; i < KnownActions.Count; i++)
 				{
-					if (KnownActions[i].GetActionPriority(localResourceLevels, inventory) > maxActionPriority)
+					float priority = KnownActions[i].GetActionPriority(localResourceLevels, inventory);
+					if (priority > maxActionPriority)
 					{
 						actionChoice = i;
+						maxActionPriority = priority;
 					}
 				}
 				// If any actions are available, execute the preferred action
@@ -350,17 +363,20 @@ namespace EvoMod2
 					Vector productionUtilityVector = KnownActions[actionChoice].DoAction(localResourceLevels, Intelligence);
 					float inventoryValueUtilityVar = inventory * prices;
 					inventory += productionUtilityVector;
-					inventoryValueUtilityVar = (inventoryValueUtilityVar - inventory * prices) / inventoryValueUtilityVar;
+					if (inventoryValueUtilityVar != 0.0f)
+					{
+						inventoryValueUtilityVar = (inventoryValueUtilityVar - inventory * prices) / inventoryValueUtilityVar;
+					}
 					happinessBonus += KnownActions[actionChoice].HappinessBonus;
 					Health += KnownActions[actionChoice].HealthBonus;
 					Mobility += KnownActions[actionChoice].MobilityBonus;
 					lethalityBonus += KnownActions[actionChoice].LethalityBonus;
 					// Update resource usage information and apply learning to action
-					KnownActions[actionChoice].Learn(Math.Sign(Happiness) * (happinessBonus + happinessWeights[0] * inventoryValueUtilityVar) / (Happiness + Single.Epsilon));
+					KnownActions[actionChoice].Learn(Math.Sign(Happiness) * (happinessBonus + happinessWeights[0] * inventoryValueUtilityVar) / (Happiness + 1.0f));
 					productionUtilityVector = KnownActions[actionChoice].Cost - productionUtilityVector;
 					resourceUse += timePreference * productionUtilityVector;
 					// Check for new Resource discovery
-					if (0.5 < StatFunctions.GaussRandom(DisplayForm.GLOBALRANDOM.NextDouble(), 50.0 * Intelligence * Openness, 50.0 / (Intelligence * Openness)))
+					if (0.5 < StatFunctions.GaussRandom(DisplayForm.GLOBALRANDOM.NextDouble(), 25.0 * (Intelligence + Openness), 100.0 / (Intelligence + Openness)))
 					{
 						bool newResourceIsFood = false;
 						if (DisplayForm.GLOBALRANDOM.NextDouble() > 0.8)
@@ -374,7 +390,7 @@ namespace EvoMod2
 						}
 					}
 					// Check for new Action discovery (can discover either Harvest or Refinement Action)
-					if (0.5 < StatFunctions.GaussRandom(DisplayForm.GLOBALRANDOM.NextDouble(), 10.0 * Intelligence * Openness, 10.0 / (Intelligence * Openness)))
+					if (0.5 < StatFunctions.GaussRandom(DisplayForm.GLOBALRANDOM.NextDouble(), 5.0 * (Intelligence + Openness), 20.0 / (Intelligence + Openness)))
 					{
 						if (DisplayForm.GLOBALRANDOM.NextDouble() > 0.5)
 						{
@@ -388,7 +404,7 @@ namespace EvoMod2
 					}
 				}
 				// Check for new HarvestAction discovery
-				if (!discoveryOccurred && 0.5 < StatFunctions.GaussRandom(DisplayForm.GLOBALRANDOM.NextDouble(), 10.0 * Intelligence * Openness, 10.0 / (Intelligence * Openness)))
+				if (!discoveryOccurred && 0.5 < StatFunctions.GaussRandom(DisplayForm.GLOBALRANDOM.NextDouble(), 5.0 * (Intelligence + Openness), 20.0 / (Intelligence + Openness)))
 				{
 					KnownActions.Add(new HarvestAction(inventory.Count, DisplayForm.GLOBALRANDOM, localResourceLevels));
 				}
@@ -407,7 +423,7 @@ namespace EvoMod2
 			while (interactionsPerTurn-- > 0)
 			{
 				Element otherElement = otherElements[random.Next(otherElements.Count - 1)];
-				if (otherElement == this)
+				if (otherElement == this || otherElement.IsDead)
 				{
 					interactionsPerTurn++;
 					continue;
@@ -422,13 +438,18 @@ namespace EvoMod2
 					double actionChoice = StatFunctions.GaussRandom(random.NextDouble(),
 						RELATIONSHIPSCALE + relationships[otherElement],
 						RELATIONSHIPSCALE - relationships[otherElement]);
-					if (actionChoice > 0.9 && this != otherElement.Parents[0] && this != otherElement.Parents[1] && this.Parents[0] != otherElement && this.Parents[1] != otherElement)
+					if (actionChoice > 0.9
+						&& this != otherElement
+						&& this != otherElement.Parents[0]
+						&& this != otherElement.Parents[1]
+						&& this.Parents[0] != otherElement
+						&& this.Parents[1] != otherElement)
 					{
 						// Mate
-						Element child = new Element(this, otherElement);
-						relationships.Add(child, 10.0f * Conscientiousness);
-						otherElement.relationships.Add(child, 10.0f * Conscientiousness);
-						otherElements.Add(child);
+						//Element child = new Element(this, otherElement);
+						//relationships.Add(child, 10.0f * Conscientiousness);
+						//otherElement.relationships.Add(child, 10.0f * Conscientiousness);
+						//otherElements.Add(child);
 					}
 					else if (actionChoice > 0.6)
 					{
@@ -514,26 +535,33 @@ namespace EvoMod2
 					effectivePrices[i] = 0.0f;
 					continue;
 				}
-				for (int j = 0; j < tradeProposal.Count; j++)
+				else
 				{
-					if (prices[j] == 0.0f)
+					for (int j = 0; j < tradeProposal.Count; j++)
 					{
-						continue;
+						if (prices[j] == 0.0f)
+						{
+							continue;
+						}
+						if (i < j)
+						{
+							effectivePrices[i] += effectivePrices[j] * tradeProposal[j];
+						}
+						else if (i > j)
+						{
+							effectivePrices[i] += prices[j] * tradeProposal[j];
+						}
 					}
-					if (i < j)
-					{
-						effectivePrices[i] += effectivePrices[j] * tradeProposal[j];
-					}
-					else if (i > j)
-					{
-						effectivePrices[i] += prices[j] * tradeProposal[j];
-					}
+					effectivePrices[i] /= -prices[i];
 				}
-				effectivePrices[i] /= -prices[i];
 			}
 			// Update standard deviations (pricesUncertainty)
 			for (int i = 0; i < pricesUncertainty.Count; i++)
 			{
+				if (tradeProposal[i] == cumulativePriceExperience[i])
+				{
+					continue;
+				}
 				pricesUncertainty[i] = (float)Math.Sqrt((cumulativePriceExperience[i] * pricesUncertainty[i] * pricesUncertainty[i]
 					+ ((tradeProposal[i] * effectivePrices[i] - cumulativePriceExperience[i] * prices[i]) / (tradeProposal[i] + cumulativePriceExperience[i]))
 					* ((tradeProposal[i] * effectivePrices[i] - cumulativePriceExperience[i] * prices[i]) / (tradeProposal[i] + cumulativePriceExperience[i])))
@@ -576,7 +604,7 @@ namespace EvoMod2
 		/// <returns> Vector trade proposal. Positive items are received by this element, negative are given as payment. </returns>
 		private Vector GetTradeProposal(Element otherElement)
 		{
-			int maxAttempts = 100;
+			int maxAttempts = 10;
 			Vector tradeProposal = new Vector(inventory);
 			for (int i = 0; i < tradeProposal.Count; i++)
 			{
@@ -630,7 +658,10 @@ namespace EvoMod2
 				relationships.Add(otherElement, Openness - Neuroticism);
 			}
 			relationships[otherElement] += (values[0] * happinessWeights[0] + values[1] * happinessWeights[1] + values[2] * happinessWeights[2]);
-			relationships[otherElement] -= (float)RELATIONSHIPSCALE * (otherElement.TurnsSinceMurder - otherElement.Age) / otherElement.Age;
+			if (otherElement.Age != 0)
+			{
+				relationships[otherElement] -= (float)RELATIONSHIPSCALE * (otherElement.TurnsSinceMurder - otherElement.Age) / otherElement.Age;
+			}
 			
 			happinessWeights[0] *= (1.0f + Agreeableness * Openness * values[0]) / (1.0f + Agreeableness * Openness);
 			happinessWeights[1] *= (1.0f + Agreeableness * Openness * values[1]) / (1.0f + Agreeableness * Openness);
@@ -752,6 +783,7 @@ namespace EvoMod2
 				}
 			}
 			inheretor.ExecuteTrade(inventory);
+			this.ExecuteTrade(-inventory);
 			this.IsDead = true;
 		}
 
@@ -831,7 +863,7 @@ namespace EvoMod2
 			for (int i = 0; i < prices.Count; i++)
 			{
 				rand = 1.0 - DisplayForm.GLOBALRANDOM.NextDouble();
-				prices[i] = 10.0f * (float)StatFunctions.GaussRandom(rand, TRAITSPREAD, TRAITSPREAD);
+				prices[i] = (float)StatFunctions.GaussRandom(rand, TRAITSPREAD, TRAITSPREAD);
 				pricesUncertainty[i] = prices[i];
 			}
 			foodConsumptionRates = new Vector(FoodResources.Count);

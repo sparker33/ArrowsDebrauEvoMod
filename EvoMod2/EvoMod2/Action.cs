@@ -24,7 +24,7 @@ namespace EvoMod2
 		protected float proficiencyBonus;
 
 		// Public objects
-		public int ActionID { get; private set; }
+		public int ActionID { get; protected set; }
 		public Vector Cost { get => (1.0f / proficiencyBonus) * baseCost; protected set => baseCost = value; }
 		public float HappinessBonus { get; protected set; }
 		public float HealthBonus { get; protected set; }
@@ -40,6 +40,11 @@ namespace EvoMod2
 			ActionID = ActionTypesCount++;
 			localResourcesDecision = new Vector(totalResourceCount);
 			inventoryResourcesDecision = new Vector(totalResourceCount);
+			for (int i = 0; i < totalResourceCount; i++)
+			{
+				localResourcesDecision[i] = 0.01f;
+				inventoryResourcesDecision[i] = 0.01f;
+			}
 			baseCost = new Vector(totalResourceCount);
 			baseProduction = new Vector(totalResourceCount);
 			localResourceLevelsProductionModifier = new Matrix(totalResourceCount, DisplayForm.NaturalResourceTypesCount);
@@ -62,14 +67,19 @@ namespace EvoMod2
 		/// <param name="production"> Base production of this Action. </param>
 		/// <param name="productionMod"> LocalResources productivity modifier for this Action. </param>
 		/// <param name="baseAction"> The base Action being coppied. </param>
-		private Action(Vector cost, Vector production, Matrix productionMod, Action baseAction)
+		protected Action(Vector cost, Vector production, Matrix productionMod, Action baseAction)
 		{
+			proficiencyBonus = 1.0f;
 			ActionID = baseAction.ActionID;
 			localResourcesDecision = new Vector(production.Count);
 			inventoryResourcesDecision = new Vector(production.Count);
+			for (int i = 0; i < production.Count; i++)
+			{
+				localResourcesDecision[i] = 0.01f;
+				inventoryResourcesDecision[i] = 0.01f;
+			}
 			baseProduction = production;
 			localResourceLevelsProductionModifier = productionMod;
-			proficiencyBonus = 1.0f;
 			baseCost = cost;
 			HappinessBonus = baseAction.HappinessBonus;
 			HealthBonus = baseAction.HealthBonus;
@@ -82,11 +92,11 @@ namespace EvoMod2
 		/// </summary>
 		public void AddResource()
 		{
-			localResourcesDecision.Add(0.0f);
-			inventoryResourcesDecision.Add(0.0f);
+			inventoryResourcesDecision.Add(0.01f);
 			baseCost.Add(0.0f);
 			baseProduction.Add(0.0f);
 			localResourceLevelsProductionModifier.Add(new Vector(DisplayForm.NaturalResourceTypesCount));
+			lastDecisionInventoryResources.Add(0.0f);
 		}
 
 		/// <summary>
@@ -95,11 +105,11 @@ namespace EvoMod2
 		/// <param name="index"> Integer index of the resource to be removed. </param>
 		public void RemoveResourceAt(int index)
 		{
-			localResourcesDecision.RemoveAt(index);
 			inventoryResourcesDecision.RemoveAt(index);
 			baseCost.RemoveAt(index);
 			baseProduction.RemoveAt(index);
 			localResourceLevelsProductionModifier.RemoveAt(index);
+			lastDecisionInventoryResources.RemoveAt(index);
 		}
 
 		/// <summary>

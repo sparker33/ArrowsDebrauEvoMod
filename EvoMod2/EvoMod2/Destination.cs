@@ -52,7 +52,12 @@ namespace EvoMod2
 		{
 			float xDist = destination.X - currentLocation.X;
 			float yDist = destination.Y - currentLocation.Y;
-			return ((float)Math.Sqrt(xDist * xDist + yDist * yDist) / startDistance);
+			float progress = 0.0f;
+			if (startDistance != 0.0f)
+			{
+				progress = (float)Math.Sqrt(xDist * xDist + yDist * yDist) / startDistance;
+			}
+			return progress;
 		}
 
 		// Method to empty this Destination

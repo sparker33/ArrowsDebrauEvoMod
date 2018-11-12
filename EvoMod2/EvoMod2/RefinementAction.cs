@@ -11,7 +11,7 @@ namespace EvoMod2
 	{
 		public RefinementAction(int totalResourceCount, Random random, Vector resourceUsageLevels) : base(totalResourceCount)
 		{
-			float maxUse = 0.0f;
+			float maxUse = 0.01f;
 			foreach (float lvl in resourceUsageLevels)
 			{
 				if (Math.Abs(lvl) > maxUse)
@@ -24,8 +24,8 @@ namespace EvoMod2
 				baseCost[i] = (float)random.NextDouble();
 				baseProduction[i] = 0.0f;
 				localResourceLevelsProductionModifier[i] = new MatrixMath.Vector(DisplayForm.NaturalResourceTypesCount);
-				localResourcesDecision[i] = 0.0f;
-				inventoryResourcesDecision[i] = 0.0f;
+				localResourcesDecision[i] = 0.01f;
+				inventoryResourcesDecision[i] = 0.01f;
 			}
 			for (int i = DisplayForm.NaturalResourceTypesCount; i < totalResourceCount; i++)
 			{
@@ -38,7 +38,7 @@ namespace EvoMod2
 					baseProduction[i] = (float)random.NextDouble();
 				}
 				localResourceLevelsProductionModifier[i] = new MatrixMath.Vector(DisplayForm.NaturalResourceTypesCount);
-				inventoryResourcesDecision[i] = 0.0f;
+				inventoryResourcesDecision[i] = 0.01f;
 			}
 			bias = 0.0f;
 			HappinessBonus = 2.0f * (float)StatFunctions.GaussRandom(random.NextDouble(), 10.0, 10.0) - 1.0f;

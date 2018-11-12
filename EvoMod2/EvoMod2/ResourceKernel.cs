@@ -82,8 +82,8 @@ namespace EvoMod2
 			Volume = volume;
 			mu[0] = position.X;
 			mu[1] = position.Y;
-			H[0][0] = 0.01f * volume;
-			H[1][1] = 0.01f * volume;
+			H[0][0] = DisplayForm.SCALE * DisplayForm.SCALE;
+			H[1][1] = DisplayForm.SCALE * DisplayForm.SCALE;
 			H[0][1] = 0.0f;
 			H[1][0] = 0.0f;
 			moveMatrix = new Matrix(2, 2);

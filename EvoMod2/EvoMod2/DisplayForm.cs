@@ -55,18 +55,19 @@ namespace EvoMod2
 				{
 					GLOBALRANDOM = new Random();
 					ELEMENTCOUNT = 125;
-					DEATHCHANCE = -5000.0f;
+					DEATHCHANCE = 0.01f;
 					Kinematics.DEFAULTDAMPING = 0.01f;
 					Kinematics.TIMESTEP = 0.05f;
 					ResourceKernel.RESOURCESPEED = 1.0f;
 					ResourceKernel.SPREADRATE = 0.0f;
-					Element.TRAITSPREAD = 10.0f;
+					Element.TRAITSPREAD = 7.0f;
 					Element.INTERACTCOUNT = ELEMENTCOUNT / 2;
 					Element.INTERACTRANGE = SCALE / 100;
 					Element.ELESPEED = 100.0f;
-					Element.RELATIONSHIPSCALE = 1.0f;
-					Element.FOODREQUIREMENT = 1.0f;
-					Element.MIDDLEAGE = 99999;
+					Element.RELATIONSHIPSCALE = 10.0f;
+					Element.FOODREQUIREMENT = 0.1f;
+					Element.STARTRESOURCES = 1000.0f;
+					Element.MIDDLEAGE = 999999;
 					displayBmp = new Bitmap(panel1.Width, panel1.Height);
 					elements = new List<Element>();
 					resources = new List<Resource>();
@@ -110,10 +111,11 @@ namespace EvoMod2
 					}
 					*/
 
-					resources.Add(new Resource(Color.Blue, 8000));
-					resources.Add(new Resource(Color.Red, 5000));
-					resources.Add(new Resource(Color.White, 1200));
-					resources.Add(new Resource(Color.Black, 3000));
+					resources.Add(new Resource(Color.Blue, 80000000));
+					Element.FoodResources.Add(new FoodResourceData(0, 1.0f - (float)GLOBALRANDOM.NextDouble()));
+					resources.Add(new Resource(Color.Red, 50000000));
+					resources.Add(new Resource(Color.White, 12000000));
+					resources.Add(new Resource(Color.Black, 30000000));
 					for (int i = 0; i < resources.Count; i++)
 					{
 						float[] pcts = new float[3];
@@ -149,7 +151,7 @@ namespace EvoMod2
 			int n = 0;
 			while (n < elements.Count)
 			{
-				elements[n].CheckForDeath(0.0f);
+				elements[n].CheckForDeath((float)Math.Exp(DEATHCHANCE * (elements.Count - ELEMENTCOUNT)));
 				if (elements[n].IsDead)
 				{
 					elements.RemoveAt(n);
@@ -159,7 +161,6 @@ namespace EvoMod2
 				elements[n].DoAction(resources, elements);
 				elements[n].DoInteraction(GLOBALRANDOM, ref elements);
 				elements[n].Move();
-				elements[n].CheckForDeath(DEATHCHANCE * (float)GLOBALRANDOM.NextDouble());
 				n++;
 			}
 			// Update and draw resources

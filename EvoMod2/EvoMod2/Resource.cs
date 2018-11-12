@@ -28,10 +28,10 @@ namespace EvoMod2
 		/// </summary>
 		/// <param name="color"> Resource color for graphics. </param>
 		/// <param name="glovalVolume"> Initial global volume of resource. </param>
-		public Resource(Color color, float glovalVolume) : base()
+		public Resource(Color color, float globalVolume) : base()
 		{
 			Color = color;
-			volume = glovalVolume;
+			volume = globalVolume;
 		}
 
 		/// <summary>
