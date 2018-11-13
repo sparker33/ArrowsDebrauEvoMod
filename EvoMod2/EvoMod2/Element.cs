@@ -574,14 +574,22 @@ namespace EvoMod2
 			// Update standard deviations (pricesUncertainty)
 			for (int i = 0; i < pricesUncertainty.Count; i++)
 			{
-				if (tradeProposal[i] - cumulativePriceExperience[i] == 0.0f)
+				if (tradeProposal[i] + cumulativePriceExperience[i] == 0.0f)
 				{
 					continue;
 				}
-				pricesUncertainty[i] = (float)Math.Sqrt((cumulativePriceExperience[i] * pricesUncertainty[i] * pricesUncertainty[i]
+				float variance = (cumulativePriceExperience[i] * pricesUncertainty[i] * pricesUncertainty[i]
 					+ ((tradeProposal[i] * effectivePrices[i] - cumulativePriceExperience[i] * prices[i]) / (tradeProposal[i] + cumulativePriceExperience[i]))
 					* ((tradeProposal[i] * effectivePrices[i] - cumulativePriceExperience[i] * prices[i]) / (tradeProposal[i] + cumulativePriceExperience[i])))
-					/ (tradeProposal[i] + cumulativePriceExperience[i]));
+					/ (tradeProposal[i] + cumulativePriceExperience[i]);
+				if (variance > 0.0f)
+				{
+					pricesUncertainty[i] = (float)Math.Sqrt(variance);
+				}
+				else
+				{
+					pricesUncertainty[i] = (float)Math.Sqrt(Math.Abs(variance));
+				}
 			}
 			// Update cumulativePriceExperience
 			cumulativePriceExperience += tradeProposal;
@@ -610,7 +618,6 @@ namespace EvoMod2
 				tradeProposal = -1.0f * thisTradeProposal;
 				return false;
 			}
-
 		}
 
 		/// <summary>
