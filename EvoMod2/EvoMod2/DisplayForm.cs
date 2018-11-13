@@ -57,19 +57,19 @@ namespace EvoMod2
 					GLOBALRANDOM = new Random();
 					ELEMENTCOUNT = 125;
 					DEATHCHANCE = 0.01f;
-					Kinematics.DEFAULTDAMPING = 0.01f;
+					Kinematics.DEFAULTDAMPING = 0.1f;
 					Kinematics.TIMESTEP = 0.05f;
 					ResourceKernel.RESOURCESPEED = 1.0f;
 					ResourceKernel.SPREADRATE = 0.0f;
 					Element.TRAITSPREAD = 5.0f;
-					Element.INTERACTCOUNT = ELEMENTCOUNT / 20;
+					Element.INTERACTCOUNT = ELEMENTCOUNT / 2;
 					Element.INTERACTRANGE = SCALE / 100;
 					Element.ELESPEED = 50.0f;
 					Element.RELATIONSHIPSCALE = 10.0f;
 					Element.FOODREQUIREMENT = 0.1f;
 					Element.STARTRESOURCES = 1000.0f;
 					Element.MAXRESOURCECOUNT = 150;
-					Element.MIDDLEAGE = 99999;
+					Element.MIDDLEAGE = 9999;
 					Element.TRADEROUNDOFF = 0.01f;
 					displayBmp = new Bitmap(panel1.Width, panel1.Height);
 					elements = new List<Element>();
@@ -154,23 +154,58 @@ namespace EvoMod2
 			int n = 0;
 			while (n < elements.Count)
 			{
-				elements[n].CheckForDeath((float)Math.Exp(DEATHCHANCE * (elements.Count - ELEMENTCOUNT)));
-				if (elements[n].IsDead)
+				try
 				{
-					elements.RemoveAt(n);
-					continue;
-				}
-				elements[n].Eat();
-				bool? newResource = elements[n].DoAction(resources, elements);
-				if (newResource.HasValue)
-				{
-					for (int i = 0; i < elements.Count; i++)
+					elements[n].CheckForDeath((float)Math.Exp(DEATHCHANCE * (elements.Count - ELEMENTCOUNT)));
+					if (elements[n].IsDead)
 					{
-						elements[i].AddResource(newResource.Value);
+						elements.RemoveAt(n);
+						continue;
 					}
 				}
-				elements.AddRange(elements[n].DoInteraction(GLOBALRANDOM, elements));
-				elements[n].Move();
+				catch (Exception)
+				{
+					throw new Exception("CheckForDeath");
+				}
+				try
+				{
+					elements[n].Eat();
+				}
+				catch (Exception)
+				{
+					throw new Exception("Eat");
+				}
+				bool? newResource = elements[n].DoAction(resources, elements);
+				try
+				{
+					if (newResource.HasValue)
+					{
+						for (int i = 0; i < elements.Count; i++)
+						{
+							elements[i].AddResource(newResource.Value);
+						}
+					}
+				}
+				catch (Exception)
+				{
+					throw new Exception("Adding new resource");
+				}
+				try
+				{
+					elements.AddRange(elements[n].DoInteraction(GLOBALRANDOM, elements));
+				}
+				catch (Exception)
+				{
+					throw new Exception("Interaction");
+				}
+				try
+				{
+					elements[n].Move();
+				}
+				catch (Exception)
+				{
+					throw new Exception("Move");
+				}
 				n++;
 			}
 			// Update and draw resources
@@ -206,14 +241,21 @@ namespace EvoMod2
 			// Draw Elements
 			foreach (Element element in elements)
 			{
-				int size = element.Size;
-				using (Brush b = new SolidBrush(element.ElementColor))
+				try
 				{
-					g.FillEllipse(b,
-						(int)(element.Position.X * panel1.ClientRectangle.Width / SCALE) - size / 2,
-						(int)(element.Position.Y * panel1.ClientRectangle.Height / SCALE) - size / 2,
-						size,
-						size);
+					int size = element.Size;
+					using (Brush b = new SolidBrush(element.ElementColor))
+					{
+						g.FillEllipse(b,
+							(int)(element.Position.X * panel1.ClientRectangle.Width / SCALE) - size / 2,
+							(int)(element.Position.Y * panel1.ClientRectangle.Height / SCALE) - size / 2,
+							size,
+							size);
+					}
+				}
+				catch (Exception)
+				{
+					throw new Exception("Drawing Elements");
 				}
 			}
 			e.Result = display;

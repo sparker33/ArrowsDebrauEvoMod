@@ -110,7 +110,7 @@ namespace EvoMod2
 			Extraversion = (float)StatFunctions.GaussRandom(rand, TRAITSPREAD, TRAITSPREAD);
 
 			rand = random.NextDouble();
-			Health = 100.0f * (float)StatFunctions.GaussRandom(rand, TRAITSPREAD, TRAITSPREAD);
+			Health = MIDDLEAGE * (float)StatFunctions.GaussRandom(rand, TRAITSPREAD, TRAITSPREAD) / 10.0f;
 			Mobility = 1.0f;
 
 			happinessWeights[0] = (float)StatFunctions.GaussRandom(rand, TRAITSPREAD, TRAITSPREAD);
@@ -167,47 +167,54 @@ namespace EvoMod2
 		/// </summary>
 		public void Eat()
 		{
-			float healthHappiness = happinessWeights.Health * Health;
-			float wealthHappiness = happinessWeights.Wealth * (inventory * prices);
-			float hunger = FOODREQUIREMENT;
-			float[] consumption = new float[FoodResources.Count];
-			for (int i = 0; i < FoodResources.Count; i++)
+			try
 			{
-				consumption[i] = foodConsumptionRates[i] * prices[FoodResources[i].ResourceIndex] / FoodResources[i].Nourishment;
-				if (consumption[i] > inventory[FoodResources[i].ResourceIndex])
+				float healthHappiness = happinessWeights.Health * Health;
+				float wealthHappiness = happinessWeights.Wealth * (inventory * prices);
+				float hunger = FOODREQUIREMENT;
+				float[] consumption = new float[FoodResources.Count];
+				for (int i = 0; i < FoodResources.Count; i++)
 				{
-					consumption[i] = inventory[FoodResources[i].ResourceIndex];
+					consumption[i] = foodConsumptionRates[i] * prices[FoodResources[i].ResourceIndex] / FoodResources[i].Nourishment;
+					if (consumption[i] > inventory[FoodResources[i].ResourceIndex])
+					{
+						consumption[i] = inventory[FoodResources[i].ResourceIndex];
+					}
+					inventory[FoodResources[i].ResourceIndex] -= consumption[i];
+					hunger -= consumption[i] * FoodResources[i].Nourishment;
 				}
-				inventory[FoodResources[i].ResourceIndex] -= consumption[i];
-				hunger -= consumption[i] * FoodResources[i].Nourishment;
-			}
-			Health -= hunger * hunger;
-			happinessBonus -= hunger;
+				Health -= hunger * hunger;
+				happinessBonus -= hunger;
 
-			float deltaWealth = wealthHappiness - happinessWeights.Wealth * (inventory * prices);
-			float trainingMetric = 0.0f;
-			if (deltaWealth != 0.0f)
-			{
-				trainingMetric = (happinessWeights.Health * Health - healthHappiness - hunger) / deltaWealth;
-			}
-			if ((FOODREQUIREMENT - hunger) != 0.0f)
-			{
-				for (int i = 0; i < foodConsumptionRates.Count; i++)
+				float deltaWealth = wealthHappiness - happinessWeights.Wealth * (inventory * prices);
+				float trainingMetric = 0.0f;
+				if (deltaWealth != 0.0f)
 				{
-					if (foodConsumptionRates[i] == 0.0f)
+					trainingMetric = (happinessWeights.Health * Health - healthHappiness - hunger) / deltaWealth;
+				}
+				if ((FOODREQUIREMENT - hunger) != 0.0f)
+				{
+					for (int i = 0; i < foodConsumptionRates.Count; i++)
 					{
-						foodConsumptionRates[i] += consumption[i] * (float)StatFunctions.Sigmoid(trainingMetric, Math.Abs(hunger), 0.0) * Math.Sign(hunger) / (FOODREQUIREMENT - hunger);
-					}
-					else
-					{
-						foodConsumptionRates[i] *= (1.0f + consumption[i] * (float)StatFunctions.Sigmoid(trainingMetric, Math.Abs(hunger), 0.0) * Math.Sign(hunger) / (FOODREQUIREMENT - hunger));
+						if (foodConsumptionRates[i] == 0.0f)
+						{
+							foodConsumptionRates[i] += consumption[i] * (float)StatFunctions.Sigmoid(trainingMetric, Math.Abs(hunger), 0.0) * Math.Sign(hunger) / (FOODREQUIREMENT - hunger);
+						}
+						else
+						{
+							foodConsumptionRates[i] *= (1.0f + consumption[i] * (float)StatFunctions.Sigmoid(trainingMetric, Math.Abs(hunger), 0.0) * Math.Sign(hunger) / (FOODREQUIREMENT - hunger));
+						}
 					}
 				}
+				// Reflect food eaten in resourceUse record
+				for (int i = 0; i < FoodResources.Count; i++)
+				{
+					resourceUse[FoodResources[i].ResourceIndex] += timePreference * consumption[i];
+				}
 			}
-			// Reflect food eaten in resourceUse record
-			for (int i = 0; i < FoodResources.Count; i++)
+			catch (Exception)
 			{
-				resourceUse[FoodResources[i].ResourceIndex] += timePreference * consumption[i];
+				throw;
 			}
 		}
 
@@ -261,9 +268,9 @@ namespace EvoMod2
 				}
 
 				float nextHappiness = timePreference * (happinessBonus
-					+ inventory * prices * happinessWeights[0]
-					+ Health * happinessWeights[1]
-					+ environmentHappiness * happinessWeights[2])
+					+ inventory * prices * happinessWeights[0] / Math.Min(99999.0f, Math.Max(1.0f, prices.Magnitude * inventory.Magnitude))
+					+ Health * happinessWeights[1] / MIDDLEAGE
+					+ environmentHappiness * happinessWeights[2] / DisplayForm.ELEMENTCOUNT)
 					+ (1.0f - timePreference) * Happiness;
 				if (Happiness <= 0.005f && Happiness >= -0.005f)
 				{
@@ -422,87 +429,98 @@ namespace EvoMod2
 		/// <returns> A List of new child Elements. </returns>
 		public List<Element> DoInteraction(Random random, List<Element> otherElements)
 		{
-			List<Element> children = new List<Element>();
-			TurnsSinceMurder++;
-			int interactionsPerTurn = (int)(Extraversion * INTERACTCOUNT);
-			while (interactionsPerTurn-- > 0)
+			try
 			{
-				Element otherElement = otherElements[random.Next(otherElements.Count - 1)];
-				if (otherElement == this || otherElement.IsDead)
+				List<Element> children = new List<Element>();
+				TurnsSinceMurder++;
+				int interactionsPerTurn = (int)(Extraversion * INTERACTCOUNT);
+				while (interactionsPerTurn-- > 0)
 				{
-					interactionsPerTurn++;
-					continue;
-				}
-				if ((Math.Sqrt((position.X - otherElement.Position.X) * (position.X - otherElement.Position.X)
-					+ (position.Y - otherElement.Position.Y) * (position.Y - otherElement.Position.Y))) < (INTERACTRANGE * Mobility))
-				{
-					if (!relationships.ContainsKey(otherElement))
+					if (this.IsDead)
 					{
-						Mingle(otherElement, otherElement.HappinessWeights);
+						return children;
 					}
-					double actionChoice = StatFunctions.GaussRandom(random.NextDouble(),
-						RELATIONSHIPSCALE + relationships[otherElement],
-						RELATIONSHIPSCALE - relationships[otherElement]);
-					if (actionChoice > 0.9
-						&& this != otherElement
-						&& this != otherElement.Parents[0]
-						&& this != otherElement.Parents[1]
-						&& this.Parents[0] != otherElement
-						&& this.Parents[1] != otherElement)
+					Element otherElement = otherElements[random.Next(otherElements.Count - 1)];
+					if (otherElement == this || otherElement.IsDead)
 					{
-						// Mate
-						Element child = new Element(this, otherElement);
-						relationships.Add(child, 10.0f * Conscientiousness);
-						children.Add(child);
+						interactionsPerTurn++;
+						continue;
 					}
-					else if (actionChoice > 0.6)
+					if ((Math.Sqrt((position.X - otherElement.Position.X) * (position.X - otherElement.Position.X)
+						+ (position.Y - otherElement.Position.Y) * (position.Y - otherElement.Position.Y))) < (INTERACTRANGE * Mobility))
 					{
-						// Mingle
-						Mingle(otherElement, otherElement.HappinessWeights);
-					}
-					else if (actionChoice > 0.4)
-					{
-						// Trade
-						// 1. Create trade proposal based on resource desires (use) and prices
-						// 2. Invoke otherElement's public bool EvaluateTradeProposal(Element sender, ref Vector tradeProposal) method with the proposal
-						// 3. If otherElement.EvaluateTradeProposal returns false,
-						//		invoke this Element's public bool EvaluateTradeProposal(Element sender, ref Vector tradeProposal) method with the returned proposal
-						// 4. If otherElement.EvaluateTradeProposal returns true or the reply this.EvaluateTradeProposal returns true, execute the trade
-						// 4a. If trade goes through, update resourceUse
-						Vector tradeProposal = -1.0f * GetTradeProposal(otherElement);
-						float direction = -1.0f;
-						if (!otherElement.EvaluateTradeProposal(this, ref tradeProposal))
+						if (!relationships.ContainsKey(otherElement))
 						{
-							direction = 1.0f;
-							if (!EvaluateTradeProposal(otherElement, ref tradeProposal))
+							Mingle(otherElement, otherElement.HappinessWeights);
+						}
+						double actionChoice = StatFunctions.GaussRandom(random.NextDouble(),
+							RELATIONSHIPSCALE + relationships[otherElement],
+							RELATIONSHIPSCALE - relationships[otherElement]);
+						if (actionChoice > 0.9
+							&& this != otherElement
+							&& this != otherElement.Parents[0]
+							&& this != otherElement.Parents[1]
+							&& this.Parents[0] != otherElement
+							&& this.Parents[1] != otherElement)
+						{
+							// Mate
+							Element child = new Element(this, otherElement);
+							relationships.Add(child, (float)RELATIONSHIPSCALE * Conscientiousness);
+							children.Add(child);
+						}
+						else if (actionChoice > 0.6)
+						{
+							// Mingle
+							Mingle(otherElement, otherElement.HappinessWeights);
+						}
+						else if (actionChoice > 0.4)
+						{
+							// Trade
+							// 1. Create trade proposal based on resource desires (use) and prices
+							// 2. Invoke otherElement's public bool EvaluateTradeProposal(Element sender, ref Vector tradeProposal) method with the proposal
+							// 3. If otherElement.EvaluateTradeProposal returns false,
+							//		invoke this Element's public bool EvaluateTradeProposal(Element sender, ref Vector tradeProposal) method with the returned proposal
+							// 4. If otherElement.EvaluateTradeProposal returns true or the reply this.EvaluateTradeProposal returns true, execute the trade
+							// 4a. If trade goes through, update resourceUse
+							Vector tradeProposal = -1.0f * GetTradeProposal(otherElement);
+							float direction = -1.0f;
+							if (!otherElement.EvaluateTradeProposal(this, ref tradeProposal))
 							{
-								continue;
+								direction = 1.0f;
+								if (!EvaluateTradeProposal(otherElement, ref tradeProposal))
+								{
+									continue;
+								}
 							}
-						}
 
-						ExecuteTrade(direction * tradeProposal);
-						otherElement.ExecuteTrade(-1.0f * direction * tradeProposal);
-					}
-					else if (actionChoice < 0.1 && Lethality > otherElement.Health)
-					{
-						// Attack
-						if (random.NextDouble() * Lethality > random.NextDouble() * otherElement.Lethality)
-						{
-							inventory = inventory + otherElement.GetRobbed();
-							otherElement.Die();
-							lethalityBonus *= (1.0f + 5.0f / (1.0f + (float)Math.Exp(lethalityBonus)));
-							TurnsSinceMurder = 1;
+							ExecuteTrade(direction * tradeProposal);
+							otherElement.ExecuteTrade(-1.0f * direction * tradeProposal);
 						}
-						else if (random.NextDouble() * Lethality < random.NextDouble() * otherElement.Lethality)
+						else if (actionChoice < 0.1 && Lethality > otherElement.Health)
 						{
-							this.Die();
-							return children;
+							// Attack
+							if (random.NextDouble() * Lethality > random.NextDouble() * otherElement.Lethality)
+							{
+								inventory = inventory + otherElement.GetRobbed();
+								otherElement.Die();
+								lethalityBonus *= (1.0f + 5.0f / (1.0f + (float)Math.Exp(lethalityBonus)));
+								TurnsSinceMurder = 1;
+							}
+							else if (random.NextDouble() * Lethality < random.NextDouble() * otherElement.Lethality)
+							{
+								this.Die();
+								return children;
+							}
+							TurnsSinceMurder--;
 						}
-						TurnsSinceMurder--;
 					}
 				}
+				return children;
 			}
-			return children;
+			catch (Exception)
+			{
+				throw;
+			}
 		}
 
 		/// <summary>
@@ -546,7 +564,7 @@ namespace EvoMod2
 			Vector effectivePrices = new Vector(tradeProposal.Count);
 			for (int i = 0; i < effectivePrices.Count; i++)
 			{
-				if (prices[i] == 0.0f)
+				if (tradeProposal[i] == 0.0f)
 				{
 					effectivePrices[i] = 0.0f;
 					continue;
@@ -555,10 +573,6 @@ namespace EvoMod2
 				{
 					for (int j = 0; j < tradeProposal.Count; j++)
 					{
-						if (prices[j] == 0.0f)
-						{
-							continue;
-						}
 						if (i < j)
 						{
 							effectivePrices[i] += effectivePrices[j] * tradeProposal[j];
@@ -568,7 +582,7 @@ namespace EvoMod2
 							effectivePrices[i] += prices[j] * tradeProposal[j];
 						}
 					}
-					effectivePrices[i] /= -prices[i];
+					effectivePrices[i] /= -tradeProposal[i];
 				}
 			}
 			// Update standard deviations (pricesUncertainty)
@@ -586,23 +600,25 @@ namespace EvoMod2
 				{
 					pricesUncertainty[i] = (float)Math.Sqrt(variance);
 				}
+				else if (Single.IsNaN(pricesUncertainty[i]) || Single.IsInfinity(pricesUncertainty[i]))
+				{
+					pricesUncertainty[i] = prices[i];
+				}
 				else
 				{
-					pricesUncertainty[i] = (float)Math.Sqrt(Math.Abs(variance));
+					pricesUncertainty[i] = (float)Math.Sqrt(variance);
 				}
 			}
 			// Update cumulativePriceExperience
 			cumulativePriceExperience += tradeProposal;
 			// Update prices
+			float newPrice;
 			for (int i = 0; i < prices.Count; i++)
 			{
-				if (prices[i] != 0.0f)
+				newPrice = (1.0f - timePreference) * prices[i] + timePreference * (prices[i] + (prices[i] - effectivePrices[i]) * pricesUncertainty[i] / prices[i]);
+				if (!Single.IsInfinity(newPrice) && !Single.IsNaN(newPrice))
 				{
-					prices[i] = (1.0f - timePreference) * prices[i] + timePreference * (prices[i] + (prices[i] - effectivePrices[i]) * pricesUncertainty[i] / prices[i]);
-				}
-				else
-				{
-					prices[i] = effectivePrices[i];
+					prices[i] = newPrice;
 				}
 			}
 
@@ -813,12 +829,19 @@ namespace EvoMod2
 		/// <returns></returns>
 		public void CheckForDeath(float deathChance)
 		{
-			Age++;
-			resourceUse = (1.0f - timePreference)  * resourceUse;
-			Health += 1.0f - Age / (1.5f * MIDDLEAGE) - (Age - MIDDLEAGE) * (Age - MIDDLEAGE) / (MIDDLEAGE * MIDDLEAGE);
-			if (Health < deathChance)
+			try
 			{
-				this.Die();
+				Age++;
+				resourceUse = (1.0f - timePreference) * resourceUse;
+				Health += 1.0f - Age / (1.5f * MIDDLEAGE) - (Age - MIDDLEAGE) * (Age - MIDDLEAGE) / (MIDDLEAGE * MIDDLEAGE);
+				if (Health < deathChance)
+				{
+					this.Die();
+				}
+			}
+			catch (Exception)
+			{
+				throw;
 			}
 		}
 
@@ -828,7 +851,7 @@ namespace EvoMod2
 		public void Die()
 		{
 			float maxOpinion = Single.MinValue;
-			Element inheretor= this;
+			Element inheretor = this;
 			foreach (Element e in relationships.Keys)
 			{
 				if (relationships[e] > maxOpinion)
@@ -837,8 +860,11 @@ namespace EvoMod2
 					maxOpinion = relationships[e];
 				}
 			}
-			inheretor.ExecuteTrade(inventory);
-			this.ExecuteTrade(-inventory);
+			if (inheretor != this)
+			{
+				inheretor.ExecuteTrade(inventory);
+				this.ExecuteTrade(-inventory);
+			}
 			this.IsDead = true;
 		}
 
