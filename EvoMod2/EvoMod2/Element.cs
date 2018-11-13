@@ -584,8 +584,8 @@ namespace EvoMod2
 
 			// Make decision and return
 			Vector thisTradeProposal = GetTradeProposal(sender);
-			if (tradeValue > -relationships[sender]
-				|| ((tradeProposal * thisTradeProposal) / (tradeProposal.Magnitude * thisTradeProposal.Magnitude)) < -1.0f + Agreeableness + relationships[sender] / 10.0f)
+			if (tradeValue > -relationships[sender] * Vector.HadamardProduct(prices, tradeProposal).Magnitude / RELATIONSHIPSCALE
+				|| ((tradeProposal * thisTradeProposal) / (tradeProposal.Magnitude * thisTradeProposal.Magnitude)) < -1.0f + Agreeableness + relationships[sender] / RELATIONSHIPSCALE)
 			{
 				return true;
 			}
@@ -611,16 +611,17 @@ namespace EvoMod2
 				tradeProposal[i] = resourceUse[i];
 			}
 			float netValue = tradeProposal * prices;
-			float initialValueMagnitude = Math.Abs(netValue);
+			Vector itemizedValues = Vector.HadamardProduct(prices, tradeProposal);
 
 			if (!relationships.ContainsKey(otherElement))
 			{
 				relationships.Add(otherElement, 0.0f);
 			}
 
+			// Recursively find an acceptable trade proposal
 			while (maxAttempts-- > 0
-				&& (-relationships[otherElement] < netValue
-					&& netValue < initialValueMagnitude * (1.0f - Agreeableness)))
+				&& (netValue  > - relationships[otherElement] * itemizedValues.Magnitude / RELATIONSHIPSCALE
+					&& netValue < (1.0f - Agreeableness) * itemizedValues.Magnitude))
 			{
 				if (netValue == 0.0f)
 				{
@@ -630,7 +631,19 @@ namespace EvoMod2
 				{
 					tradeProposal[i] *= (1.0f - tradeProposal[i] * prices[i] / netValue);
 				}
+				itemizedValues = Vector.HadamardProduct(prices, tradeProposal);
 				netValue = tradeProposal * prices;
+			}
+			// Ensure offer does not exceed this Element's ability to pay
+			int c = 0;
+			while (c < tradeProposal.Count)
+			{
+				if (tradeProposal[c] + inventory[c] < 0.0f)
+				{
+					tradeProposal = 0.9f * tradeProposal;
+					c = -1;
+				}
+				c++;
 			}
 
 			return tradeProposal;
