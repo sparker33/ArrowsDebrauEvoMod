@@ -67,7 +67,9 @@ namespace EvoMod2
 					Element.RELATIONSHIPSCALE = 10.0f;
 					Element.FOODREQUIREMENT = 0.1f;
 					Element.STARTRESOURCES = 1000.0f;
+					Element.MAXRESOURCECOUNT = 150;
 					Element.MIDDLEAGE = 999999;
+					Element.TRADEROUNDOFF = 0.01f;
 					displayBmp = new Bitmap(panel1.Width, panel1.Height);
 					elements = new List<Element>();
 					resources = new List<Resource>();
@@ -158,8 +160,15 @@ namespace EvoMod2
 					continue;
 				}
 				elements[n].Eat();
-				elements[n].DoAction(resources, elements);
-				//elements[n].DoInteraction(GLOBALRANDOM, ref elements);
+				bool? newResource = elements[n].DoAction(resources, elements);
+				if (newResource.HasValue)
+				{
+					for (int i = 0; i < elements.Count; i++)
+					{
+						elements[i].AddResource(newResource.Value);
+					}
+				}
+				elements.AddRange(elements[n].DoInteraction(GLOBALRANDOM, elements));
 				elements[n].Move();
 				n++;
 			}

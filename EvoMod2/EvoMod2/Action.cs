@@ -38,17 +38,22 @@ namespace EvoMod2
 		public Action(int totalResourceCount)
 		{
 			ActionID = ActionTypesCount++;
-			localResourcesDecision = new Vector(totalResourceCount);
+			localResourcesDecision = new Vector(DisplayForm.NaturalResourceTypesCount);
+			for (int i = 0; i < DisplayForm.NaturalResourceTypesCount; i++)
+			{
+				localResourcesDecision[i] = 0.01f;
+			}
 			inventoryResourcesDecision = new Vector(totalResourceCount);
 			for (int i = 0; i < totalResourceCount; i++)
 			{
-				localResourcesDecision[i] = 0.01f;
 				inventoryResourcesDecision[i] = 0.01f;
 			}
 			baseCost = new Vector(totalResourceCount);
 			baseProduction = new Vector(totalResourceCount);
 			localResourceLevelsProductionModifier = new Matrix(totalResourceCount, DisplayForm.NaturalResourceTypesCount);
 			proficiencyBonus = 1.0f;
+			lastDecisionLocalResources = new Vector(totalResourceCount);
+			lastDecisionInventoryResources = new Vector(totalResourceCount);
 		}
 
 		/// <summary>
@@ -67,24 +72,29 @@ namespace EvoMod2
 		/// <param name="production"> Base production of this Action. </param>
 		/// <param name="productionMod"> LocalResources productivity modifier for this Action. </param>
 		/// <param name="baseAction"> The base Action being coppied. </param>
-		protected Action(Vector cost, Vector production, Matrix productionMod, Action baseAction)
+		protected Action(Vector cost, Vector production, MatrixMath.Matrix productionMod, Action baseAction)
 		{
 			proficiencyBonus = 1.0f;
 			ActionID = baseAction.ActionID;
-			localResourcesDecision = new Vector(production.Count);
+			localResourcesDecision = new Vector(DisplayForm.NaturalResourceTypesCount);
+			for (int i = 0; i < localResourcesDecision.Count; i++)
+			{
+				localResourcesDecision[i] = 0.01f;
+			}
 			inventoryResourcesDecision = new Vector(production.Count);
 			for (int i = 0; i < production.Count; i++)
 			{
-				localResourcesDecision[i] = 0.01f;
 				inventoryResourcesDecision[i] = 0.01f;
 			}
-			baseProduction = production;
-			localResourceLevelsProductionModifier = productionMod;
-			baseCost = cost;
+			baseProduction = new Vector(production);
+			localResourceLevelsProductionModifier = new MatrixMath.Matrix(productionMod);
+			baseCost = new Vector(cost);
 			HappinessBonus = baseAction.HappinessBonus;
 			HealthBonus = baseAction.HealthBonus;
 			MobilityBonus = baseAction.MobilityBonus;
 			LethalityBonus = baseAction.LethalityBonus;
+			lastDecisionLocalResources = new Vector(production.Count);
+			lastDecisionInventoryResources = new Vector(production.Count);
 		}
 
 		/// <summary>
@@ -96,6 +106,7 @@ namespace EvoMod2
 			baseCost.Add(0.0f);
 			baseProduction.Add(0.0f);
 			localResourceLevelsProductionModifier.Add(new Vector(DisplayForm.NaturalResourceTypesCount));
+			lastDecisionLocalResources.Add(0.0f);
 			lastDecisionInventoryResources.Add(0.0f);
 		}
 
@@ -109,6 +120,7 @@ namespace EvoMod2
 			baseCost.RemoveAt(index);
 			baseProduction.RemoveAt(index);
 			localResourceLevelsProductionModifier.RemoveAt(index);
+			lastDecisionLocalResources.RemoveAt(index);
 			lastDecisionInventoryResources.RemoveAt(index);
 		}
 

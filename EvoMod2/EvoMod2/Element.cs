@@ -20,6 +20,8 @@ namespace EvoMod2
 		public static double RELATIONSHIPSCALE;
 		public static float FOODREQUIREMENT;
 		public static float STARTRESOURCES;
+		public static int MAXRESOURCECOUNT;
+		public static float TRADEROUNDOFF;
 		public static List<FoodResourceData> FoodResources = new List<FoodResourceData>();
 
 		// Private fields
@@ -171,7 +173,7 @@ namespace EvoMod2
 			float[] consumption = new float[FoodResources.Count];
 			for (int i = 0; i < FoodResources.Count; i++)
 			{
-				consumption[i] = foodConsumptionRates[FoodResources[i].ResourceIndex] * prices[FoodResources[i].ResourceIndex] / FoodResources[i].Nourishment;
+				consumption[i] = foodConsumptionRates[i] * prices[FoodResources[i].ResourceIndex] / FoodResources[i].Nourishment;
 				if (consumption[i] > inventory[FoodResources[i].ResourceIndex])
 				{
 					consumption[i] = inventory[FoodResources[i].ResourceIndex];
@@ -336,11 +338,13 @@ namespace EvoMod2
 		/// </summary>
 		/// <param name="environmentResources"> List of Resource objects in the environment. </param>
 		/// <param name="elements"> List of all elements in simulation. </param>
-		public void DoAction(List<Resource> environmentResources, List<Element> elements)
+		/// <returns> A FoodResourceData object to be added to the </returns>
+		public bool? DoAction(List<Resource> environmentResources, List<Element> elements)
 		{
+			bool? resourceDiscovered = null;
 			if (DisplayForm.GLOBALRANDOM.NextDouble() < Conscientiousness)
 			{
-				bool discoveryOccurred = false;
+				bool didAction = false;
 				// Populate the local resource levels
 				Vector localResourceLevels = GetLocalResourceLevels(environmentResources);
 				// Decide which action to do
@@ -358,6 +362,7 @@ namespace EvoMod2
 				// If any actions are available, execute the preferred action
 				if (maxActionPriority > -1.0f)
 				{
+					didAction = true;
 					// Apply action effects
 					inventory -= KnownActions[actionChoice].Cost;
 					Vector productionUtilityVector = KnownActions[actionChoice].DoAction(localResourceLevels, Intelligence);
@@ -376,19 +381,16 @@ namespace EvoMod2
 					productionUtilityVector = KnownActions[actionChoice].Cost - productionUtilityVector;
 					resourceUse += timePreference * productionUtilityVector;
 					// Check for new Resource discovery
-					//if (0.5 < StatFunctions.GaussRandom(DisplayForm.GLOBALRANDOM.NextDouble(), 25.0 * (Intelligence + Openness), 100.0 / (Intelligence + Openness)))
-					//{
-					//	bool newResourceIsFood = false;
-					//	if (DisplayForm.GLOBALRANDOM.NextDouble() > 0.8)
-					//	{
-					//		FoodResources.Add(new FoodResourceData(inventory.Count - 1, 1.0f - (float)DisplayForm.GLOBALRANDOM.NextDouble()));
-					//		newResourceIsFood = true;
-					//	}
-					//	for (int i = 0; i < elements.Count; i++)
-					//	{
-					//		elements[i].AddResource(newResourceIsFood);
-					//	}
-					//}
+					if ((1.0f / Math.Exp(27.18f / MAXRESOURCECOUNT))
+						< StatFunctions.GaussRandom(DisplayForm.GLOBALRANDOM.NextDouble(), 25.0 * (Intelligence + Openness), 100.0 / (Intelligence + Openness)))
+					{
+						resourceDiscovered = false; // Not a food resource (null is no resource)
+						if (DisplayForm.GLOBALRANDOM.NextDouble() > 0.8)
+						{
+							FoodResources.Add(new FoodResourceData(inventory.Count - 1, 1.0f - (float)DisplayForm.GLOBALRANDOM.NextDouble()));
+							resourceDiscovered = true; // Is a food resource (null is no resource)
+						}
+					}
 					// Check for new Action discovery (can discover either Harvest or Refinement Action)
 					if (0.5 < StatFunctions.GaussRandom(DisplayForm.GLOBALRANDOM.NextDouble(), 5.0 * (Intelligence + Openness), 20.0 / (Intelligence + Openness)))
 					{
@@ -400,15 +402,16 @@ namespace EvoMod2
 						{
 							KnownActions.Add(new RefinementAction(inventory.Count, DisplayForm.GLOBALRANDOM, productionUtilityVector));
 						}
-						discoveryOccurred = true;
 					}
 				}
 				// Check for new HarvestAction discovery
-				if (!discoveryOccurred && 0.5 < StatFunctions.GaussRandom(DisplayForm.GLOBALRANDOM.NextDouble(), 5.0 * (Intelligence + Openness), 20.0 / (Intelligence + Openness)))
+				if (!didAction && 0.5 < StatFunctions.GaussRandom(DisplayForm.GLOBALRANDOM.NextDouble(), 5.0 * (Intelligence + Openness), 20.0 / (Intelligence + Openness)))
 				{
 					KnownActions.Add(new HarvestAction(inventory.Count, DisplayForm.GLOBALRANDOM, localResourceLevels));
 				}
 			}
+
+			return resourceDiscovered;
 		}
 
 		/// <summary>
@@ -416,8 +419,10 @@ namespace EvoMod2
 		/// </summary>
 		/// <param name="random"> A random number generator. </param>
 		/// <param name="otherElements"> The list of all other elements in this simulation. </param>
-		public void DoInteraction(Random random, ref List<Element> otherElements)
+		/// <returns> A List of new child Elements. </returns>
+		public List<Element> DoInteraction(Random random, List<Element> otherElements)
 		{
+			List<Element> children = new List<Element>();
 			TurnsSinceMurder++;
 			int interactionsPerTurn = (int)(Extraversion * INTERACTCOUNT);
 			while (interactionsPerTurn-- > 0)
@@ -448,8 +453,7 @@ namespace EvoMod2
 						// Mate
 						Element child = new Element(this, otherElement);
 						relationships.Add(child, 10.0f * Conscientiousness);
-						otherElement.relationships.Add(child, 10.0f * Conscientiousness);
-						otherElements.Add(child);
+						children.Add(child);
 					}
 					else if (actionChoice > 0.6)
 					{
@@ -492,12 +496,13 @@ namespace EvoMod2
 						else if (random.NextDouble() * Lethality < random.NextDouble() * otherElement.Lethality)
 						{
 							this.Die();
-							return;
+							return children;
 						}
 						TurnsSinceMurder--;
 					}
 				}
 			}
+			return children;
 		}
 
 		/// <summary>
@@ -512,6 +517,17 @@ namespace EvoMod2
 			float tradeValue = tradeProposal * prices;
 
 			// Update relationship and check for social interaction;
+			if (this.Parents[0] == sender || this.Parents[1] == sender)
+			{
+				if (!relationships.ContainsKey(sender))
+				{
+					relationships.Add(sender, ((float)RELATIONSHIPSCALE / (1.0f + (float)Math.Exp(MIDDLEAGE / 4.0 - Age)) - (float)RELATIONSHIPSCALE) / 2.0f);
+				}
+				else
+				{
+					relationships[sender] += (float)RELATIONSHIPSCALE / (1000.0f * MIDDLEAGE);
+				}
+			}
 			if (!relationships.ContainsKey(sender))
 			{
 				relationships.Add(sender, 2.0f * (float)StatFunctions.Sigmoid(tradeValue, 1.0, 0.0) - 1.0f);
@@ -558,7 +574,7 @@ namespace EvoMod2
 			// Update standard deviations (pricesUncertainty)
 			for (int i = 0; i < pricesUncertainty.Count; i++)
 			{
-				if (tradeProposal[i] == cumulativePriceExperience[i])
+				if (tradeProposal[i] - cumulativePriceExperience[i] == 0.0f)
 				{
 					continue;
 				}
@@ -629,21 +645,40 @@ namespace EvoMod2
 				}
 				for (int i = 0; i < tradeProposal.Count; i++)
 				{
+					if (Single.IsNaN(tradeProposal[i]))
+					{
+						tradeProposal[i] = resourceUse[i];
+					}
 					tradeProposal[i] *= (1.0f - tradeProposal[i] * prices[i] / netValue);
 				}
 				itemizedValues = Vector.HadamardProduct(prices, tradeProposal);
 				netValue = tradeProposal * prices;
 			}
 			// Ensure offer does not exceed this Element's ability to pay
-			int c = 0;
-			while (c < tradeProposal.Count)
+			float tradePropMag = tradeProposal.Magnitude;
+			if (!(tradePropMag == 0.0f))
 			{
-				if (tradeProposal[c] + inventory[c] < 0.0f)
+				int c = 0;
+				while (c < tradeProposal.Count)
 				{
-					tradeProposal = 0.9f * tradeProposal;
-					c = -1;
+					if (Single.IsNaN(tradeProposal[c]))
+					{
+						tradeProposal[c] = 0.0f;
+					}
+					if (tradeProposal[c] + inventory[c] < 0.0f)
+					{
+						if (tradeProposal[c] / tradePropMag < TRADEROUNDOFF)
+						{
+							tradeProposal[c] = 0.0f;
+						}
+						else
+						{
+							tradeProposal = 0.9f * tradeProposal;
+							c = -1;
+						}
+					}
+					c++;
 				}
-				c++;
 			}
 
 			return tradeProposal;
