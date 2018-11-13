@@ -225,7 +225,7 @@ namespace EvoMod2
 				destination.Set(this.position, newLocation);
 			}
 			float progress = destination.GetProgress(position);
-			if (!destination.IsEmpty && StatFunctions.Sigmoid(DisplayForm.GLOBALRANDOM.NextDouble(), 100.0 * progress, 0.0) > 0.45)
+			if (!destination.IsEmpty && StatFunctions.Sigmoid(DisplayForm.GLOBALRANDOM.NextDouble(), ELESPEED * progress, 0.0) > 0.45)
 			{
 				destination.Clear();
 			}
@@ -236,20 +236,20 @@ namespace EvoMod2
 				temp[0] = 0.0f;
 				temp[1] = 0.0f;
 			}
-			else if (progress == 0.0f)
+			else if (progress < 0.01f)
 			{
 				destination.Clear();
 			}
 			else
 			{
-				kinematics.Damping = 1.0f / progress;
+				kinematics.Damping = Kinematics.DEFAULTDAMPING / (1.0f + progress);
 				temp[0] = destination.X - position.X;
 				temp[1] = destination.Y - position.Y;
 			}
 
 			// Determine driving force vector
 			float speed = kinematics.Speed;
-			if (speed != 0.0f)
+			if (speed >= 0.05f || speed <= -0.05f)
 			{
 				// Update Happiness
 				float environmentHappiness = 0.0f;
@@ -265,13 +265,13 @@ namespace EvoMod2
 					+ Health * happinessWeights[1]
 					+ environmentHappiness * happinessWeights[2])
 					+ (1.0f - timePreference) * Happiness;
-				if (Happiness == 0.0f)
+				if (Happiness <= 0.005f && Happiness >= -0.005f)
 				{
 					happinessPercentChangeHistory = 0.0f;
 				}
 				else
 				{
-					happinessPercentChangeHistory = (nextHappiness - Happiness) / Happiness;
+					happinessPercentChangeHistory = Math.Min(1.0f, (nextHappiness - Happiness) / Happiness);
 				}
 				Happiness = nextHappiness;
 				// Update acceleratons
@@ -285,9 +285,9 @@ namespace EvoMod2
 			}
 
 			// Apply force vector to kinematics; get and apply displacements
-			if (Mobility != 0.0f)
+			if (Mobility >= 0.05f || Mobility <= -0.05f)
 			{
-				temp = kinematics.GetDisplacement(temp, 1.0f / Mobility).ToArray();
+				temp = kinematics.GetDisplacement(temp, 10.0f / Mobility).ToArray();
 			}
 			position.X += temp[0];
 			position.Y += temp[1];
@@ -521,7 +521,7 @@ namespace EvoMod2
 			{
 				if (!relationships.ContainsKey(sender))
 				{
-					relationships.Add(sender, ((float)RELATIONSHIPSCALE / (1.0f + (float)Math.Exp(MIDDLEAGE / 4.0 - Age)) - (float)RELATIONSHIPSCALE) / 2.0f);
+					relationships.Add(sender, ((float)RELATIONSHIPSCALE / (1.0f + (float)Math.Exp(MIDDLEAGE / 2.0 - Age)) - (float)RELATIONSHIPSCALE) / 2.0f);
 				}
 				else
 				{

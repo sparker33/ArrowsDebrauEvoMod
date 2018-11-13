@@ -53,9 +53,13 @@ namespace EvoMod2
 			float xDist = destination.X - currentLocation.X;
 			float yDist = destination.Y - currentLocation.Y;
 			float progress = 0.0f;
-			if (startDistance != 0.0f)
+			if (startDistance > 1.0f)
 			{
 				progress = (float)Math.Sqrt(xDist * xDist + yDist * yDist) / startDistance;
+			}
+			else
+			{
+				Clear();
 			}
 			return progress;
 		}
