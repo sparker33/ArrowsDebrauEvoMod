@@ -152,62 +152,29 @@ namespace EvoMod2
 
 			// Update elements
 			int n = 0;
+			List<Element> children = new List<Element>();
 			while (n < elements.Count)
 			{
-				try
+				elements[n].CheckForDeath((float)Math.Exp(DEATHCHANCE * (elements.Count - ELEMENTCOUNT)));
+				if (elements[n].IsDead)
 				{
-					elements[n].CheckForDeath((float)Math.Exp(DEATHCHANCE * (elements.Count - ELEMENTCOUNT)));
-					if (elements[n].IsDead)
-					{
-						elements.RemoveAt(n);
-						continue;
-					}
+					elements.RemoveAt(n);
+					continue;
 				}
-				catch (Exception)
-				{
-					throw new Exception("CheckForDeath");
-				}
-				try
-				{
-					elements[n].Eat();
-				}
-				catch (Exception)
-				{
-					throw new Exception("Eat");
-				}
+				elements[n].Eat();
 				bool? newResource = elements[n].DoAction(resources, elements);
-				try
+				if (newResource.HasValue)
 				{
-					if (newResource.HasValue)
+					for (int i = 0; i < elements.Count; i++)
 					{
-						for (int i = 0; i < elements.Count; i++)
-						{
-							elements[i].AddResource(newResource.Value);
-						}
+						elements[i].AddResource(newResource.Value);
 					}
 				}
-				catch (Exception)
-				{
-					throw new Exception("Adding new resource");
-				}
-				try
-				{
-					elements.AddRange(elements[n].DoInteraction(GLOBALRANDOM, elements));
-				}
-				catch (Exception)
-				{
-					throw new Exception("Interaction");
-				}
-				try
-				{
-					elements[n].Move();
-				}
-				catch (Exception)
-				{
-					throw new Exception("Move");
-				}
+				children.AddRange(elements[n].DoInteraction(GLOBALRANDOM, elements));
+				elements[n].Move();
 				n++;
 			}
+			elements.AddRange(children);
 			// Update and draw resources
 			for (int i = 0; i < resources.Count; i++)
 			{
@@ -241,21 +208,14 @@ namespace EvoMod2
 			// Draw Elements
 			foreach (Element element in elements)
 			{
-				try
+				int size = element.Size;
+				using (Brush b = new SolidBrush(element.ElementColor))
 				{
-					int size = element.Size;
-					using (Brush b = new SolidBrush(element.ElementColor))
-					{
-						g.FillEllipse(b,
-							(int)(element.Position.X * panel1.ClientRectangle.Width / SCALE) - size / 2,
-							(int)(element.Position.Y * panel1.ClientRectangle.Height / SCALE) - size / 2,
-							size,
-							size);
-					}
-				}
-				catch (Exception)
-				{
-					throw new Exception("Drawing Elements");
+					g.FillEllipse(b,
+						(int)(element.Position.X * panel1.ClientRectangle.Width / SCALE) - size / 2,
+						(int)(element.Position.Y * panel1.ClientRectangle.Height / SCALE) - size / 2,
+						size,
+						size);
 				}
 			}
 			e.Result = display;
