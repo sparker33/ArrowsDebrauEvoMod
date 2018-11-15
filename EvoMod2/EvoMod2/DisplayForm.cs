@@ -70,7 +70,6 @@ namespace EvoMod2
 					Element.STARTRESOURCES = 1000.0f;
 					Element.MAXRESOURCECOUNT = 150;
 					Element.MIDDLEAGE = 9999;
-					Element.TRADEROUNDOFF = 0.01f;
 					displayBmp = new Bitmap(panel1.Width, panel1.Height);
 					elements = new List<Element>();
 					resources = new List<Resource>();

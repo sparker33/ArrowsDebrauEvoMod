@@ -21,7 +21,6 @@ namespace EvoMod2
 		public static float FOODREQUIREMENT;
 		public static float STARTRESOURCES;
 		public static int MAXRESOURCECOUNT;
-		public static float TRADEROUNDOFF;
 		public static List<FoodResourceData> FoodResources = new List<FoodResourceData>();
 
 		// Private fields
@@ -287,9 +286,16 @@ namespace EvoMod2
 				float environmentHappiness = 0.0f;
 				foreach (Element e in relationships.Keys)
 				{
-					environmentHappiness += relationships[e]
-							* (float)Math.Sqrt((position.X - e.Position.X) * (position.X - e.Position.X) + (position.Y - e.Position.Y) * (position.Y - e.Position.Y))
-							 / ((float)RELATIONSHIPSCALE * INTERACTRANGE / Mobility);
+					try
+					{
+						environmentHappiness += relationships[e]
+								* (float)Math.Sqrt((position.X - e.Position.X) * (position.X - e.Position.X) + (position.Y - e.Position.Y) * (position.Y - e.Position.Y))
+								 / ((float)RELATIONSHIPSCALE * INTERACTRANGE / Mobility);
+					}
+					catch (NullReferenceException)
+					{
+						continue;
+					}
 				}
 
 				environmentHappiness = environmentHappiness * happinessWeights[2];
@@ -506,7 +512,9 @@ namespace EvoMod2
 						//		invoke this Element's public bool EvaluateTradeProposal(Element sender, ref Vector tradeProposal) method with the returned proposal
 						// 4. If otherElement.EvaluateTradeProposal returns true or the reply this.EvaluateTradeProposal returns true, execute the trade
 						// 4a. If trade goes through, update resourceUse
-						Vector tradeProposal = -1.0f * GetTradeProposal(otherElement);
+						Vector tradeProposal = new Vector(resourceUse);
+						RefineTradeProposal(otherElement, ref tradeProposal);
+						tradeProposal = -1.0f * tradeProposal;
 						float direction = -1.0f;
 						if (!otherElement.EvaluateTradeProposal(this, ref tradeProposal))
 						{
@@ -642,88 +650,95 @@ namespace EvoMod2
 			}
 
 			// Make decision and return
-			Vector thisTradeProposal = GetTradeProposal(sender);
-			if (tradeValue > -relationships[sender] * Vector.HadamardProduct(prices, tradeProposal).Magnitude / RELATIONSHIPSCALE
-				|| ((tradeProposal * thisTradeProposal) / (tradeProposal.Magnitude * thisTradeProposal.Magnitude)) < -1.0f + Agreeableness + relationships[sender] / RELATIONSHIPSCALE)
+			Vector thisTradeProposal = new Vector(resourceUse);
+			RefineTradeProposal(sender, ref thisTradeProposal);
+			float targetVal = relationships[sender] / (float)RELATIONSHIPSCALE;
+			if (((tradeValue - targetVal) / targetVal) > (1.0f - Agreeableness)
+				|| ((tradeProposal * thisTradeProposal) / (tradeProposal.Magnitude * thisTradeProposal.Magnitude)) < -1.0f + Agreeableness + targetVal)
 			{
 				return true;
 			}
 			else
 			{
-				tradeProposal = -1.0f * thisTradeProposal;
+				RefineTradeProposal(sender, ref tradeProposal);
+				tradeProposal = -1.0f * tradeProposal;
 				return false;
 			}
 		}
 
 		/// <summary>
-		/// Method to retreive this Element's trade proposal.
+		/// Takes a suggested trade proposal Vector reference input and refines it to the proposal that is
+		/// optimal for this Element.
 		/// </summary>
-		/// <param name="otherElement"> Element with whom trade will be conducted. </param>
-		/// <returns> Vector trade proposal. Positive items are received by this element, negative are given as payment. </returns>
-		private Vector GetTradeProposal(Element otherElement)
+		/// <param name="otherElement"> Element who will be traded with. </param>
+		/// <param name="baseProposal"> Baseline suggested trade proposal. </param>
+		private void RefineTradeProposal(Element otherElement, ref Vector baseProposal)
 		{
-			int maxAttempts = 10;
-			Vector tradeProposal = new Vector(inventory);
-			for (int i = 0; i < tradeProposal.Count; i++)
-			{
-				tradeProposal[i] = resourceUse[i];
-			}
-			float netValue = tradeProposal * prices;
-			Vector itemizedValues = Vector.HadamardProduct(prices, tradeProposal);
-
+			float netValue = baseProposal * prices;
+			float tradeMag = baseProposal.Magnitude;
 			if (!relationships.ContainsKey(otherElement))
 			{
 				relationships.Add(otherElement, 0.0f);
 			}
+			float tradeValueTarget;
+			if (relationships[otherElement] < 0.01f && relationships[otherElement] > -0.01f)
+			{
+				tradeValueTarget = relationships[otherElement] / (float)RELATIONSHIPSCALE;
+			}
+			else
+			{
+				tradeValueTarget = relationships[otherElement] / (float)RELATIONSHIPSCALE;
+			}
+			float convergence = (netValue - tradeValueTarget) / tradeValueTarget;
 
 			// Recursively find an acceptable trade proposal
-			while (maxAttempts-- > 0
-				&& (netValue > -relationships[otherElement] * itemizedValues.Magnitude / RELATIONSHIPSCALE
-					&& netValue < (1.0f - Agreeableness) * itemizedValues.Magnitude))
+			int maxAttempts = 10;
+			float previousConvergence = convergence;
+			float adjustmentScaling = 1.0f;
+			while (maxAttempts-- > 0)
 			{
-				if (netValue == 0.0f)
+				if (convergence > -Agreeableness && convergence < 1.0f - Agreeableness)
 				{
 					break;
 				}
-				for (int i = 0; i < tradeProposal.Count; i++)
+
+				Vector previousTradeProposal = new Vector(baseProposal);
+				for (int i = 0; i < baseProposal.Count; i++)
 				{
-					if (Single.IsNaN(tradeProposal[i]))
+					if (prices[i] == 0.0f)
 					{
-						tradeProposal[i] = resourceUse[i];
+						baseProposal[i] = 0.0f;
 					}
-					tradeProposal[i] *= (1.0f - tradeProposal[i] * prices[i] / netValue);
+					baseProposal[i] += adjustmentScaling * Math.Abs(baseProposal[i]) * (tradeValueTarget - netValue) / prices[i];
 				}
-				itemizedValues = Vector.HadamardProduct(prices, tradeProposal);
-				netValue = tradeProposal * prices;
-			}
-			// Ensure offer does not exceed this Element's ability to pay
-			float tradePropMag = tradeProposal.Magnitude;
-			if (!(tradePropMag == 0.0f))
-			{
-				int c = 0;
-				while (c < tradeProposal.Count)
+				baseProposal = (tradeMag / baseProposal.Magnitude) * baseProposal;
+
+				netValue = prices * baseProposal;
+				previousConvergence = convergence;
+				convergence = (netValue - tradeValueTarget) / tradeValueTarget;
+				if (Math.Abs(convergence) > Math.Abs(previousConvergence))
 				{
-					if (Single.IsNaN(tradeProposal[c]))
-					{
-						tradeProposal[c] = 0.0f;
-					}
-					if (tradeProposal[c] + inventory[c] < 0.0f)
-					{
-						if (tradeProposal[c] / tradePropMag < TRADEROUNDOFF)
-						{
-							tradeProposal[c] = 0.0f;
-						}
-						else
-						{
-							tradeProposal = 0.9f * tradeProposal;
-							c = -1;
-						}
-					}
-					c++;
+					adjustmentScaling /= 2.0f;
+					baseProposal = previousTradeProposal;
+					netValue = prices * baseProposal;
+					convergence = (netValue - tradeValueTarget) / tradeValueTarget;
 				}
 			}
 
-			return tradeProposal;
+			// Condition trade to remove any invalid numbers and ensure trade does not exceed this element's ability to pay
+			double tradePropScaling = 1.0f;
+			for (int i = 0; i < baseProposal.Count; i++)
+			{
+				if (Single.IsInfinity(baseProposal[i]) || Single.IsNaN(baseProposal[i]) || baseProposal[i] == 0.0f)
+				{
+					baseProposal[i] = 0.0f;
+				}
+				else if (baseProposal[i] < -inventory[i])
+				{
+					tradePropScaling = Math.Max(0.0, Math.Min(tradePropScaling, -inventory[i] / baseProposal[i]));
+				}
+			}
+			baseProposal = (float)tradePropScaling * baseProposal;
 		}
 
 		/// <summary>
@@ -866,10 +881,17 @@ namespace EvoMod2
 			Element inheretor = this;
 			foreach (Element e in relationships.Keys)
 			{
-				if (relationships[e] > maxOpinion)
+				try
 				{
-					inheretor = e;
-					maxOpinion = relationships[e];
+					if (relationships[e] > maxOpinion)
+					{
+						inheretor = e;
+						maxOpinion = relationships[e];
+					}
+				}
+				catch (NullReferenceException)
+				{
+					continue;
 				}
 			}
 			if (inheretor != this)
