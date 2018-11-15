@@ -55,21 +55,26 @@ namespace EvoMod2
 				if (result == DialogResult.OK)
 				{
 					GLOBALRANDOM = new Random();
-					ELEMENTCOUNT = 250;
-					DEATHCHANCE = 0.01f;
+					ELEMENTCOUNT = 125;
+					DEATHCHANCE = 0.075f;
 					Kinematics.DEFAULTDAMPING = 0.1f;
 					Kinematics.TIMESTEP = 0.05f;
 					ResourceKernel.RESOURCESPEED = 1.0f;
 					ResourceKernel.SPREADRATE = 0.0f;
-					Element.TRAITSPREAD = 5.0f;
+					Element.TRAITSPREAD = 7.0f;
 					Element.INTERACTCOUNT = ELEMENTCOUNT / 1.3f;
 					Element.INTERACTRANGE = SCALE / 100;
-					Element.ELESPEED = 100.0f;
+					Element.ELESPEED = 20000.0f;
 					Element.RELATIONSHIPSCALE = 10.0f;
 					Element.FOODREQUIREMENT = 0.1f;
 					Element.STARTRESOURCES = 1000.0f;
-					Element.MAXRESOURCECOUNT = 50;
+					Element.MAXRESOURCECOUNT = 25;
+					Element.MAXACTIONSCOUNT = 10;
+					Element.DISCOVERYRATE = 0.03f;
 					Element.MIDDLEAGE = 500;
+					Element.TRADEROUNDOFF = 0.0001f;
+					Element.REPRODUCTIONCHANCE = 0.005f;
+					Element.CHILDCOST = 0.5f;
 					displayBmp = new Bitmap(panel1.Width, panel1.Height);
 					elements = new List<Element>();
 					resources = new List<Resource>();
@@ -154,7 +159,7 @@ namespace EvoMod2
 			List<Element> children = new List<Element>();
 			while (n < elements.Count)
 			{
-				elements[n].CheckForDeath((float)Math.Exp(DEATHCHANCE * (elements.Count - ELEMENTCOUNT)));
+				elements[n].CheckForDeath((float)Math.Exp(DEATHCHANCE * (elements.Count + children.Count - ELEMENTCOUNT)));
 				if (elements[n].IsDead)
 				{
 					elements.RemoveAt(n);
