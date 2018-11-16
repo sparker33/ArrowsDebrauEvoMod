@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace EvoMod2
 {
-	public class HappinessWeights
+	public struct HappinessWeights
 	{
 		public float Wealth { get; set; }
 		public float Health { get; set; }

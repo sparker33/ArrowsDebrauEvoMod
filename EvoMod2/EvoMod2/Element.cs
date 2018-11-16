@@ -94,7 +94,7 @@ namespace EvoMod2
 		public float Lethality { get => Health + lethalityBonus; }
 		// Display data and general accessors
 		public PointF Position { get => position; }
-		public int Size { get => (int)(22.0 * StatFunctions.Sigmoid(5.0 * healthHappiness / happinessWeights.Health, 1.0, 0.5) + 5.0); }
+		public int Size { get => (int)(22.0 * StatFunctions.Sigmoid(healthHappiness / happinessWeights.Health, 2.0, 0.5) + 5.0); }
 		public Color ElementColor { get; private set; }
 		public HappinessWeights HappinessWeights { get => happinessWeights; }
 		public Vector Inventory { get => inventory; }
@@ -300,9 +300,10 @@ namespace EvoMod2
 			{
 				try
 				{
-					environmentHappiness += relationships[e]
-							* (float)Math.Sqrt((position.X - e.Position.X) * (position.X - e.Position.X) + (position.Y - e.Position.Y) * (position.Y - e.Position.Y))
-							 / ((float)RELATIONSHIPSCALE * INTERACTRANGE / Mobility);
+					environmentHappiness += relationships[e] / (float)RELATIONSHIPSCALE
+							* (float)Math.Sqrt((position.X - e.Position.X) * (position.X - e.Position.X)
+								+ (position.Y - e.Position.Y) * (position.Y - e.Position.Y))
+							 / INTERACTRANGE;
 				}
 				catch (NullReferenceException)
 				{
@@ -316,10 +317,7 @@ namespace EvoMod2
 				+ healthHappiness
 				+ environmentHappiness) / 4.0f
 				+ (1.0f - timePreference) * Happiness;
-			if (Single.IsNaN(nextHappiness))
-			{
-				nextHappiness = Happiness;
-			}
+
 			if (Happiness <= 0.1f && Happiness >= -0.1f)
 			{
 				happinessPercentChangeHistory = Math.Sign(nextHappiness - Happiness) * 0.001f;
@@ -431,12 +429,13 @@ namespace EvoMod2
 					{
 						inventoryValueUtilityVar = (inventoryValueUtilityVar - inventory * prices) / inventoryValueUtilityVar;
 					}
-					happinessBonus += KnownActions[actionChoice].HappinessBonus;
+					float deltaHappinessBonus = KnownActions[actionChoice].HappinessBonus;
+					happinessBonus += deltaHappinessBonus;
 					Health += KnownActions[actionChoice].HealthBonus;
 					Mobility += KnownActions[actionChoice].MobilityBonus;
 					lethalityBonus += KnownActions[actionChoice].LethalityBonus;
 					// Update resource usage information and apply learning to action
-					KnownActions[actionChoice].Learn(Math.Sign(Happiness) * (happinessBonus + happinessWeights[0] * inventoryValueUtilityVar) / (Happiness + 1.0f));
+					KnownActions[actionChoice].Learn(deltaHappinessBonus + happinessWeights[0] * inventoryValueUtilityVar);
 					productionUtilityVector = KnownActions[actionChoice].Cost - productionUtilityVector;
 					resourceUse += productionUtilityVector;
 					// Check for new Resource discovery
@@ -775,43 +774,8 @@ namespace EvoMod2
 		/// <param name="trade"> Input trade to be added to this Element's inventory. </param>
 		public void ExecuteTrade(Vector trade)
 		{
-			for (int i = 0; i < inventory.Count; i++)
-			{
-				if (inventory[i] < 0.0f)
-				{
-					return;
-				}
-				if (inventory[i] < -trade[i])
-				{
-					return;
-				}
-			}
-			try
-			{
-				inventory += trade;
-				resourceUse -= trade;
-			}
-			catch (MatrixMath.SizeMismatchException)
-			{
-				while (inventory.Count < trade.Count)
-				{
-					inventory.Add(0.0f);
-				}
-				while (inventory.Count > trade.Count)
-				{
-					inventory.RemoveAt(inventory.Count - 1);
-				}
-				while (resourceUse.Count < trade.Count)
-				{
-					resourceUse.Add(0.0f);
-				}
-				while (resourceUse.Count > trade.Count)
-				{
-					resourceUse.RemoveAt(resourceUse.Count - 1);
-				}
-				inventory += trade;
-				resourceUse -= trade;
-			}
+			inventory += trade;
+			resourceUse -= trade;
 		}
 
 		/// <summary>
@@ -831,9 +795,9 @@ namespace EvoMod2
 				relationships[otherElement] -= (float)RELATIONSHIPSCALE * (otherElement.TurnsSinceMurder - otherElement.Age) / otherElement.Age;
 			}
 
-			happinessWeights[0] *= (1.0f + Agreeableness * Openness * values[0]) / (1.0f + Agreeableness * Openness);
-			happinessWeights[1] *= (1.0f + Agreeableness * Openness * values[1]) / (1.0f + Agreeableness * Openness);
-			happinessWeights[2] *= (1.0f + Agreeableness * Openness * values[2]) / (1.0f + Agreeableness * Openness);
+			happinessWeights[0] += Agreeableness * Openness * (values[0] - happinessWeights[0]);
+			happinessWeights[1] += Agreeableness * Openness * (values[1] - happinessWeights[1]);
+			happinessWeights[2] += Agreeableness * Openness * (values[2] - happinessWeights[2]);
 
 			if (Math.Exp(KnownActions.Count - MAXACTIONSCOUNT)
 				< StatFunctions.GaussRandom(DisplayForm.GLOBALRANDOM.NextDouble(), 10.0f * Intelligence, 10.0 / Intelligence))
@@ -955,19 +919,18 @@ namespace EvoMod2
 		{
 			float maxOpinion = Single.MinValue;
 			Element inheretor = this;
-			foreach (Element e in relationships.Keys)
+			for (int i = 0; i < relationships.Keys.Count; i++)
 			{
-				try
+				Element e = relationships.Keys.ToArray()[i];
+				if (e.IsDead)
 				{
-					if (relationships[e] > maxOpinion)
-					{
-						inheretor = e;
-						maxOpinion = relationships[e];
-					}
-				}
-				catch (NullReferenceException)
-				{
+					relationships.Remove(e);
 					continue;
+				}
+				if (relationships[e] > maxOpinion)
+				{
+					inheretor = e;
+					maxOpinion = relationships[e];
 				}
 			}
 			if (inheretor != this)

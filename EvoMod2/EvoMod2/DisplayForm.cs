@@ -67,15 +67,15 @@ namespace EvoMod2
 					Element.ELESPEED = 6500.0f;
 					Element.RELATIONSHIPSCALE = 10.0f;
 					Element.FOODREQUIREMENT = 0.5f;
-					Element.STARTRESOURCES = 1000.0f;
+					Element.STARTRESOURCES = 50.0f;
 					Element.MAXRELATIONSHIPS = 10;
 					Element.MAXLOCATIONSCOUNT = 10;
 					Element.MAXRESOURCECOUNT = 25;
 					Element.MAXACTIONSCOUNT = 10;
 					Element.DISCOVERYRATE = 0.003f;
-					Element.MIDDLEAGE = 100;
+					Element.MIDDLEAGE = 50;
 					Element.TRADEROUNDOFF = 0.0001f;
-					Element.REPRODUCTIONCHANCE = 0.005f;
+					Element.REPRODUCTIONCHANCE = 0.05f;
 					Element.CHILDCOST = 0.5f;
 					displayBmp = new Bitmap(panel1.Width, panel1.Height);
 					elements = new List<Element>();
@@ -173,7 +173,14 @@ namespace EvoMod2
 				{
 					for (int i = 0; i < elements.Count; i++)
 					{
-						elements[i].AddResource(newResource.Value);
+						if (elements[n].IsDead)
+						{
+							elements.RemoveAt(n);
+						}
+						else
+						{
+							elements[i].AddResource(newResource.Value);
+						}
 					}
 					for (int i = 0; i < children.Count; i++)
 					{
