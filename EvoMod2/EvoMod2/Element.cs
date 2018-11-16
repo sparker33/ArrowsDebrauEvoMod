@@ -14,6 +14,7 @@ namespace EvoMod2
 		// Public static fields
 		public static float MIDDLEAGE;
 		public static float ELESPEED;
+		public static float COLORMUTATIONRATE;
 		public static float TRAITSPREAD;
 		public static float INTERACTCOUNT;
 		public static int INTERACTRANGE;
@@ -47,7 +48,6 @@ namespace EvoMod2
 		private Vector foodConsumptionRates;
 		private Vector resourceUse;
 		private float healthHappiness { get => happinessWeights.Health * Health / MIDDLEAGE; }
-		//private float wealthHappiness { get => happinessWeights.Wealth * (inventory * prices); }
 		private float wealthHappiness { get => happinessWeights.Wealth * (inventory * prices) / (inventory.Magnitude + Single.Epsilon); }
 
 		// Public objects
@@ -94,8 +94,9 @@ namespace EvoMod2
 		public float Lethality { get => Health + lethalityBonus; }
 		// Display data and general accessors
 		public PointF Position { get => position; }
-		public int Size { get => (int)(22.0 * StatFunctions.Sigmoid(healthHappiness / happinessWeights.Health, 2.0, 0.5) + 5.0); }
+		public int Size { get => (int)(22.0 * StatFunctions.Sigmoid(wealthHappiness / happinessWeights.Wealth, 2.0, 0.5) + 5.0); }
 		public Color ElementColor { get; private set; }
+		public int Opacity { get => (int)(255.0 * StatFunctions.Sigmoid(healthHappiness / happinessWeights.Health, 2.0, 0.5)); }
 		public HappinessWeights HappinessWeights { get => happinessWeights; }
 		public Vector Inventory { get => inventory; }
 		/// <summary>
@@ -959,9 +960,12 @@ namespace EvoMod2
 			position.Y = parent1.Position.Y;
 			KnownLocations = new List<PointF>();
 			KnownLocations.Add(position);
-			int r = (parent1.ElementColor.R + parent2.ElementColor.R) / 2;
-			int g = (parent1.ElementColor.G + parent2.ElementColor.G) / 2;
-			int b = (parent1.ElementColor.B + parent2.ElementColor.B) / 2;
+			int r = (int)((1.0 - COLORMUTATIONRATE) * (parent1.ElementColor.R + parent2.ElementColor.R) / 2);
+			int g = (int)((1.0 - COLORMUTATIONRATE) * (parent1.ElementColor.G + parent2.ElementColor.G) / 2);
+			int b = (int)((1.0 - COLORMUTATIONRATE) * (parent1.ElementColor.B + parent2.ElementColor.B) / 2);
+			r += (int)(COLORMUTATIONRATE * (255.0 / (1.0 + Math.Exp((15.0 / DisplayForm.SCALE) * (position.X - DisplayForm.SCALE / 2.0)))));
+			g += (int)(COLORMUTATIONRATE * (255.0 / (1.0 + Math.Exp((15.0 / DisplayForm.SCALE) * (position.X * position.Y / (2 * DisplayForm.SCALE * DisplayForm.SCALE))))));
+			b += (int)(COLORMUTATIONRATE * (255.0 / (1.0 + Math.Exp((15.0 / DisplayForm.SCALE) * (position.Y - DisplayForm.SCALE / 2.0)))));
 			ElementColor = Color.FromArgb(r, g, b);
 
 			double rand = 1.0 - DisplayForm.GLOBALRANDOM.NextDouble();

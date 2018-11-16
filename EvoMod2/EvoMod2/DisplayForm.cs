@@ -55,19 +55,20 @@ namespace EvoMod2
 				if (result == DialogResult.OK)
 				{
 					GLOBALRANDOM = new Random();
-					ELEMENTCOUNT = 125;
+					ELEMENTCOUNT = 300;
 					DEATHCHANCE = 0.05f;
 					Kinematics.DEFAULTDAMPING = 0.08f;
 					Kinematics.TIMESTEP = 0.05f;
 					ResourceKernel.RESOURCESPEED = 1.0f;
 					ResourceKernel.SPREADRATE = 0.0f;
+					Element.COLORMUTATIONRATE = 0.15f;
 					Element.TRAITSPREAD = 3.5f;
-					Element.INTERACTCOUNT = ELEMENTCOUNT / 1.3f;
+					Element.INTERACTCOUNT = ELEMENTCOUNT / 4.0f;
 					Element.INTERACTRANGE = SCALE / 100;
-					Element.ELESPEED = 6500.0f;
+					Element.ELESPEED = 7500.0f;
 					Element.RELATIONSHIPSCALE = 10.0f;
 					Element.FOODREQUIREMENT = 0.5f;
-					Element.STARTRESOURCES = 50.0f;
+					Element.STARTRESOURCES = 75.0f;
 					Element.MAXRELATIONSHIPS = 10;
 					Element.MAXLOCATIONSCOUNT = 10;
 					Element.MAXRESOURCECOUNT = 25;
@@ -81,45 +82,45 @@ namespace EvoMod2
 					elements = new List<Element>();
 					resources = new List<Resource>();
 
-					/* COMMENTED OUT IN LIEU OF PROGRAMMATIC VERSION FOR DEBUGGING SPEED
-					for (int i = 0; i < settings.NaturalResourcesDataGridView.Rows.Count; i++)
-					{
-						float resourceVolume;
-						int nodeCount;
-						try
-						{
-							if (!Single.TryParse(settings.NaturalResourcesDataGridView.Rows[i].Cells[0].Value.ToString(), out resourceVolume)
-								|| !Int32.TryParse(settings.NaturalResourcesDataGridView.Rows[i].Cells[2].Value.ToString(), out nodeCount))
-							{
-								continue;
-							}
-						}
-						catch (NullReferenceException)
-						{
-							continue;
-						}
-						resources.Add(new Resource(Color.FromName(settings.NaturalResourcesDataGridView.Rows[i].Cells[1].Value.ToString()), resourceVolume));
+					/* COMMENTED OUT IN LIEU OF PROGRAMMATIC VERSION FOR DEBUGGING SPEED */
+					//for (int i = 0; i < settings.NaturalResourcesDataGridView.Rows.Count; i++)
+					//{
+					//	float resourceVolume;
+					//	int nodeCount;
+					//	try
+					//	{
+					//		if (!Single.TryParse(settings.NaturalResourcesDataGridView.Rows[i].Cells[0].Value.ToString(), out resourceVolume)
+					//			|| !Int32.TryParse(settings.NaturalResourcesDataGridView.Rows[i].Cells[2].Value.ToString(), out nodeCount))
+					//		{
+					//			continue;
+					//		}
+					//	}
+					//	catch (NullReferenceException)
+					//	{
+					//		continue;
+					//	}
+					//	resources.Add(new Resource(Color.FromName(settings.NaturalResourcesDataGridView.Rows[i].Cells[1].Value.ToString()), resourceVolume));
 
-						float[] pcts = new float[nodeCount];
-						float sum = 0.0f;
-						for (int j = 0; j < pcts.Length; j++)
-						{
-							pcts[j] = (float)GLOBALRANDOM.NextDouble();
-							sum += pcts[j];
-						}
-						for (int j = 0; j < pcts.Length; j++)
-						{
-							resources[i].Add(pcts[j] / sum, new PointF((float)(GLOBALRANDOM.NextDouble() * SCALE), (float)(GLOBALRANDOM.NextDouble() * SCALE)));
-						}
+					//	float[] pcts = new float[nodeCount];
+					//	float sum = 0.0f;
+					//	for (int j = 0; j < pcts.Length; j++)
+					//	{
+					//		pcts[j] = (float)GLOBALRANDOM.NextDouble();
+					//		sum += pcts[j];
+					//	}
+					//	for (int j = 0; j < pcts.Length; j++)
+					//	{
+					//		resources[i].Add(pcts[j] / sum, new PointF((float)(GLOBALRANDOM.NextDouble() * SCALE), (float)(GLOBALRANDOM.NextDouble() * SCALE)));
+					//	}
 
-						DataGridViewCheckBoxCell isFoodCell = settings.NaturalResourcesDataGridView.Rows[i].Cells[3] as DataGridViewCheckBoxCell;
-						if (bool.Parse(isFoodCell.Value.ToString()))
-						{
-							Element.FoodResources.Add(new FoodResourceData(i, 1.0f - (float)GLOBALRANDOM.NextDouble()));
-						}
-					}
-					*/
+					//	DataGridViewCheckBoxCell isFoodCell = settings.NaturalResourcesDataGridView.Rows[i].Cells[3] as DataGridViewCheckBoxCell;
+					//	if (bool.Parse(isFoodCell.Value.ToString()))
+					//	{
+					//		Element.FoodResources.Add(new FoodResourceData(i, 1.0f - (float)GLOBALRANDOM.NextDouble()));
+					//	}
+					//}
 
+					// Debugging auto-resource-populate
 					resources.Add(new Resource(Color.Blue, 80000000));
 					Element.FoodResources.Add(new FoodResourceData(0, 1.0f - (float)GLOBALRANDOM.NextDouble()));
 					resources.Add(new Resource(Color.Red, 50000000));
@@ -226,7 +227,7 @@ namespace EvoMod2
 			foreach (Element element in elements)
 			{
 				int size = element.Size;
-				using (Brush b = new SolidBrush(element.ElementColor))
+				using (Brush b = new SolidBrush(Color.FromArgb(element.Opacity, element.ElementColor.R, element.ElementColor.G, element.ElementColor.B)))
 				{
 					g.FillEllipse(b,
 						(int)(element.Position.X * panel1.ClientRectangle.Width / SCALE) - size / 2,
