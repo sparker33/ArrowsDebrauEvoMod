@@ -283,7 +283,7 @@ namespace EvoMod2
 			}
 			else
 			{
-				//kinematics.Damping = Kinematics.DEFAULTDAMPING - progress;
+				kinematics.Damping = Kinematics.DEFAULTDAMPING - progress;
 				temp[0] = (destination.X - position.X) / DisplayForm.SCALE;
 				temp[1] = (destination.Y - position.Y) / DisplayForm.SCALE;
 			}
@@ -322,10 +322,12 @@ namespace EvoMod2
 			if (Happiness <= 0.1f && Happiness >= -0.1f)
 			{
 				happinessPercentChangeHistory = Math.Sign(nextHappiness - Happiness) * 0.001f;
+				//happinessPercentChangeHistory = Math.Sign(environmentHappiness - prevEnvHap) * 0.001f;
 			}
 			else
 			{
 				happinessPercentChangeHistory = (nextHappiness - Happiness) / Happiness;
+				//happinessPercentChangeHistory = (environmentHappiness - prevEnvHap) / prevEnvHap;
 			}
 			Happiness = nextHappiness;
 
@@ -334,8 +336,8 @@ namespace EvoMod2
 			if (speed >= 0.01f)
 			{
 				// Update acceleratons
-				temp[0] += happinessPercentChangeHistory * kinematics.GetVelocity(0) / speed;
-				temp[1] += happinessPercentChangeHistory * kinematics.GetVelocity(1) / speed;
+				temp[0] += kinematics.Damping * happinessPercentChangeHistory * kinematics.GetVelocity(0) / speed;
+				temp[1] += kinematics.Damping * happinessPercentChangeHistory * kinematics.GetVelocity(1) / speed;
 			}
 			else
 			{
