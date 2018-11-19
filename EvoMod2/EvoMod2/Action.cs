@@ -176,7 +176,7 @@ namespace EvoMod2
 				}
 				else
 				{
-					localResourcesDecision[i] *= (1.0f + learnCoeff);
+					localResourcesDecision[i] += learnCoeff / localResourcesDecision[i];
 				}
 			}
 			// Train dependence on inventoryResourceLevels
@@ -189,7 +189,7 @@ namespace EvoMod2
 				}
 				else
 				{
-					inventoryResourcesDecision[i] *= (1.0f + learnCoeff);
+					inventoryResourcesDecision[i] += learnCoeff / inventoryResourcesDecision[i];
 				}
 			}
 			// Train general bias
@@ -200,7 +200,7 @@ namespace EvoMod2
 			}
 			else
 			{
-				bias *= (1.0f + learnCoeff);
+				bias += learnCoeff / bias;
 			}
 		}
 	}

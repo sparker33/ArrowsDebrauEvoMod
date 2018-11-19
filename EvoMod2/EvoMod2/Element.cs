@@ -283,7 +283,7 @@ namespace EvoMod2
 			}
 			else
 			{
-				kinematics.Damping = Kinematics.DEFAULTDAMPING - progress;
+				kinematics.Damping = Kinematics.DEFAULTDAMPING / (progress + 0.1f);
 				temp[0] = (destination.X - position.X) / DisplayForm.SCALE;
 				temp[1] = (destination.Y - position.Y) / DisplayForm.SCALE;
 			}
@@ -322,12 +322,10 @@ namespace EvoMod2
 			if (Happiness <= 0.1f && Happiness >= -0.1f)
 			{
 				happinessPercentChangeHistory = Math.Sign(nextHappiness - Happiness) * 0.001f;
-				//happinessPercentChangeHistory = Math.Sign(environmentHappiness - prevEnvHap) * 0.001f;
 			}
 			else
 			{
 				happinessPercentChangeHistory = (nextHappiness - Happiness) / Happiness;
-				//happinessPercentChangeHistory = (environmentHappiness - prevEnvHap) / prevEnvHap;
 			}
 			Happiness = nextHappiness;
 
@@ -412,7 +410,7 @@ namespace EvoMod2
 				int actionChoice = 0;
 				for (int i = 0; i < KnownActions.Count; i++)
 				{
-					float priority = KnownActions[i].GetActionPriority(localResourceLevels, inventory);
+					float priority = (float)DisplayForm.GLOBALRANDOM.NextDouble() * KnownActions[i].GetActionPriority(localResourceLevels, inventory);
 					if (priority > maxActionPriority)
 					{
 						actionChoice = i;
@@ -426,19 +424,24 @@ namespace EvoMod2
 					// Apply action effects
 					inventory -= KnownActions[actionChoice].Cost;
 					Vector productionUtilityVector = KnownActions[actionChoice].DoAction(localResourceLevels, Intelligence);
-					float inventoryValueUtilityVar = inventory * prices;
-					inventory += productionUtilityVector;
-					if (inventoryValueUtilityVar != 0.0f)
-					{
-						inventoryValueUtilityVar = (inventoryValueUtilityVar - inventory * prices) / inventoryValueUtilityVar;
-					}
-					float deltaHappinessBonus = KnownActions[actionChoice].HappinessBonus;
-					happinessBonus += deltaHappinessBonus;
+					happinessBonus += KnownActions[actionChoice].HappinessBonus;
 					Health += KnownActions[actionChoice].HealthBonus;
 					Mobility += KnownActions[actionChoice].MobilityBonus;
 					lethalityBonus += KnownActions[actionChoice].LethalityBonus;
 					// Update resource usage information and apply learning to action
-					KnownActions[actionChoice].Learn(deltaHappinessBonus + happinessWeights[0] * inventoryValueUtilityVar);
+					float learnMetric = inventory * prices;
+					inventory += productionUtilityVector;
+					if (learnMetric != 0.0f)
+					{
+						learnMetric = happinessWeights.Wealth * (learnMetric - inventory * prices) / learnMetric;
+					}
+					if (Happiness != 0.0f)
+					{
+						learnMetric += (KnownActions[actionChoice].HappinessBonus
+							+ HappinessWeights.Health * KnownActions[actionChoice].HealthBonus)
+							/ Math.Abs(Happiness);
+					}
+					KnownActions[actionChoice].Learn(learnMetric);
 					productionUtilityVector = KnownActions[actionChoice].Cost - productionUtilityVector;
 					resourceUse += productionUtilityVector;
 					// Check for new Resource discovery
