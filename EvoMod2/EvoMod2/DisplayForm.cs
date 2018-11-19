@@ -55,16 +55,16 @@ namespace EvoMod2
 				{
 					GLOBALRANDOM = new Random();
 					ELEMENTCOUNT = 200;
-					DEATHCHANCE = 0.01f;
-					Kinematics.DEFAULTDAMPING = 0.08f;
+					DEATHCHANCE = 0.02f;
+					Kinematics.DEFAULTDAMPING = 0.1f;
 					Kinematics.TIMESTEP = 0.05f;
 					ResourceKernel.RESOURCESPEED = 1.0f;
 					ResourceKernel.SPREADRATE = 0.0f;
 					Element.COLORMUTATIONRATE = 0.15f;
 					Element.TRAITSPREAD = 3.5f;
 					Element.INTERACTCOUNT = ELEMENTCOUNT / 4.0f;
-					Element.INTERACTRANGE = SCALE / 1000;
-					Element.ELESPEED = 1000.0f;
+					Element.INTERACTRANGE = SCALE / 1250;
+					Element.ELESPEED = 2500.0f;
 					Element.RELATIONSHIPSCALE = 10.0f;
 					Element.FOODREQUIREMENT = 0.5f;
 					Element.STARTRESOURCES = 75.0f;
@@ -75,7 +75,7 @@ namespace EvoMod2
 					Element.DISCOVERYRATE = 0.003f;
 					Element.MIDDLEAGE = 500;
 					Element.TRADEROUNDOFF = 0.0001f;
-					Element.REPRODUCTIONCHANCE = 0.3f;
+					Element.REPRODUCTIONCHANCE = 0.5f;
 					Element.CHILDCOST = 0.5f;
 					displayBmp = new Bitmap(panel1.Width, panel1.Height);
 					elements = new List<Element>();

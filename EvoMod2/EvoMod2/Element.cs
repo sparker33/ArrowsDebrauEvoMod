@@ -271,7 +271,7 @@ namespace EvoMod2
 
 			if (destination.IsEmpty)
 			{
-				kinematics.Damping = Kinematics.DEFAULTDAMPING;
+				//kinematics.Damping = Kinematics.DEFAULTDAMPING;
 				temp[0] = 0.0f;
 				temp[1] = 0.0f;
 			}
@@ -283,7 +283,7 @@ namespace EvoMod2
 			}
 			else
 			{
-				kinematics.Damping = Kinematics.DEFAULTDAMPING / (progress + 0.1f);
+				//kinematics.Damping = Kinematics.DEFAULTDAMPING / (progress + 0.1f);
 				temp[0] = (destination.X - position.X) / DisplayForm.SCALE;
 				temp[1] = (destination.Y - position.Y) / DisplayForm.SCALE;
 			}
@@ -418,19 +418,21 @@ namespace EvoMod2
 					}
 				}
 				// If any actions are available, execute the preferred action
-				if (maxActionPriority > -1.0f)
+				if (maxActionPriority > 0.0f)
 				{
 					didAction = true;
 					// Apply action effects
+					float learnMetric = inventory * prices;
 					inventory -= KnownActions[actionChoice].Cost;
+					resourceUse += KnownActions[actionChoice].Cost;
 					Vector productionUtilityVector = KnownActions[actionChoice].DoAction(localResourceLevels, Intelligence);
+					inventory += productionUtilityVector;
+					resourceUse -= productionUtilityVector;
 					happinessBonus += KnownActions[actionChoice].HappinessBonus;
 					Health += KnownActions[actionChoice].HealthBonus;
 					Mobility += KnownActions[actionChoice].MobilityBonus;
 					lethalityBonus += KnownActions[actionChoice].LethalityBonus;
 					// Update resource usage information and apply learning to action
-					float learnMetric = inventory * prices;
-					inventory += productionUtilityVector;
 					if (learnMetric != 0.0f)
 					{
 						learnMetric = happinessWeights.Wealth * (learnMetric - inventory * prices) / learnMetric;
@@ -442,8 +444,6 @@ namespace EvoMod2
 							/ Math.Abs(Happiness);
 					}
 					KnownActions[actionChoice].Learn(learnMetric);
-					productionUtilityVector = KnownActions[actionChoice].Cost - productionUtilityVector;
-					resourceUse += productionUtilityVector;
 					// Check for new Resource discovery
 					if (Math.Exp(DISCOVERYRATE * (inventory.Count - MAXRESOURCECOUNT))
 						< StatFunctions.GaussRandom(DisplayForm.GLOBALRANDOM.NextDouble(), 25.0 * (Intelligence + Openness), 100.0 / (Intelligence + Openness)))
@@ -754,7 +754,7 @@ namespace EvoMod2
 		/// <param name="tradeProposal"> Vector of proposed trades. </param>
 		private void ScaleTrade(ref Vector tradeProposal)
 		{
-			double tradePropScaling = 1.0;
+			float tradePropScaling = 1.0f;
 			float tradeMag = tradeProposal.Magnitude;
 			for (int i = 0; i < tradeProposal.Count; i++)
 			{
@@ -764,10 +764,10 @@ namespace EvoMod2
 				}
 				else if (tradeProposal[i] < -inventory[i])
 				{
-					tradePropScaling = Math.Max(0.0, Math.Min(tradePropScaling, -inventory[i] / tradeProposal[i]));
+					tradePropScaling = Math.Max(0.0f, Math.Min(tradePropScaling, -inventory[i] / tradeProposal[i]));
 				}
 			}
-			tradeProposal = (float)tradePropScaling * tradeProposal;
+			tradeProposal = tradePropScaling * tradeProposal;
 			if (tradeProposal.Magnitude < TRADEROUNDOFF)
 			{
 				tradeProposal = new Vector(tradeProposal.Count);
@@ -904,11 +904,11 @@ namespace EvoMod2
 			{
 				if (resourceUse[i] > 0.0f)
 				{
-					resourceUse[i] = (1.0f - timePreference) * (1.0f / (10.0f * (Agreeableness + Single.Epsilon))) * resourceUse[i];
+					resourceUse[i] = (1.0f - timePreference) * (1.0f / (2.0f * (Agreeableness + Single.Epsilon))) * resourceUse[i];
 				}
 				else
 				{
-					resourceUse[i] = (1.0f - timePreference) * (1.0f / (10.0f * (1.0f - Agreeableness + Single.Epsilon))) * resourceUse[i];
+					resourceUse[i] = (1.0f - timePreference) * (1.0f / (2.0f * (1.0f - Agreeableness + Single.Epsilon))) * resourceUse[i];
 				}
 			}
 			Health += 2.0f * (float)StatFunctions.Sigmoid((Age - MIDDLEAGE), MIDDLEAGE, MIDDLEAGE) - 1.0f;

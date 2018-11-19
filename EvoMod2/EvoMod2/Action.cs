@@ -41,12 +41,12 @@ namespace EvoMod2
 			localResourcesDecision = new Vector(DisplayForm.NaturalResourceTypesCount);
 			for (int i = 0; i < DisplayForm.NaturalResourceTypesCount; i++)
 			{
-				localResourcesDecision[i] = 0.01f;
+				localResourcesDecision[i] = 0.0f;
 			}
 			inventoryResourcesDecision = new Vector(totalResourceCount);
 			for (int i = 0; i < totalResourceCount; i++)
 			{
-				inventoryResourcesDecision[i] = 0.01f;
+				inventoryResourcesDecision[i] = 0.0f;
 			}
 			baseCost = new Vector(totalResourceCount);
 			baseProduction = new Vector(totalResourceCount);
@@ -79,12 +79,12 @@ namespace EvoMod2
 			localResourcesDecision = new Vector(DisplayForm.NaturalResourceTypesCount);
 			for (int i = 0; i < localResourcesDecision.Count; i++)
 			{
-				localResourcesDecision[i] = 0.01f;
+				localResourcesDecision[i] = 0.0f;
 			}
 			inventoryResourcesDecision = new Vector(production.Count);
 			for (int i = 0; i < production.Count; i++)
 			{
-				inventoryResourcesDecision[i] = 0.01f;
+				inventoryResourcesDecision[i] = 0.0f;
 			}
 			baseProduction = new Vector(production);
 			localResourceLevelsProductionModifier = new MatrixMath.Matrix(productionMod);
@@ -102,7 +102,7 @@ namespace EvoMod2
 		/// </summary>
 		public void AddResource()
 		{
-			inventoryResourcesDecision.Add(0.01f);
+			inventoryResourcesDecision.Add(0.0f);
 			baseCost.Add(0.0f);
 			baseProduction.Add(0.0f);
 			localResourceLevelsProductionModifier.Add(new Vector(DisplayForm.NaturalResourceTypesCount));
