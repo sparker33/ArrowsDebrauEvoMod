@@ -410,7 +410,7 @@ namespace EvoMod2
 				int actionChoice = 0;
 				for (int i = 0; i < KnownActions.Count; i++)
 				{
-					float priority = (float)DisplayForm.GLOBALRANDOM.NextDouble() * KnownActions[i].GetActionPriority(localResourceLevels, inventory);
+					float priority = (float)(0.9 * DisplayForm.GLOBALRANDOM.NextDouble() + 0.1) * KnownActions[i].GetActionPriority(localResourceLevels, inventory);
 					if (priority > maxActionPriority)
 					{
 						actionChoice = i;
@@ -418,7 +418,7 @@ namespace EvoMod2
 					}
 				}
 				// If any actions are available, execute the preferred action
-				if (maxActionPriority > 0.0f)
+				if (maxActionPriority > -Single.Epsilon)
 				{
 					didAction = true;
 					// Apply action effects
@@ -580,6 +580,7 @@ namespace EvoMod2
 					}
 				}
 			}
+
 			return children;
 		}
 
@@ -762,9 +763,9 @@ namespace EvoMod2
 				{
 					tradeProposal[i] = 0.0f;
 				}
-				else if (tradeProposal[i] < -inventory[i])
+				else if (tradeProposal[i] < -(1.0f - TRADEROUNDOFF) * inventory[i])
 				{
-					tradePropScaling = Math.Max(0.0f, Math.Min(tradePropScaling, -inventory[i] / tradeProposal[i]));
+					tradePropScaling = Math.Max(0.0f, Math.Min(tradePropScaling, (-(1.0f - TRADEROUNDOFF) * inventory[i]) / tradeProposal[i]));
 				}
 			}
 			tradeProposal = tradePropScaling * tradeProposal;
