@@ -35,30 +35,31 @@ namespace EvoMod2
 		/// <returns> Displacement array (ordered by dimensions). </returns>
         public List<float> GetDisplacement(IEnumerable<float> forceVector, float mass)
         {
-			float currentSpeed = Speed;
             List<float> displacement = new List<float>();
             IEnumerator<float> forcesEnumerator = forceVector.GetEnumerator();
             for (int i = 0; forcesEnumerator.MoveNext(); i++)
             {
-                if (Double.IsInfinity(forcesEnumerator.Current)
-                    || Double.IsNaN(forcesEnumerator.Current)
-					|| 0.5f * Math.Abs(acceleration[i]) * TIMESTEP > SPEEDLIMIT)
-				{
-					acceleration[i] = 0.0f;
-                }
-				else if (currentSpeed > SPEEDLIMIT)
+				if (Math.Abs(0.5f * forcesEnumerator.Current / mass * TIMESTEP + velocity[i]) > SPEEDLIMIT)
 				{
 					acceleration[i] = -(DEFAULTDAMPING * velocity[i]) / mass;
 				}
-                else
-                {
+				else
+				{
                     acceleration[i] = (forcesEnumerator.Current - Damping * velocity[i]) / mass;
                 }
-                displacement.Add((velocity[i] * TIMESTEP + 0.5f * acceleration[i] * TIMESTEP * TIMESTEP));
+                displacement.Add(velocity[i] * TIMESTEP + 0.5f * acceleration[i] * TIMESTEP * TIMESTEP);
                 velocity[i] += acceleration[i] * TIMESTEP;
-            }
+			}
+			float currentSpeed = Speed;
+			if (currentSpeed > SPEEDLIMIT)
+			{
+				for (int i = 0; i < velocity.Length; i++)
+				{
+					velocity[i] = velocity[i] * SPEEDLIMIT / currentSpeed;
+				}
+			}
 
-            return displacement;
+			return displacement;
         }
 
 		public void ReverseDirection(int dimension)
