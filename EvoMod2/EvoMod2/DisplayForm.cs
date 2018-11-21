@@ -56,15 +56,16 @@ namespace EvoMod2
 					GLOBALRANDOM = new Random();
 					ELEMENTCOUNT = 200;
 					DEATHCHANCE = 0.01f;
-					Kinematics.DEFAULTDAMPING = 0.1f;
-					Kinematics.TIMESTEP = 0.05f;
+					Kinematics.DEFAULTDAMPING = 0.05f;
+					Kinematics.TIMESTEP = 0.01f;
+					Kinematics.SPEEDLIMIT = SCALE / 10.0f;
 					ResourceKernel.RESOURCESPEED = 1.0f;
 					ResourceKernel.SPREADRATE = 0.0f;
 					Element.COLORMUTATIONRATE = 0.15f;
-					Element.TRAITSPREAD = 3.5f;
-					Element.INTERACTCOUNT = ELEMENTCOUNT / 4.0f;
+					Element.TRAITSPREAD = 3.75f;
+					Element.INTERACTCOUNT = ELEMENTCOUNT / 5.0f;
 					Element.INTERACTRANGE = SCALE / 1000;
-					Element.ELESPEED = 2500.0f;
+					Element.ELESPEED = SCALE / 0.5f;
 					Element.RELATIONSHIPSCALE = 10.0f;
 					Element.FOODREQUIREMENT = 0.5f;
 					Element.STARTRESOURCES = 75.0f;
@@ -72,10 +73,10 @@ namespace EvoMod2
 					Element.MAXLOCATIONSCOUNT = 10;
 					Element.MAXRESOURCECOUNT = 25;
 					Element.MAXACTIONSCOUNT = 13;
-					Element.DISCOVERYRATE = 0.003f;
+					Element.DISCOVERYRATE = 0.001f;
 					Element.MIDDLEAGE = 500;
 					Element.TRADEROUNDOFF = 0.0001f;
-					Element.REPRODUCTIONCHANCE = 0.75f;
+					Element.REPRODUCTIONCHANCE = 0.3f;
 					Element.CHILDCOST = 0.5f;
 					displayBmp = new Bitmap(panel1.Width, panel1.Height);
 					elements = new List<Element>();
@@ -152,7 +153,15 @@ namespace EvoMod2
 
 		private void worker_DoWork(object sender, DoWorkEventArgs e)
 		{
-			Bitmap display = new Bitmap(panel1.Width, panel1.Height);
+			Bitmap display;
+			try
+			{
+				display = new Bitmap(panel1.Width, panel1.Height);
+			}
+			catch (Exception)
+			{
+				display = new Bitmap(10, 10);
+			}
 			Graphics g = Graphics.FromImage(display);
 			g.Clear(Color.DarkGray);
 

@@ -16,7 +16,7 @@ namespace EvoMod2
 		// Public objects
 		public float X { get => destination.X; }
 		public float Y { get => destination.Y; }
-		public bool IsEmpty { get => destination.IsEmpty; }
+		public bool IsEmpty { get; private set; }
 
 		/// <summary>
 		/// Default empty constructor
@@ -50,11 +50,11 @@ namespace EvoMod2
 		/// <returns> Float between 0.0 (arrived at destination) and 1.0 (at starting point). </returns>
 		public float GetProgress(PointF currentLocation)
 		{
-			float xDist = destination.X - currentLocation.X;
-			float yDist = destination.Y - currentLocation.Y;
 			float progress = 0.0f;
 			if (startDistance > 1.0f)
 			{
+				float xDist = destination.X - currentLocation.X;
+				float yDist = destination.Y - currentLocation.Y;
 				progress = (float)Math.Sqrt(xDist * xDist + yDist * yDist) / startDistance;
 			}
 			else
@@ -69,6 +69,7 @@ namespace EvoMod2
 		{
 			startDistance = 0.0f;
 			destination = new PointF();
+			IsEmpty = true;
 		}
 
 		/// <summary>
@@ -76,10 +77,11 @@ namespace EvoMod2
 		/// </summary>
 		/// <param name="currentLocation"> Current location PointF. </param>
 		/// <param name="destination"> Desired destination PointF. </param>
-		public void Set(PointF currentLocation, PointF destination)
+		public void Set(PointF currentLocation, PointF newDestination)
 		{
-			destination = new PointF(destination.X, destination.Y);
-			startDistance = (float)Math.Sqrt((destination.X - currentLocation.X) * (destination.X - currentLocation.X) + (destination.Y - currentLocation.Y) * (destination.Y - currentLocation.Y));
+			destination = new PointF(newDestination.X, newDestination.Y);
+			startDistance = (float)Math.Sqrt((newDestination.X - currentLocation.X) * (newDestination.X - currentLocation.X) + (newDestination.Y - currentLocation.Y) * (newDestination.Y - currentLocation.Y));
+			IsEmpty = false;
 		}
 	}
 }

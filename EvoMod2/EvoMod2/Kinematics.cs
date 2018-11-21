@@ -5,13 +5,14 @@ namespace EvoMod2
 {
 	public class Kinematics
     {
-        // Private fields
-        private float[] acceleration;
-        private float[] velocity;
-
-		// Public objects
+		// Static objects
 		public static float DEFAULTDAMPING;
 		public static float TIMESTEP;
+		public static float SPEEDLIMIT;
+
+		// Private fields
+		private float[] acceleration;
+        private float[] velocity;
 
         // Public properties
         public float Speed { get { return (float)Math.Sqrt(velocity[0] * velocity[0] + velocity[1] * velocity[1]); } }
@@ -34,15 +35,21 @@ namespace EvoMod2
 		/// <returns> Displacement array (ordered by dimensions). </returns>
         public List<float> GetDisplacement(IEnumerable<float> forceVector, float mass)
         {
+			float currentSpeed = Speed;
             List<float> displacement = new List<float>();
             IEnumerator<float> forcesEnumerator = forceVector.GetEnumerator();
             for (int i = 0; forcesEnumerator.MoveNext(); i++)
             {
                 if (Double.IsInfinity(forcesEnumerator.Current)
-                    || Double.IsNaN(forcesEnumerator.Current))
-                {
-                    acceleration[i] = -(Damping * velocity[i]) / mass;
+                    || Double.IsNaN(forcesEnumerator.Current)
+					|| 0.5f * Math.Abs(acceleration[i]) * TIMESTEP > SPEEDLIMIT)
+				{
+					acceleration[i] = 0.0f;
                 }
+				else if (currentSpeed > SPEEDLIMIT)
+				{
+					acceleration[i] = -(DEFAULTDAMPING * velocity[i]) / mass;
+				}
                 else
                 {
                     acceleration[i] = (forcesEnumerator.Current - Damping * velocity[i]) / mass;

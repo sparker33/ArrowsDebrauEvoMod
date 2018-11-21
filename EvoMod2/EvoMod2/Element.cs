@@ -94,9 +94,9 @@ namespace EvoMod2
 		public float Lethality { get => Health + lethalityBonus; }
 		// Display data and general accessors
 		public PointF Position { get => position; }
-		public int Size { get => (int)(22.0 * StatFunctions.Sigmoid(wealthHappiness / happinessWeights.Wealth, 2.0, 0.5) + 5.0); }
+		public int Size { get => (int)(22.0 * StatFunctions.Sigmoid(wealthHappiness / happinessWeights.Wealth, 8.0, 0.5) + 5.0); }
 		public Color ElementColor { get; private set; }
-		public int Opacity { get => (int)(255.0 * StatFunctions.Sigmoid(healthHappiness / happinessWeights.Health, 2.0, 0.5)); }
+		public int Opacity { get => (int)(255.0 * StatFunctions.Sigmoid(healthHappiness / happinessWeights.Health, 8.0, 0.5)); }
 		public HappinessWeights HappinessWeights { get => happinessWeights; }
 		public Vector Inventory { get => inventory; }
 		/// <summary>
@@ -258,32 +258,33 @@ namespace EvoMod2
 			float[] temp = new float[2]; // Utility array to hold destination distance, accelleration, and displacement
 
 			// Check for destination acquisition
-			if (destination.IsEmpty && StatFunctions.GaussRandom(DisplayForm.GLOBALRANDOM.NextDouble(), 10.0 * Openness, 1.0 / Openness) > 0.90)
+			if (destination.IsEmpty && StatFunctions.GaussRandom(DisplayForm.GLOBALRANDOM.NextDouble(), 10.0 * Openness, 1.0 / Openness) > 0.95)
 			{
 				PointF newLocation = KnownLocations[DisplayForm.GLOBALRANDOM.Next(KnownLocations.Count - 1)];
 				destination.Set(this.position, newLocation);
 			}
 			float progress = destination.GetProgress(position);
-			if (!destination.IsEmpty && StatFunctions.Sigmoid(DisplayForm.GLOBALRANDOM.NextDouble(), 5.0, progress) < 0.05)
+			if (!destination.IsEmpty && StatFunctions.Sigmoid(DisplayForm.GLOBALRANDOM.NextDouble(), 5.0, progress) < 0.01)
 			{
 				destination.Clear();
 			}
 
 			if (destination.IsEmpty)
 			{
-				//kinematics.Damping = Kinematics.DEFAULTDAMPING;
+				kinematics.Damping = Kinematics.DEFAULTDAMPING;
 				temp[0] = 0.0f;
 				temp[1] = 0.0f;
 			}
 			else if (progress == 0.0f)
 			{
+				kinematics.Damping = Kinematics.DEFAULTDAMPING;
 				destination.Clear();
 				temp[0] = 0.0f;
 				temp[1] = 0.0f;
 			}
 			else
 			{
-				//kinematics.Damping = Kinematics.DEFAULTDAMPING / (progress + 0.1f);
+				kinematics.Damping = Kinematics.DEFAULTDAMPING / (progress + 0.1f);
 				temp[0] = (destination.X - position.X) / DisplayForm.SCALE;
 				temp[1] = (destination.Y - position.Y) / DisplayForm.SCALE;
 			}
@@ -331,22 +332,25 @@ namespace EvoMod2
 
 			// Determine driving force vector
 			float speed = kinematics.Speed;
-			if (speed >= 0.01f)
+			if (temp[0] == 0.0f && temp[1] == 0.0f)
 			{
-				// Update acceleratons
-				temp[0] += kinematics.Damping * happinessPercentChangeHistory * kinematics.GetVelocity(0) / speed;
-				temp[1] += kinematics.Damping * happinessPercentChangeHistory * kinematics.GetVelocity(1) / speed;
-			}
-			else
-			{
-				temp[0] += 2.0f * (float)DisplayForm.GLOBALRANDOM.NextDouble() - 1.0f;
-				temp[1] += 2.0f * (float)DisplayForm.GLOBALRANDOM.NextDouble() - 1.0f;
+				if (speed >= 0.01f)
+				{
+					// Update acceleratons
+					temp[0] += happinessPercentChangeHistory * kinematics.GetVelocity(0) / speed;
+					temp[1] += happinessPercentChangeHistory * kinematics.GetVelocity(1) / speed;
+				}
+				else
+				{
+					temp[0] += 2.0f * (float)DisplayForm.GLOBALRANDOM.NextDouble() - 1.0f;
+					temp[1] += 2.0f * (float)DisplayForm.GLOBALRANDOM.NextDouble() - 1.0f;
+				}
 			}
 			temp[0] *= ELESPEED;
 			temp[1] *= ELESPEED;
 
 			// Apply force vector to kinematics; get and apply displacements
-			temp = kinematics.GetDisplacement(temp, 10.0f).ToArray();
+			temp = kinematics.GetDisplacement(temp, 1.0f).ToArray();
 			position.X += temp[0];
 			position.Y += temp[1];
 
@@ -522,8 +526,8 @@ namespace EvoMod2
 						&& this != otherElement.Parents[1]
 						&& this.Parents[0] != otherElement
 						&& this.Parents[1] != otherElement
-						&& this.Age > MIDDLEAGE / 4.0f
-						&& otherElement.Age > MIDDLEAGE / 4.0f)
+						&& this._health > MIDDLEAGE / 4.0f
+						&& otherElement._health > MIDDLEAGE / 4.0f)
 					{
 						// Mate
 						Element child = new Element(this, otherElement);
