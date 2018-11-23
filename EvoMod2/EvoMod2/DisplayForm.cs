@@ -16,8 +16,8 @@ namespace EvoMod2
 	{
 		// Global values
 		public const int SCALE = 5000;   // Scale of domain for positions
-		public const double SIZESCALING = 6.0; // Scales rate of change of dot sizes wrt wealth
-		public const double OPACITYSCALING = 0.1; // Scales rate of change of dot opacity wrt health
+		public static double SIZESCALING; // Scales rate of change of dot sizes wrt wealth
+		public static double OPACITYSCALING; // Scales rate of change of dot opacity wrt health
 		public static Random GLOBALRANDOM; // Global random number generator
 		public static int ELEMENTCOUNT; // Number of elements
 		public static float DEATHCHANCE; // Scales the health treashold for death
@@ -58,16 +58,18 @@ namespace EvoMod2
 					GLOBALRANDOM = new Random();
 					ELEMENTCOUNT = 225;
 					DEATHCHANCE = 0.01f;
-					Kinematics.DEFAULTDAMPING = 0.2f;
+					SIZESCALING = 7.0f;
+					OPACITYSCALING = 4.0f;
+					Kinematics.DEFAULTDAMPING = 0.02f;
 					Kinematics.TIMESTEP = 0.05f;
-					Kinematics.SPEEDLIMIT = SCALE / 20.0f;
+					Kinematics.SPEEDLIMIT = SCALE / 25.0f;
 					ResourceKernel.RESOURCESPEED = 3.0f;
 					ResourceKernel.SPREADRATE = 0.0f;
-					Element.COLORMUTATIONRATE = 0.15f;
+					Element.COLORMUTATIONRATE = 0.25f;
 					Element.TRAITSPREAD = 3.75f;
 					Element.INTERACTCOUNT = ELEMENTCOUNT / 5.0f;
 					Element.INTERACTRANGE = SCALE / 1000;
-					Element.ELESPEED = SCALE / 1.65f;
+					Element.ELESPEED = SCALE / 1.75f;
 					Element.RELATIONSHIPSCALE = 10.0f;
 					Element.FOODREQUIREMENT = 0.25f;
 					Element.STARTRESOURCES = 75.0f;
@@ -80,6 +82,7 @@ namespace EvoMod2
 					Element.TRADEROUNDOFF = 0.0001f;
 					Element.REPRODUCTIONCHANCE = 0.3f;
 					Element.CHILDCOST = 0.5f;
+					Element.INHERITANCE = false;
 					displayBmp = new Bitmap(panel1.Width, panel1.Height);
 					elements = new List<Element>();
 					resources = new List<Resource>();

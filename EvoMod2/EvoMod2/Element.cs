@@ -29,6 +29,7 @@ namespace EvoMod2
 		public static float TRADEROUNDOFF;
 		public static float REPRODUCTIONCHANCE;
 		public static float CHILDCOST;
+		public static bool INHERITANCE;
 		public static List<FoodResourceData> FoodResources = new List<FoodResourceData>();
 
 		// Private fields
@@ -92,13 +93,15 @@ namespace EvoMod2
 		public bool IsDead { get; private set; }
 		public int TurnsSinceMurder { get; private set; }
 		public float Lethality { get => Health + lethalityBonus; }
-		// Display data and general accessors
-		public PointF Position { get => position; }
-		public int Size { get => (int)(22.0 * StatFunctions.Sigmoid(wealthHappiness / happinessWeights.Wealth, DisplayForm.SIZESCALING, 0.5) + 5.0); }
-		public Color ElementColor { get; private set; }
-		public int Opacity { get => (int)(255.0 * StatFunctions.Sigmoid(healthHappiness / happinessWeights.Health, DisplayForm.OPACITYSCALING, 0.5)); }
 		public HappinessWeights HappinessWeights { get => happinessWeights; }
 		public Vector Inventory { get => inventory; }
+		// Display data and general accessors
+		public PointF Position { get => position; }
+		//public int Size { get => (int)(22.0 * StatFunctions.Sigmoid(wealthHappiness / happinessWeights.Wealth, DisplayForm.SIZESCALING, 0.5) + 5.0); }
+		public int Size { get => (int)(22.0 * StatFunctions.Sigmoid(0.5 * Age / MIDDLEAGE, -DisplayForm.SIZESCALING, 0.5) + 5.0); }
+		public int Opacity { get => (int)(255.0 * StatFunctions.Sigmoid(healthHappiness / happinessWeights.Health, DisplayForm.OPACITYSCALING, 0.5)); }
+		public Color ElementColor { get; private set; }
+
 		/// <summary>
 		/// Private default class constructor. Not intended for use
 		/// </summary>
@@ -697,11 +700,11 @@ namespace EvoMod2
 			RefineTradeProposal(sender, ref thisTradeProposal);
 			float targetVal = relationships[sender] / (float)RELATIONSHIPSCALE;
 
-			if (((tradeValue - targetVal) / targetVal) > (1.0f - Agreeableness)
-				|| ((tradeProposal * thisTradeProposal) / (tradeProposal.Magnitude * thisTradeProposal.Magnitude)) > (1.0f - Agreeableness))
-
 			//if (((tradeValue - targetVal) / targetVal) > (1.0f - Agreeableness)
-			//	&& ((tradeProposal * thisTradeProposal) / (tradeProposal.Magnitude * thisTradeProposal.Magnitude)) > (1.0f - Agreeableness))
+			//	|| ((tradeProposal * thisTradeProposal) / (tradeProposal.Magnitude * thisTradeProposal.Magnitude)) > (1.0f - Agreeableness))
+
+			if (((tradeValue - targetVal) / targetVal) > (1.0f - Agreeableness)
+				&& ((tradeProposal * thisTradeProposal) / (tradeProposal.Magnitude * thisTradeProposal.Magnitude)) > (1.0f - Agreeableness))
 
 			//if (((tradeProposal * thisTradeProposal) / (tradeProposal.Magnitude * thisTradeProposal.Magnitude)) > (1.0f - Agreeableness))
 
@@ -946,26 +949,29 @@ namespace EvoMod2
 		/// </summary>
 		public void Die()
 		{
-			float maxOpinion = Single.MinValue;
-			Element inheretor = this;
-			for (int i = 0; i < relationships.Keys.Count; i++)
+			if (INHERITANCE)
 			{
-				Element e = relationships.Keys.ToArray()[i];
-				if (e.IsDead)
+				float maxOpinion = Single.MinValue;
+				Element inheretor = this;
+				for (int i = 0; i < relationships.Keys.Count; i++)
 				{
-					relationships.Remove(e);
-					continue;
+					Element e = relationships.Keys.ToArray()[i];
+					if (e.IsDead)
+					{
+						relationships.Remove(e);
+						continue;
+					}
+					if (relationships[e] > maxOpinion)
+					{
+						inheretor = e;
+						maxOpinion = relationships[e];
+					}
 				}
-				if (relationships[e] > maxOpinion)
+				if (inheretor != this)
 				{
-					inheretor = e;
-					maxOpinion = relationships[e];
+					inheretor.ExecuteTrade(inventory);
+					this.ExecuteTrade(-inventory);
 				}
-			}
-			if (inheretor != this)
-			{
-				inheretor.ExecuteTrade(inventory);
-				this.ExecuteTrade(-inventory);
 			}
 			this.IsDead = true;
 		}
@@ -1048,11 +1054,14 @@ namespace EvoMod2
 			pricesUncertainty = new Vector(parent1.Inventory.Count);
 			for (int i = 0; i < prices.Count; i++)
 			{
-				rand = 1.0 - DisplayForm.GLOBALRANDOM.NextDouble();
-				prices[i] = (float)StatFunctions.GaussRandom(rand, TRAITSPREAD, TRAITSPREAD);
+				prices[i] = parent1.prices[i];
 				pricesUncertainty[i] = prices[i];
 			}
 			foodConsumptionRates = new Vector(FoodResources.Count);
+			for (int i = 0; i < FoodResources.Count; i++)
+			{
+				foodConsumptionRates[i] = parent1.foodConsumptionRates[i];
+			}
 			timePreference = (float)StatFunctions.GaussRandom(Intelligence, TRAITSPREAD, TRAITSPREAD);
 			resourceUse = new Vector(parent1.Inventory.Count);
 			KnownActions = new List<Action>();
