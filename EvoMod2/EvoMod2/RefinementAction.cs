@@ -24,8 +24,8 @@ namespace EvoMod2
 				baseCost[i] = (float)random.NextDouble();
 				baseProduction[i] = 0.0f;
 				localResourceLevelsProductionModifier[i] = new MatrixMath.Vector(DisplayForm.NaturalResourceTypesCount);
-				localResourcesDecision[i] = 0.01f;
-				inventoryResourcesDecision[i] = 0.01f;
+				localResourcesDecision[i] = 0.0f;
+				inventoryResourcesDecision[i] = 0.0f;
 			}
 			for (int i = DisplayForm.NaturalResourceTypesCount; i < totalResourceCount; i++)
 			{
@@ -38,7 +38,7 @@ namespace EvoMod2
 					baseProduction[i] = (float)random.NextDouble();
 				}
 				localResourceLevelsProductionModifier[i] = new MatrixMath.Vector(DisplayForm.NaturalResourceTypesCount);
-				inventoryResourcesDecision[i] = 0.01f;
+				inventoryResourcesDecision[i] = 0.0f;
 			}
 			bias = 0.0f;
 			HappinessBonus = 2.0f * (float)StatFunctions.GaussRandom(random.NextDouble(), 10.0, 10.0) - 1.0f;

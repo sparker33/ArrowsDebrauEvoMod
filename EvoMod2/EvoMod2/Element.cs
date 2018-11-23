@@ -94,9 +94,9 @@ namespace EvoMod2
 		public float Lethality { get => Health + lethalityBonus; }
 		// Display data and general accessors
 		public PointF Position { get => position; }
-		public int Size { get => (int)(22.0 * StatFunctions.Sigmoid(wealthHappiness / happinessWeights.Wealth, 2.0, 0.5) + 5.0); }
+		public int Size { get => (int)(22.0 * StatFunctions.Sigmoid(wealthHappiness / happinessWeights.Wealth, DisplayForm.SIZESCALING, 0.5) + 5.0); }
 		public Color ElementColor { get; private set; }
-		public int Opacity { get => (int)(255.0 * StatFunctions.Sigmoid(healthHappiness / happinessWeights.Health, 2.0, 0.5)); }
+		public int Opacity { get => (int)(255.0 * StatFunctions.Sigmoid(healthHappiness / happinessWeights.Health, DisplayForm.OPACITYSCALING, 0.5)); }
 		public HappinessWeights HappinessWeights { get => happinessWeights; }
 		public Vector Inventory { get => inventory; }
 		/// <summary>
@@ -258,13 +258,13 @@ namespace EvoMod2
 			float[] temp = new float[2]; // Utility array to hold destination distance, accelleration, and displacement
 
 			// Check for destination acquisition
-			if (destination.IsEmpty && StatFunctions.GaussRandom(DisplayForm.GLOBALRANDOM.NextDouble(), 10.0 * Openness, 1.0 / Openness) > 0.90)
+			if (destination.IsEmpty && StatFunctions.GaussRandom(DisplayForm.GLOBALRANDOM.NextDouble(), 10.0 * Openness, 1.0 / Openness) > 0.99)
 			{
 				PointF newLocation = KnownLocations[DisplayForm.GLOBALRANDOM.Next(KnownLocations.Count - 1)];
 				destination.Set(this.position, newLocation);
 			}
 			float progress = destination.GetProgress(position);
-			if (!destination.IsEmpty && StatFunctions.Sigmoid(DisplayForm.GLOBALRANDOM.NextDouble(), 5.0, progress) < 0.05)
+			if (!destination.IsEmpty && StatFunctions.Sigmoid(DisplayForm.GLOBALRANDOM.NextDouble(), 5.0, progress) < 0.01)
 			{
 				destination.Clear();
 			}
@@ -277,13 +277,14 @@ namespace EvoMod2
 			}
 			else if (progress == 0.0f)
 			{
+				kinematics.Damping = Kinematics.DEFAULTDAMPING;
 				destination.Clear();
 				temp[0] = 0.0f;
 				temp[1] = 0.0f;
 			}
 			else
 			{
-				//kinematics.Damping = Kinematics.DEFAULTDAMPING - progress;
+				kinematics.Damping = Kinematics.DEFAULTDAMPING / (Math.Min(progress, 1.5f) + 0.5f);
 				temp[0] = (destination.X - position.X) / DisplayForm.SCALE;
 				temp[1] = (destination.Y - position.Y) / DisplayForm.SCALE;
 			}
@@ -301,10 +302,10 @@ namespace EvoMod2
 			{
 				try
 				{
-					environmentHappiness += relationships[e] / (float)RELATIONSHIPSCALE
+					environmentHappiness += relationships[e]
 							* (float)Math.Sqrt((position.X - e.Position.X) * (position.X - e.Position.X)
 								+ (position.Y - e.Position.Y) * (position.Y - e.Position.Y))
-							 / INTERACTRANGE;
+							/ (INTERACTRANGE * MAXRELATIONSHIPS * (float)RELATIONSHIPSCALE);
 				}
 				catch (NullReferenceException)
 				{
@@ -330,47 +331,57 @@ namespace EvoMod2
 			Happiness = nextHappiness;
 
 			// Determine driving force vector
-			float speed = kinematics.Speed;
-			if (speed >= 0.01f)
+			if (temp[0] == 0.0f && temp[1] == 0.0f)
 			{
-				// Update acceleratons
-				temp[0] += happinessPercentChangeHistory * kinematics.GetVelocity(0) / speed;
-				temp[1] += happinessPercentChangeHistory * kinematics.GetVelocity(1) / speed;
-			}
-			else
-			{
-				temp[0] += 2.0f * (float)DisplayForm.GLOBALRANDOM.NextDouble() - 1.0f;
-				temp[1] += 2.0f * (float)DisplayForm.GLOBALRANDOM.NextDouble() - 1.0f;
+				float speed = kinematics.Speed;
+				if (speed >= 0.01f)
+				{
+					if (Math.Abs(happinessPercentChangeHistory) > 2.0f)
+					{
+						temp[0] = 2.0f * Math.Sign(happinessPercentChangeHistory) * kinematics.GetVelocity(0) / speed;
+						temp[1] = 2.0f * Math.Sign(happinessPercentChangeHistory) * kinematics.GetVelocity(1) / speed;
+					}
+					else
+					{
+						temp[0] = happinessPercentChangeHistory * kinematics.GetVelocity(0) / speed;
+						temp[1] = happinessPercentChangeHistory * kinematics.GetVelocity(1) / speed;
+					}
+				}
+				else
+				{
+					temp[0] = 2.0f * (float)DisplayForm.GLOBALRANDOM.NextDouble() - 1.0f;
+					temp[1] = 2.0f * (float)DisplayForm.GLOBALRANDOM.NextDouble() - 1.0f;
+				}
 			}
 			temp[0] *= ELESPEED;
 			temp[1] *= ELESPEED;
 
 			// Apply force vector to kinematics; get and apply displacements
-			temp = kinematics.GetDisplacement(temp, 10.0f).ToArray();
+			temp = kinematics.GetDisplacement(temp, 1.0f).ToArray();
 			position.X += temp[0];
 			position.Y += temp[1];
 
-			// Handle domain boundary collisions
-			if (position.X < 0.0f)
-			{
-				position.X = 0.0f;
-				kinematics.ReverseDirection(0);
-			}
-			if (position.X > DisplayForm.SCALE)
-			{
-				position.X = (float)DisplayForm.SCALE;
-				kinematics.ReverseDirection(0);
-			}
-			if (position.Y < 0.0f)
-			{
-				position.Y = 0.0f;
-				kinematics.ReverseDirection(1);
-			}
-			if (position.Y > DisplayForm.SCALE)
-			{
-				position.Y = (float)DisplayForm.SCALE;
-				kinematics.ReverseDirection(1);
-			}
+			// Handle domain boundary collisions with elastic collisions (impacts performance)
+			//if (position.X < 0.0f)
+			//{
+			//	position.X = 0.0f;
+			//	kinematics.ReverseDirection(0);
+			//}
+			//else if (position.X > DisplayForm.SCALE)
+			//{
+			//	position.X = (float)DisplayForm.SCALE;
+			//	kinematics.ReverseDirection(0);
+			//}
+			//if (position.Y < 0.0f)
+			//{
+			//	position.Y = 0.0f;
+			//	kinematics.ReverseDirection(1);
+			//}
+			//else if (position.Y > DisplayForm.SCALE)
+			//{
+			//	position.Y = (float)DisplayForm.SCALE;
+			//	kinematics.ReverseDirection(1);
+			//}
 		}
 
 		/// <summary>
@@ -410,7 +421,7 @@ namespace EvoMod2
 				int actionChoice = 0;
 				for (int i = 0; i < KnownActions.Count; i++)
 				{
-					float priority = KnownActions[i].GetActionPriority(localResourceLevels, inventory);
+					float priority = (float)(0.9 * DisplayForm.GLOBALRANDOM.NextDouble() + 0.1) * KnownActions[i].GetActionPriority(localResourceLevels, inventory);
 					if (priority > maxActionPriority)
 					{
 						actionChoice = i;
@@ -418,27 +429,32 @@ namespace EvoMod2
 					}
 				}
 				// If any actions are available, execute the preferred action
-				if (maxActionPriority > -1.0f)
+				if (maxActionPriority > -Single.Epsilon)
 				{
 					didAction = true;
 					// Apply action effects
+					float learnMetric = inventory * prices;
 					inventory -= KnownActions[actionChoice].Cost;
+					resourceUse += KnownActions[actionChoice].Cost;
 					Vector productionUtilityVector = KnownActions[actionChoice].DoAction(localResourceLevels, Intelligence);
-					float inventoryValueUtilityVar = inventory * prices;
 					inventory += productionUtilityVector;
-					if (inventoryValueUtilityVar != 0.0f)
-					{
-						inventoryValueUtilityVar = (inventoryValueUtilityVar - inventory * prices) / inventoryValueUtilityVar;
-					}
-					float deltaHappinessBonus = KnownActions[actionChoice].HappinessBonus;
-					happinessBonus += deltaHappinessBonus;
+					resourceUse -= productionUtilityVector;
+					happinessBonus += KnownActions[actionChoice].HappinessBonus;
 					Health += KnownActions[actionChoice].HealthBonus;
 					Mobility += KnownActions[actionChoice].MobilityBonus;
 					lethalityBonus += KnownActions[actionChoice].LethalityBonus;
 					// Update resource usage information and apply learning to action
-					KnownActions[actionChoice].Learn(deltaHappinessBonus + happinessWeights[0] * inventoryValueUtilityVar);
-					productionUtilityVector = KnownActions[actionChoice].Cost - productionUtilityVector;
-					resourceUse += productionUtilityVector;
+					if (learnMetric != 0.0f)
+					{
+						learnMetric = happinessWeights.Wealth * (learnMetric - inventory * prices) / learnMetric;
+					}
+					if (Happiness != 0.0f)
+					{
+						learnMetric += (KnownActions[actionChoice].HappinessBonus
+							+ HappinessWeights.Health * KnownActions[actionChoice].HealthBonus)
+							/ Math.Abs(Happiness);
+					}
+					KnownActions[actionChoice].Learn(learnMetric);
 					// Check for new Resource discovery
 					if (Math.Exp(DISCOVERYRATE * (inventory.Count - MAXRESOURCECOUNT))
 						< StatFunctions.GaussRandom(DisplayForm.GLOBALRANDOM.NextDouble(), 25.0 * (Intelligence + Openness), 100.0 / (Intelligence + Openness)))
@@ -486,6 +502,19 @@ namespace EvoMod2
 		/// <returns> A List of new child Elements. </returns>
 		public List<Element> DoInteraction(Random random, List<Element> otherElements)
 		{
+			// Update resourceUse. This portion must be called every turn. Used to drive trade decisions
+			for (int i = 0; i < resourceUse.Count; i++)
+			{
+				if (resourceUse[i] > 0.0f)
+				{
+					resourceUse[i] = (1.0f - timePreference) * (1.0f / (2.0f * (Agreeableness + Single.Epsilon))) * resourceUse[i];
+				}
+				else
+				{
+					resourceUse[i] = (1.0f - timePreference) * (1.0f / (2.0f * (1.0f - Agreeableness + Single.Epsilon))) * resourceUse[i];
+				}
+			}
+
 			List<Element> children = new List<Element>();
 			TurnsSinceMurder++;
 			int interactionsPerTurn = (int)(Extraversion * INTERACTCOUNT);
@@ -517,8 +546,8 @@ namespace EvoMod2
 						&& this != otherElement.Parents[1]
 						&& this.Parents[0] != otherElement
 						&& this.Parents[1] != otherElement
-						&& this.Age > MIDDLEAGE / 4.0f
-						&& otherElement.Age > MIDDLEAGE / 4.0f)
+						&& this._health > MIDDLEAGE / 4.0f
+						&& otherElement._health > MIDDLEAGE / 4.0f)
 					{
 						// Mate
 						Element child = new Element(this, otherElement);
@@ -575,6 +604,7 @@ namespace EvoMod2
 					}
 				}
 			}
+
 			return children;
 		}
 
@@ -666,8 +696,17 @@ namespace EvoMod2
 			Vector thisTradeProposal = new Vector(resourceUse);
 			RefineTradeProposal(sender, ref thisTradeProposal);
 			float targetVal = relationships[sender] / (float)RELATIONSHIPSCALE;
+
 			if (((tradeValue - targetVal) / targetVal) > (1.0f - Agreeableness)
 				|| ((tradeProposal * thisTradeProposal) / (tradeProposal.Magnitude * thisTradeProposal.Magnitude)) > (1.0f - Agreeableness))
+
+			//if (((tradeValue - targetVal) / targetVal) > (1.0f - Agreeableness)
+			//	&& ((tradeProposal * thisTradeProposal) / (tradeProposal.Magnitude * thisTradeProposal.Magnitude)) > (1.0f - Agreeableness))
+
+			//if (((tradeProposal * thisTradeProposal) / (tradeProposal.Magnitude * thisTradeProposal.Magnitude)) > (1.0f - Agreeableness))
+
+			//if (((tradeValue - targetVal) / targetVal) > (1.0f - Agreeableness))
+
 			{
 				ScaleTrade(ref tradeProposal);
 				return true;
@@ -749,7 +788,7 @@ namespace EvoMod2
 		/// <param name="tradeProposal"> Vector of proposed trades. </param>
 		private void ScaleTrade(ref Vector tradeProposal)
 		{
-			double tradePropScaling = 1.0;
+			float tradePropScaling = 1.0f;
 			float tradeMag = tradeProposal.Magnitude;
 			for (int i = 0; i < tradeProposal.Count; i++)
 			{
@@ -757,12 +796,12 @@ namespace EvoMod2
 				{
 					tradeProposal[i] = 0.0f;
 				}
-				else if (tradeProposal[i] < -inventory[i])
+				else if (tradeProposal[i] < -(1.0f - TRADEROUNDOFF) * inventory[i])
 				{
-					tradePropScaling = Math.Max(0.0, Math.Min(tradePropScaling, -inventory[i] / tradeProposal[i]));
+					tradePropScaling = Math.Max(0.0f, Math.Min(tradePropScaling, (-(1.0f - TRADEROUNDOFF) * inventory[i]) / tradeProposal[i]));
 				}
 			}
-			tradeProposal = (float)tradePropScaling * tradeProposal;
+			tradeProposal = tradePropScaling * tradeProposal;
 			if (tradeProposal.Magnitude < TRADEROUNDOFF)
 			{
 				tradeProposal = new Vector(tradeProposal.Count);
@@ -895,17 +934,6 @@ namespace EvoMod2
 		public void CheckForDeath(float deathChance)
 		{
 			Age++;
-			for (int i = 0; i < resourceUse.Count; i++)
-			{
-				if (resourceUse[i] > 0.0f)
-				{
-					resourceUse[i] = (1.0f - timePreference) * (1.0f / (10.0f * (Agreeableness + Single.Epsilon))) * resourceUse[i];
-				}
-				else
-				{
-					resourceUse[i] = (1.0f - timePreference) * (1.0f / (10.0f * (1.0f - Agreeableness + Single.Epsilon))) * resourceUse[i];
-				}
-			}
 			Health += 2.0f * (float)StatFunctions.Sigmoid((Age - MIDDLEAGE), MIDDLEAGE, MIDDLEAGE) - 1.0f;
 			if (Health < deathChance)
 			{

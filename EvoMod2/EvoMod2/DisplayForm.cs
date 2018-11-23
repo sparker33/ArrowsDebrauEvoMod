@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Linq;
@@ -17,6 +16,8 @@ namespace EvoMod2
 	{
 		// Global values
 		public const int SCALE = 5000;   // Scale of domain for positions
+		public const double SIZESCALING = 6.0; // Scales rate of change of dot sizes wrt wealth
+		public const double OPACITYSCALING = 0.1; // Scales rate of change of dot opacity wrt health
 		public static Random GLOBALRANDOM; // Global random number generator
 		public static int ELEMENTCOUNT; // Number of elements
 		public static float DEATHCHANCE; // Scales the health treashold for death
@@ -55,28 +56,29 @@ namespace EvoMod2
 				if (result == DialogResult.OK)
 				{
 					GLOBALRANDOM = new Random();
-					ELEMENTCOUNT = 300;
-					DEATHCHANCE = 0.05f;
-					Kinematics.DEFAULTDAMPING = 0.08f;
+					ELEMENTCOUNT = 225;
+					DEATHCHANCE = 0.01f;
+					Kinematics.DEFAULTDAMPING = 0.2f;
 					Kinematics.TIMESTEP = 0.05f;
-					ResourceKernel.RESOURCESPEED = 1.0f;
+					Kinematics.SPEEDLIMIT = SCALE / 20.0f;
+					ResourceKernel.RESOURCESPEED = 3.0f;
 					ResourceKernel.SPREADRATE = 0.0f;
 					Element.COLORMUTATIONRATE = 0.15f;
-					Element.TRAITSPREAD = 3.5f;
-					Element.INTERACTCOUNT = ELEMENTCOUNT / 4.0f;
-					Element.INTERACTRANGE = SCALE / 100;
-					Element.ELESPEED = 7500.0f;
+					Element.TRAITSPREAD = 3.75f;
+					Element.INTERACTCOUNT = ELEMENTCOUNT / 5.0f;
+					Element.INTERACTRANGE = SCALE / 1000;
+					Element.ELESPEED = SCALE / 1.65f;
 					Element.RELATIONSHIPSCALE = 10.0f;
-					Element.FOODREQUIREMENT = 0.5f;
+					Element.FOODREQUIREMENT = 0.25f;
 					Element.STARTRESOURCES = 75.0f;
 					Element.MAXRELATIONSHIPS = 10;
 					Element.MAXLOCATIONSCOUNT = 10;
-					Element.MAXRESOURCECOUNT = 25;
-					Element.MAXACTIONSCOUNT = 10;
-					Element.DISCOVERYRATE = 0.003f;
-					Element.MIDDLEAGE = 50;
+					Element.MAXRESOURCECOUNT = 15;
+					Element.MAXACTIONSCOUNT = 15;
+					Element.DISCOVERYRATE = 0.0001f;
+					Element.MIDDLEAGE = 500;
 					Element.TRADEROUNDOFF = 0.0001f;
-					Element.REPRODUCTIONCHANCE = 0.05f;
+					Element.REPRODUCTIONCHANCE = 0.3f;
 					Element.CHILDCOST = 0.5f;
 					displayBmp = new Bitmap(panel1.Width, panel1.Height);
 					elements = new List<Element>();
@@ -153,7 +155,15 @@ namespace EvoMod2
 
 		private void worker_DoWork(object sender, DoWorkEventArgs e)
 		{
-			Bitmap display = new Bitmap(panel1.Width, panel1.Height);
+			Bitmap display;
+			try
+			{
+				display = new Bitmap(panel1.Width, panel1.Height);
+			}
+			catch (Exception)
+			{
+				display = new Bitmap(10, 10);
+			}
 			Graphics g = Graphics.FromImage(display);
 			g.Clear(Color.DarkGray);
 
@@ -234,6 +244,11 @@ namespace EvoMod2
 						(int)(element.Position.Y * panel1.ClientRectangle.Height / SCALE) - size / 2,
 						size,
 						size);
+					//g.FillEllipse(b,
+					//	(int)(element.Position.X * panel1.ClientRectangle.Width / SCALE) - 10 / 2,
+					//	(int)(element.Position.Y * panel1.ClientRectangle.Height / SCALE) - 10 / 2,
+					//	10,
+					//	10);
 				}
 			}
 			e.Result = display;
