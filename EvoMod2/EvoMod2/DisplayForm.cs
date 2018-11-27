@@ -15,7 +15,7 @@ namespace EvoMod2
 	public partial class DisplayForm : Form
 	{
 		// Global values
-		public static Random GLOBALRANDOM; // Global random number generator
+		public static Random GLOBALRANDOM = new Random(); // Global random number generator
 		public static int SCALE;   // Scale of domain for positions
 		public static double SIZESCALING; // Scales rate of change of dot sizes wrt wealth
 		public static double OPACITYSCALING; // Scales rate of change of dot opacity wrt health
@@ -25,8 +25,8 @@ namespace EvoMod2
 		public static float DEATHCHANCE; // Scales the health treashold for death
 
 		// Private objects
-		private static List<Element> elements;
-		private static List<Resource> resources;
+		private static List<Element> elements = new List<Element>();
+		private static List<Resource> resources = new List<Resource>();
 		private BackgroundWorker worker = new BackgroundWorker();
 		private Bitmap displayBmp;
 
@@ -57,7 +57,86 @@ namespace EvoMod2
 				DialogResult result = settings.ShowDialog();
 				if (result == DialogResult.OK)
 				{
-					GLOBALRANDOM = new Random();
+					// Read in simulation inputs
+					SCALE = settings.DomainScale;
+					BOUNDARYCOLLISIONS = settings.BoundCollisions;
+					ELEMENTCOUNT = settings.EleCount;
+					POPULATIONENFORCEMENT = settings.PopEnforcement;
+					DEATHCHANCE = settings.DeathChance;
+					SIZESCALING = settings.SizeScaling;
+					OPACITYSCALING = settings.OpacityScaling;
+					Kinematics.DEFAULTDAMPING = settings.Damping;
+					Kinematics.TIMESTEP = settings.TimeStep;
+					Kinematics.SPEEDLIMIT = settings.SpeedLimit;
+					ResourceKernel.RESOURCESPEED = settings.ResourceSpeed;
+					ResourceKernel.SPREADRATE = settings.ResourceSpread;
+					Element.COLORMUTATIONRATE = settings.ColorMutation;
+					Element.TRAITSPREAD = settings.TraitSpread;
+					Element.INTERACTCOUNT = settings.InteractCount;
+					Element.INTERACTRANGE = settings.InteractRange;
+					Element.ELESPEED = settings.EleSpeed;
+					Element.DESTINATIONACCEL = settings.DestinationAccel;
+					Element.INTERACTIONCHOICESCALE = settings.InteractionChoiceScale;
+					Element.RELATIONSHIPSCALE = settings.RelationShipScale;
+					Element.FOODREQUIREMENT = settings.FoodRequirement;
+					Element.STARTRESOURCES = settings.StartResources;
+					Element.MAXRELATIONSHIPS = settings.MaxRelationships;
+					Element.MAXLOCATIONSCOUNT = settings.MaxLocations;
+					Element.MAXACTIONSCOUNT = settings.MaxActions;
+					Element.MAXRESOURCECOUNT = settings.MaxResourceCount;
+					Element.DISCOVERYRATE = settings.DiscoveryRate;
+					Element.MIDDLEAGE = settings.MiddleAge;
+					Element.TRADEROUNDOFF = settings.TradeRoundoff;
+					Element.REPRODUCTIONCHANCE = settings.ReproductionChance;
+					Element.MINGLECHANCE = settings.MingleChance;
+					Element.TRADECHANCE = settings.TradeChance;
+					Element.ATTACKCHANCE = settings.AttackChance;
+					Element.CHILDCOST = settings.ChildCost;
+					Element.INFANTMORTALITY = settings.InfantMortality;
+					Element.INHERITANCE = settings.Inheritance;
+					Element.INCESTALLOWED = settings.IncestAllowed;
+
+					// Set up natural resources according to inputs table
+					for (int i = 0; i < settings.NaturalResourcesDataGridView.Rows.Count; i++)
+					{
+						float resourceVolume;
+						int nodeCount;
+						try
+						{
+							if (!Single.TryParse(settings.NaturalResourcesDataGridView.Rows[i].Cells[0].Value.ToString(), out resourceVolume)
+								|| !Int32.TryParse(settings.NaturalResourcesDataGridView.Rows[i].Cells[2].Value.ToString(), out nodeCount))
+							{
+								continue;
+							}
+						}
+						catch (NullReferenceException)
+						{
+							continue;
+						}
+						resources.Add(new Resource(Color.FromName(settings.NaturalResourcesDataGridView.Rows[i].Cells[1].Value.ToString()), resourceVolume));
+
+						float[] pcts = new float[nodeCount];
+						float sum = 0.0f;
+						for (int j = 0; j < pcts.Length; j++)
+						{
+							pcts[j] = (float)GLOBALRANDOM.NextDouble();
+							sum += pcts[j];
+						}
+						for (int j = 0; j < pcts.Length; j++)
+						{
+							resources[i].Add(pcts[j] / sum, new PointF((float)(GLOBALRANDOM.NextDouble() * SCALE), (float)(GLOBALRANDOM.NextDouble() * SCALE)));
+						}
+
+						DataGridViewCheckBoxCell isFoodCell = settings.NaturalResourcesDataGridView.Rows[i].Cells[3] as DataGridViewCheckBoxCell;
+						if (bool.Parse(isFoodCell.Value.ToString()))
+						{
+							Element.FoodResources.Add(new FoodResourceData(i, 1.0f - (float)GLOBALRANDOM.NextDouble()));
+						}
+					}
+				}
+				else
+				{
+					// Use default values
 					SCALE = 5000;
 					BOUNDARYCOLLISIONS = true;
 					ELEMENTCOUNT = 1250;
@@ -65,7 +144,7 @@ namespace EvoMod2
 					DEATHCHANCE = 0.0225f;
 					SIZESCALING = 7.0f;
 					OPACITYSCALING = 2.0f;
-					Kinematics.DEFAULTDAMPING = 0.2f;
+					Kinematics.DEFAULTDAMPING = 0.175f;
 					Kinematics.TIMESTEP = 0.05f;
 					Kinematics.SPEEDLIMIT = SCALE / 17.5f;
 					ResourceKernel.RESOURCESPEED = 3.0f;
@@ -73,10 +152,10 @@ namespace EvoMod2
 					Element.COLORMUTATIONRATE = 0.15f;
 					Element.TRAITSPREAD = 3.75f;
 					Element.INTERACTCOUNT = ELEMENTCOUNT / 50.0f;
-					Element.INTERACTRANGE = SCALE / 750;
+					Element.INTERACTRANGE = SCALE / 750.0f;
 					Element.ELESPEED = SCALE / 5.0f;
-					Element.DESTINATIONACCEL = 2.0f;
-					Element.ACTIONCHOICESCALE = 10.0f;
+					Element.DESTINATIONACCEL = 5.0f;
+					Element.INTERACTIONCHOICESCALE = 10.0f;
 					Element.RELATIONSHIPSCALE = 25.0f;
 					Element.FOODREQUIREMENT = 0.25f;
 					Element.STARTRESOURCES = 15.0f;
@@ -95,49 +174,8 @@ namespace EvoMod2
 					Element.INFANTMORTALITY = 0.05f;
 					Element.INHERITANCE = 1.0f;
 					Element.INCESTALLOWED = false;
-					displayBmp = new Bitmap(panel1.Width, panel1.Height);
-					elements = new List<Element>();
-					resources = new List<Resource>();
 
-					/* COMMENTED OUT IN LIEU OF PROGRAMMATIC VERSION FOR DEBUGGING SPEED */
-					//for (int i = 0; i < settings.NaturalResourcesDataGridView.Rows.Count; i++)
-					//{
-					//	float resourceVolume;
-					//	int nodeCount;
-					//	try
-					//	{
-					//		if (!Single.TryParse(settings.NaturalResourcesDataGridView.Rows[i].Cells[0].Value.ToString(), out resourceVolume)
-					//			|| !Int32.TryParse(settings.NaturalResourcesDataGridView.Rows[i].Cells[2].Value.ToString(), out nodeCount))
-					//		{
-					//			continue;
-					//		}
-					//	}
-					//	catch (NullReferenceException)
-					//	{
-					//		continue;
-					//	}
-					//	resources.Add(new Resource(Color.FromName(settings.NaturalResourcesDataGridView.Rows[i].Cells[1].Value.ToString()), resourceVolume));
-
-					//	float[] pcts = new float[nodeCount];
-					//	float sum = 0.0f;
-					//	for (int j = 0; j < pcts.Length; j++)
-					//	{
-					//		pcts[j] = (float)GLOBALRANDOM.NextDouble();
-					//		sum += pcts[j];
-					//	}
-					//	for (int j = 0; j < pcts.Length; j++)
-					//	{
-					//		resources[i].Add(pcts[j] / sum, new PointF((float)(GLOBALRANDOM.NextDouble() * SCALE), (float)(GLOBALRANDOM.NextDouble() * SCALE)));
-					//	}
-
-					//	DataGridViewCheckBoxCell isFoodCell = settings.NaturalResourcesDataGridView.Rows[i].Cells[3] as DataGridViewCheckBoxCell;
-					//	if (bool.Parse(isFoodCell.Value.ToString()))
-					//	{
-					//		Element.FoodResources.Add(new FoodResourceData(i, 1.0f - (float)GLOBALRANDOM.NextDouble()));
-					//	}
-					//}
-
-					// Debugging auto-resource-populate
+					// Set up default background resources
 					resources.Add(new Resource(Color.Blue, 80000000));
 					Element.FoodResources.Add(new FoodResourceData(0, 1.0f - (float)GLOBALRANDOM.NextDouble()));
 					resources.Add(new Resource(Color.Red, 50000000));
@@ -159,11 +197,13 @@ namespace EvoMod2
 					}
 				}
 			}
+
 			// Populate initial generation of elements
 			while (elements.Count < ELEMENTCOUNT)
 			{
 				elements.Add(new Element(GLOBALRANDOM, resources));
 			}
+			// Begin simulation
 			worker.RunWorkerAsync();
 			timer1.Start();
 		}

@@ -18,15 +18,15 @@ namespace EvoMod2
 		public static float COLORMUTATIONRATE;
 		public static float TRAITSPREAD;
 		public static float INTERACTCOUNT;
-		public static int INTERACTRANGE;
+		public static float INTERACTRANGE;
 		public static double RELATIONSHIPSCALE;
-		public static float ACTIONCHOICESCALE;
+		public static float INTERACTIONCHOICESCALE;
 		public static float FOODREQUIREMENT;
 		public static float STARTRESOURCES;
 		public static int MAXRELATIONSHIPS;
 		public static int MAXLOCATIONSCOUNT;
-		public static int MAXRESOURCECOUNT;
 		public static int MAXACTIONSCOUNT;
+		public static int MAXRESOURCECOUNT;
 		public static float DISCOVERYRATE;
 		public static float TRADEROUNDOFF;
 		public static float REPRODUCTIONCHANCE;
@@ -545,8 +545,8 @@ namespace EvoMod2
 						Mingle(otherElement, otherElement.HappinessWeights);
 					}
 					double actionChoice = StatFunctions.GaussRandom(random.NextDouble(),
-						ACTIONCHOICESCALE + relationships[otherElement],
-						ACTIONCHOICESCALE - relationships[otherElement]);
+						INTERACTIONCHOICESCALE + relationships[otherElement],
+						INTERACTIONCHOICESCALE - relationships[otherElement]);
 					if (actionChoice > 1.0f / (1.0f + REPRODUCTIONCHANCE)
 						&& this != otherElement
 						&& this.Age > MIDDLEAGE / 4.0f
@@ -558,7 +558,7 @@ namespace EvoMod2
 					{
 						// Mate
 						Element child = new Element(this, otherElement);
-						relationships.Add(child, Conscientiousness * ACTIONCHOICESCALE);
+						relationships.Add(child, Conscientiousness * INTERACTIONCHOICESCALE);
 						children.Add(child);
 						_health -= Age / MIDDLEAGE;
 					}
@@ -632,7 +632,7 @@ namespace EvoMod2
 			{
 				if (!relationships.ContainsKey(sender))
 				{
-					relationships.Add(sender, (float)(ACTIONCHOICESCALE * StatFunctions.Sigmoid(MIDDLEAGE / 2.0, 1.0 / MIDDLEAGE, Age) - 0.5 * ACTIONCHOICESCALE));
+					relationships.Add(sender, (float)(INTERACTIONCHOICESCALE * StatFunctions.Sigmoid(MIDDLEAGE / 2.0, 1.0 / MIDDLEAGE, Age) - 0.5 * INTERACTIONCHOICESCALE));
 				}
 				else
 				{

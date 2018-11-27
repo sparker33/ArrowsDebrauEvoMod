@@ -52,7 +52,7 @@ namespace EvoMod2
 		public float GetProgress(PointF currentLocation)
 		{
 			float progress = 0.0f;
-			if (startDistance > 1.0f)
+			if (startDistance > DisplayForm.SCALE / 1000.0f)
 			{
 				float xDist = destination.X - currentLocation.X;
 				float yDist = destination.Y - currentLocation.Y;
