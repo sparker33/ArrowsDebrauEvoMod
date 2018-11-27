@@ -14,6 +14,7 @@ namespace EvoMod2
 	{
 		/* Accessors for inputs */
 		// General settings
+		public int RandomSeed { get => Int32.Parse(randomSeedBox.Text); }
 		public int DomainScale { get => Int32.Parse(scaleBox.Text); }
 		public int EleCount { get => Int32.Parse(eleCountBox.Text); }
 		public float PopEnforcement { get => Single.Parse(popEnforceBox.Text); }

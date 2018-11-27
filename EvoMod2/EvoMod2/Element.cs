@@ -270,9 +270,20 @@ namespace EvoMod2
 			float[] temp = new float[2]; // Utility array to hold destination distance, accelleration, and displacement
 
 			// Check for destination acquisition
-			if (destination.IsEmpty && StatFunctions.GaussRandom(DisplayForm.GLOBALRANDOM.NextDouble(), 10.0 * Openness, 1.0 / Openness) > 0.99)
+			double destinationAcquisitionCheck = StatFunctions.GaussRandom(DisplayForm.GLOBALRANDOM.NextDouble(), 10.0 * Openness, 1.0 / Openness);
+			if (destination.IsEmpty && destinationAcquisitionCheck > 0.99)
 			{
-				PointF newLocation = KnownLocations[DisplayForm.GLOBALRANDOM.Next(KnownLocations.Count - 1)];
+				PointF newLocation;
+				if (Math.Exp(DISCOVERYRATE * (KnownLocations.Count - MAXLOCATIONSCOUNT)) < destinationAcquisitionCheck)
+				{
+					newLocation = new PointF((float)(DisplayForm.GLOBALRANDOM.NextDouble() * DisplayForm.SCALE),
+						(float)(DisplayForm.GLOBALRANDOM.NextDouble() * DisplayForm.SCALE));
+					KnownLocations.Add(newLocation);
+				}
+				else
+				{
+					newLocation = KnownLocations[DisplayForm.GLOBALRANDOM.Next(KnownLocations.Count - 1)];
+				}
 				destination.Set(this.position, newLocation);
 			}
 			float progress = destination.GetProgress(position);
@@ -858,7 +869,7 @@ namespace EvoMod2
 				this.LearnLocation(otherElement.KnownLocations[DisplayForm.GLOBALRANDOM.Next(otherElement.KnownLocations.Count - 1)]);
 			}
 			if (Math.Exp(KNOWLEDGETRANSFERRATE * (relationships.Count - MAXRELATIONSHIPS))
-				< StatFunctions.GaussRandom(DisplayForm.GLOBALRANDOM.NextDouble(), 10.0 * (Extraversion), 10.0 / (Extraversion)))
+				< StatFunctions.GaussRandom(DisplayForm.GLOBALRANDOM.NextDouble(), 10.0 * Extraversion, 10.0 / Extraversion))
 			{
 				Element subject = relationships.Keys.ToArray()[DisplayForm.GLOBALRANDOM.Next(relationships.Count() - 1)];
 				this.LearnRelationshipRating(subject, otherElement.LearnRelationshipRating(subject, relationships[subject]));

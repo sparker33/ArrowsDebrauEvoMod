@@ -114,6 +114,8 @@
 			this.infantMortalityBox = new System.Windows.Forms.TextBox();
 			this.label34 = new System.Windows.Forms.Label();
 			this.knowledgeTransferRateBox = new System.Windows.Forms.TextBox();
+			this.label42 = new System.Windows.Forms.Label();
+			this.randomSeedBox = new System.Windows.Forms.TextBox();
 			((System.ComponentModel.ISupportInitialize)(this.natResourcesDataGrid)).BeginInit();
 			this.SuspendLayout();
 			// 
@@ -121,7 +123,7 @@
 			// 
 			this.runManualButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
 			this.runManualButton.DialogResult = System.Windows.Forms.DialogResult.OK;
-			this.runManualButton.Location = new System.Drawing.Point(704, 100);
+			this.runManualButton.Location = new System.Drawing.Point(703, 100);
 			this.runManualButton.Name = "runManualButton";
 			this.runManualButton.Size = new System.Drawing.Size(75, 23);
 			this.runManualButton.TabIndex = 0;
@@ -130,8 +132,7 @@
 			// 
 			// natResourcesDataGrid
 			// 
-			this.natResourcesDataGrid.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
+			this.natResourcesDataGrid.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
 			this.natResourcesDataGrid.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
 			this.natResourcesDataGrid.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
@@ -177,7 +178,7 @@
 			// 
 			this.runDefaultsButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
 			this.runDefaultsButton.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-			this.runDefaultsButton.Location = new System.Drawing.Point(785, 100);
+			this.runDefaultsButton.Location = new System.Drawing.Point(784, 100);
 			this.runDefaultsButton.Name = "runDefaultsButton";
 			this.runDefaultsButton.Size = new System.Drawing.Size(75, 23);
 			this.runDefaultsButton.TabIndex = 2;
@@ -199,7 +200,7 @@
 			this.boundaryCollisionsCheckBox.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
 			this.boundaryCollisionsCheckBox.Checked = true;
 			this.boundaryCollisionsCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-			this.boundaryCollisionsCheckBox.Location = new System.Drawing.Point(16, 384);
+			this.boundaryCollisionsCheckBox.Location = new System.Drawing.Point(12, 410);
 			this.boundaryCollisionsCheckBox.Name = "boundaryCollisionsCheckBox";
 			this.boundaryCollisionsCheckBox.Size = new System.Drawing.Size(167, 17);
 			this.boundaryCollisionsCheckBox.TabIndex = 4;
@@ -209,7 +210,7 @@
 			// 
 			// scaleBox
 			// 
-			this.scaleBox.Location = new System.Drawing.Point(169, 208);
+			this.scaleBox.Location = new System.Drawing.Point(165, 234);
 			this.scaleBox.Name = "scaleBox";
 			this.scaleBox.Size = new System.Drawing.Size(100, 20);
 			this.scaleBox.TabIndex = 5;
@@ -218,7 +219,7 @@
 			// 
 			// label2
 			// 
-			this.label2.Location = new System.Drawing.Point(13, 211);
+			this.label2.Location = new System.Drawing.Point(9, 237);
 			this.label2.Name = "label2";
 			this.label2.Size = new System.Drawing.Size(150, 13);
 			this.label2.TabIndex = 6;
@@ -237,7 +238,7 @@
 			// 
 			// label4
 			// 
-			this.label4.Location = new System.Drawing.Point(13, 237);
+			this.label4.Location = new System.Drawing.Point(9, 263);
 			this.label4.Name = "label4";
 			this.label4.Size = new System.Drawing.Size(150, 13);
 			this.label4.TabIndex = 9;
@@ -246,7 +247,7 @@
 			// 
 			// eleCountBox
 			// 
-			this.eleCountBox.Location = new System.Drawing.Point(169, 234);
+			this.eleCountBox.Location = new System.Drawing.Point(165, 260);
 			this.eleCountBox.Name = "eleCountBox";
 			this.eleCountBox.Size = new System.Drawing.Size(100, 20);
 			this.eleCountBox.TabIndex = 8;
@@ -255,7 +256,7 @@
 			// 
 			// label5
 			// 
-			this.label5.Location = new System.Drawing.Point(13, 263);
+			this.label5.Location = new System.Drawing.Point(9, 289);
 			this.label5.Name = "label5";
 			this.label5.Size = new System.Drawing.Size(150, 13);
 			this.label5.TabIndex = 11;
@@ -264,7 +265,7 @@
 			// 
 			// popEnforceBox
 			// 
-			this.popEnforceBox.Location = new System.Drawing.Point(169, 260);
+			this.popEnforceBox.Location = new System.Drawing.Point(165, 286);
 			this.popEnforceBox.Name = "popEnforceBox";
 			this.popEnforceBox.Size = new System.Drawing.Size(100, 20);
 			this.popEnforceBox.TabIndex = 10;
@@ -273,7 +274,7 @@
 			// 
 			// label6
 			// 
-			this.label6.Location = new System.Drawing.Point(13, 289);
+			this.label6.Location = new System.Drawing.Point(9, 315);
 			this.label6.Name = "label6";
 			this.label6.Size = new System.Drawing.Size(150, 13);
 			this.label6.TabIndex = 13;
@@ -282,7 +283,7 @@
 			// 
 			// deathChanceBox
 			// 
-			this.deathChanceBox.Location = new System.Drawing.Point(169, 286);
+			this.deathChanceBox.Location = new System.Drawing.Point(165, 312);
 			this.deathChanceBox.Name = "deathChanceBox";
 			this.deathChanceBox.Size = new System.Drawing.Size(100, 20);
 			this.deathChanceBox.TabIndex = 12;
@@ -291,7 +292,7 @@
 			// 
 			// label7
 			// 
-			this.label7.Location = new System.Drawing.Point(13, 315);
+			this.label7.Location = new System.Drawing.Point(9, 341);
 			this.label7.Name = "label7";
 			this.label7.Size = new System.Drawing.Size(150, 13);
 			this.label7.TabIndex = 15;
@@ -300,7 +301,7 @@
 			// 
 			// sizeScaleBox
 			// 
-			this.sizeScaleBox.Location = new System.Drawing.Point(169, 312);
+			this.sizeScaleBox.Location = new System.Drawing.Point(165, 338);
 			this.sizeScaleBox.Name = "sizeScaleBox";
 			this.sizeScaleBox.Size = new System.Drawing.Size(100, 20);
 			this.sizeScaleBox.TabIndex = 14;
@@ -309,7 +310,7 @@
 			// 
 			// label8
 			// 
-			this.label8.Location = new System.Drawing.Point(13, 341);
+			this.label8.Location = new System.Drawing.Point(9, 367);
 			this.label8.Name = "label8";
 			this.label8.Size = new System.Drawing.Size(150, 13);
 			this.label8.TabIndex = 17;
@@ -318,7 +319,7 @@
 			// 
 			// opacityScaleBox
 			// 
-			this.opacityScaleBox.Location = new System.Drawing.Point(169, 338);
+			this.opacityScaleBox.Location = new System.Drawing.Point(165, 364);
 			this.opacityScaleBox.Name = "opacityScaleBox";
 			this.opacityScaleBox.Size = new System.Drawing.Size(100, 20);
 			this.opacityScaleBox.TabIndex = 16;
@@ -327,7 +328,7 @@
 			// 
 			// label9
 			// 
-			this.label9.Location = new System.Drawing.Point(12, 410);
+			this.label9.Location = new System.Drawing.Point(8, 436);
 			this.label9.Name = "label9";
 			this.label9.Size = new System.Drawing.Size(150, 13);
 			this.label9.TabIndex = 19;
@@ -336,7 +337,7 @@
 			// 
 			// dampingBox
 			// 
-			this.dampingBox.Location = new System.Drawing.Point(168, 407);
+			this.dampingBox.Location = new System.Drawing.Point(164, 433);
 			this.dampingBox.Name = "dampingBox";
 			this.dampingBox.Size = new System.Drawing.Size(100, 20);
 			this.dampingBox.TabIndex = 18;
@@ -346,7 +347,7 @@
 			// label10
 			// 
 			this.label10.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Underline))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.label10.Location = new System.Drawing.Point(12, 361);
+			this.label10.Location = new System.Drawing.Point(8, 387);
 			this.label10.Name = "label10";
 			this.label10.Size = new System.Drawing.Size(200, 20);
 			this.label10.TabIndex = 20;
@@ -355,7 +356,7 @@
 			// 
 			// label11
 			// 
-			this.label11.Location = new System.Drawing.Point(12, 436);
+			this.label11.Location = new System.Drawing.Point(8, 462);
 			this.label11.Name = "label11";
 			this.label11.Size = new System.Drawing.Size(150, 13);
 			this.label11.TabIndex = 22;
@@ -364,7 +365,7 @@
 			// 
 			// timeStepBox
 			// 
-			this.timeStepBox.Location = new System.Drawing.Point(168, 433);
+			this.timeStepBox.Location = new System.Drawing.Point(164, 459);
 			this.timeStepBox.Name = "timeStepBox";
 			this.timeStepBox.Size = new System.Drawing.Size(100, 20);
 			this.timeStepBox.TabIndex = 21;
@@ -373,7 +374,7 @@
 			// 
 			// label12
 			// 
-			this.label12.Location = new System.Drawing.Point(13, 462);
+			this.label12.Location = new System.Drawing.Point(9, 488);
 			this.label12.Name = "label12";
 			this.label12.Size = new System.Drawing.Size(150, 13);
 			this.label12.TabIndex = 24;
@@ -382,7 +383,7 @@
 			// 
 			// speedLimitBox
 			// 
-			this.speedLimitBox.Location = new System.Drawing.Point(169, 459);
+			this.speedLimitBox.Location = new System.Drawing.Point(165, 485);
 			this.speedLimitBox.Name = "speedLimitBox";
 			this.speedLimitBox.Size = new System.Drawing.Size(100, 20);
 			this.speedLimitBox.TabIndex = 23;
@@ -442,7 +443,7 @@
 			// 
 			// label16
 			// 
-			this.label16.Location = new System.Drawing.Point(12, 514);
+			this.label16.Location = new System.Drawing.Point(8, 540);
 			this.label16.Name = "label16";
 			this.label16.Size = new System.Drawing.Size(150, 13);
 			this.label16.TabIndex = 42;
@@ -451,7 +452,7 @@
 			// 
 			// destinationAccelBox
 			// 
-			this.destinationAccelBox.Location = new System.Drawing.Point(168, 511);
+			this.destinationAccelBox.Location = new System.Drawing.Point(164, 537);
 			this.destinationAccelBox.Name = "destinationAccelBox";
 			this.destinationAccelBox.Size = new System.Drawing.Size(100, 20);
 			this.destinationAccelBox.TabIndex = 41;
@@ -460,7 +461,7 @@
 			// 
 			// label17
 			// 
-			this.label17.Location = new System.Drawing.Point(12, 488);
+			this.label17.Location = new System.Drawing.Point(8, 514);
 			this.label17.Name = "label17";
 			this.label17.Size = new System.Drawing.Size(150, 13);
 			this.label17.TabIndex = 40;
@@ -469,7 +470,7 @@
 			// 
 			// eleSpeedBox
 			// 
-			this.eleSpeedBox.Location = new System.Drawing.Point(168, 485);
+			this.eleSpeedBox.Location = new System.Drawing.Point(164, 511);
 			this.eleSpeedBox.Name = "eleSpeedBox";
 			this.eleSpeedBox.Size = new System.Drawing.Size(100, 20);
 			this.eleSpeedBox.TabIndex = 39;
@@ -479,7 +480,7 @@
 			// label18
 			// 
 			this.label18.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-			this.label18.Location = new System.Drawing.Point(367, 289);
+			this.label18.Location = new System.Drawing.Point(366, 289);
 			this.label18.Name = "label18";
 			this.label18.Size = new System.Drawing.Size(150, 13);
 			this.label18.TabIndex = 38;
@@ -489,7 +490,7 @@
 			// interactRangeBox
 			// 
 			this.interactRangeBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-			this.interactRangeBox.Location = new System.Drawing.Point(523, 286);
+			this.interactRangeBox.Location = new System.Drawing.Point(522, 286);
 			this.interactRangeBox.Name = "interactRangeBox";
 			this.interactRangeBox.Size = new System.Drawing.Size(100, 20);
 			this.interactRangeBox.TabIndex = 37;
@@ -499,7 +500,7 @@
 			// label19
 			// 
 			this.label19.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-			this.label19.Location = new System.Drawing.Point(367, 263);
+			this.label19.Location = new System.Drawing.Point(366, 263);
 			this.label19.Name = "label19";
 			this.label19.Size = new System.Drawing.Size(150, 13);
 			this.label19.TabIndex = 36;
@@ -509,7 +510,7 @@
 			// interactCountBox
 			// 
 			this.interactCountBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-			this.interactCountBox.Location = new System.Drawing.Point(523, 260);
+			this.interactCountBox.Location = new System.Drawing.Point(522, 260);
 			this.interactCountBox.Name = "interactCountBox";
 			this.interactCountBox.Size = new System.Drawing.Size(100, 20);
 			this.interactCountBox.TabIndex = 35;
@@ -519,7 +520,7 @@
 			// label20
 			// 
 			this.label20.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-			this.label20.Location = new System.Drawing.Point(367, 237);
+			this.label20.Location = new System.Drawing.Point(366, 237);
 			this.label20.Name = "label20";
 			this.label20.Size = new System.Drawing.Size(150, 13);
 			this.label20.TabIndex = 34;
@@ -529,7 +530,7 @@
 			// traitSpreadBox
 			// 
 			this.traitSpreadBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-			this.traitSpreadBox.Location = new System.Drawing.Point(523, 234);
+			this.traitSpreadBox.Location = new System.Drawing.Point(522, 234);
 			this.traitSpreadBox.Name = "traitSpreadBox";
 			this.traitSpreadBox.Size = new System.Drawing.Size(100, 20);
 			this.traitSpreadBox.TabIndex = 33;
@@ -550,7 +551,7 @@
 			// label22
 			// 
 			this.label22.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-			this.label22.Location = new System.Drawing.Point(367, 211);
+			this.label22.Location = new System.Drawing.Point(366, 211);
 			this.label22.Name = "label22";
 			this.label22.Size = new System.Drawing.Size(150, 13);
 			this.label22.TabIndex = 31;
@@ -560,7 +561,7 @@
 			// colorMutationRateBox
 			// 
 			this.colorMutationRateBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-			this.colorMutationRateBox.Location = new System.Drawing.Point(523, 208);
+			this.colorMutationRateBox.Location = new System.Drawing.Point(522, 208);
 			this.colorMutationRateBox.Name = "colorMutationRateBox";
 			this.colorMutationRateBox.Size = new System.Drawing.Size(100, 20);
 			this.colorMutationRateBox.TabIndex = 30;
@@ -570,7 +571,7 @@
 			// label24
 			// 
 			this.label24.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-			this.label24.Location = new System.Drawing.Point(367, 419);
+			this.label24.Location = new System.Drawing.Point(366, 419);
 			this.label24.Name = "label24";
 			this.label24.Size = new System.Drawing.Size(150, 13);
 			this.label24.TabIndex = 52;
@@ -580,17 +581,17 @@
 			// maxRelationshipsBox
 			// 
 			this.maxRelationshipsBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-			this.maxRelationshipsBox.Location = new System.Drawing.Point(523, 416);
+			this.maxRelationshipsBox.Location = new System.Drawing.Point(522, 416);
 			this.maxRelationshipsBox.Name = "maxRelationshipsBox";
 			this.maxRelationshipsBox.Size = new System.Drawing.Size(100, 20);
 			this.maxRelationshipsBox.TabIndex = 51;
-			this.maxRelationshipsBox.Text = "10";
+			this.maxRelationshipsBox.Text = "1000";
 			this.maxRelationshipsBox.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
 			// 
 			// label25
 			// 
 			this.label25.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-			this.label25.Location = new System.Drawing.Point(367, 393);
+			this.label25.Location = new System.Drawing.Point(366, 393);
 			this.label25.Name = "label25";
 			this.label25.Size = new System.Drawing.Size(150, 13);
 			this.label25.TabIndex = 50;
@@ -600,7 +601,7 @@
 			// startResourcesBox
 			// 
 			this.startResourcesBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-			this.startResourcesBox.Location = new System.Drawing.Point(523, 390);
+			this.startResourcesBox.Location = new System.Drawing.Point(522, 390);
 			this.startResourcesBox.Name = "startResourcesBox";
 			this.startResourcesBox.Size = new System.Drawing.Size(100, 20);
 			this.startResourcesBox.TabIndex = 49;
@@ -610,7 +611,7 @@
 			// label26
 			// 
 			this.label26.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-			this.label26.Location = new System.Drawing.Point(367, 367);
+			this.label26.Location = new System.Drawing.Point(366, 367);
 			this.label26.Name = "label26";
 			this.label26.Size = new System.Drawing.Size(150, 13);
 			this.label26.TabIndex = 48;
@@ -620,7 +621,7 @@
 			// foodRequirementBox
 			// 
 			this.foodRequirementBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-			this.foodRequirementBox.Location = new System.Drawing.Point(523, 364);
+			this.foodRequirementBox.Location = new System.Drawing.Point(522, 364);
 			this.foodRequirementBox.Name = "foodRequirementBox";
 			this.foodRequirementBox.Size = new System.Drawing.Size(100, 20);
 			this.foodRequirementBox.TabIndex = 47;
@@ -630,7 +631,7 @@
 			// label27
 			// 
 			this.label27.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-			this.label27.Location = new System.Drawing.Point(367, 341);
+			this.label27.Location = new System.Drawing.Point(366, 341);
 			this.label27.Name = "label27";
 			this.label27.Size = new System.Drawing.Size(150, 13);
 			this.label27.TabIndex = 46;
@@ -640,7 +641,7 @@
 			// relationshipScaleBox
 			// 
 			this.relationshipScaleBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-			this.relationshipScaleBox.Location = new System.Drawing.Point(523, 338);
+			this.relationshipScaleBox.Location = new System.Drawing.Point(522, 338);
 			this.relationshipScaleBox.Name = "relationshipScaleBox";
 			this.relationshipScaleBox.Size = new System.Drawing.Size(100, 20);
 			this.relationshipScaleBox.TabIndex = 45;
@@ -650,7 +651,7 @@
 			// label28
 			// 
 			this.label28.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-			this.label28.Location = new System.Drawing.Point(367, 315);
+			this.label28.Location = new System.Drawing.Point(366, 315);
 			this.label28.Name = "label28";
 			this.label28.Size = new System.Drawing.Size(150, 13);
 			this.label28.TabIndex = 44;
@@ -660,7 +661,7 @@
 			// interactChoiceScaleBox
 			// 
 			this.interactChoiceScaleBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-			this.interactChoiceScaleBox.Location = new System.Drawing.Point(523, 312);
+			this.interactChoiceScaleBox.Location = new System.Drawing.Point(522, 312);
 			this.interactChoiceScaleBox.Name = "interactChoiceScaleBox";
 			this.interactChoiceScaleBox.Size = new System.Drawing.Size(100, 20);
 			this.interactChoiceScaleBox.TabIndex = 43;
@@ -670,7 +671,7 @@
 			// label23
 			// 
 			this.label23.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-			this.label23.Location = new System.Drawing.Point(367, 445);
+			this.label23.Location = new System.Drawing.Point(366, 445);
 			this.label23.Name = "label23";
 			this.label23.Size = new System.Drawing.Size(150, 13);
 			this.label23.TabIndex = 54;
@@ -680,7 +681,7 @@
 			// maxLocationsCountBox
 			// 
 			this.maxLocationsCountBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-			this.maxLocationsCountBox.Location = new System.Drawing.Point(523, 442);
+			this.maxLocationsCountBox.Location = new System.Drawing.Point(522, 442);
 			this.maxLocationsCountBox.Name = "maxLocationsCountBox";
 			this.maxLocationsCountBox.Size = new System.Drawing.Size(100, 20);
 			this.maxLocationsCountBox.TabIndex = 53;
@@ -710,7 +711,7 @@
 			// label30
 			// 
 			this.label30.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-			this.label30.Location = new System.Drawing.Point(367, 471);
+			this.label30.Location = new System.Drawing.Point(366, 471);
 			this.label30.Name = "label30";
 			this.label30.Size = new System.Drawing.Size(150, 13);
 			this.label30.TabIndex = 58;
@@ -720,7 +721,7 @@
 			// maxActionsCountBox
 			// 
 			this.maxActionsCountBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-			this.maxActionsCountBox.Location = new System.Drawing.Point(523, 468);
+			this.maxActionsCountBox.Location = new System.Drawing.Point(522, 468);
 			this.maxActionsCountBox.Name = "maxActionsCountBox";
 			this.maxActionsCountBox.Size = new System.Drawing.Size(100, 20);
 			this.maxActionsCountBox.TabIndex = 57;
@@ -731,7 +732,7 @@
 			// 
 			this.incestAllowedCheckBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
 			this.incestAllowedCheckBox.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
-			this.incestAllowedCheckBox.Location = new System.Drawing.Point(632, 468);
+			this.incestAllowedCheckBox.Location = new System.Drawing.Point(631, 442);
 			this.incestAllowedCheckBox.Name = "incestAllowedCheckBox";
 			this.incestAllowedCheckBox.Size = new System.Drawing.Size(167, 17);
 			this.incestAllowedCheckBox.TabIndex = 59;
@@ -742,7 +743,7 @@
 			// label31
 			// 
 			this.label31.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-			this.label31.Location = new System.Drawing.Point(629, 393);
+			this.label31.Location = new System.Drawing.Point(628, 367);
 			this.label31.Name = "label31";
 			this.label31.Size = new System.Drawing.Size(150, 13);
 			this.label31.TabIndex = 68;
@@ -752,7 +753,7 @@
 			// childCostBox
 			// 
 			this.childCostBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-			this.childCostBox.Location = new System.Drawing.Point(785, 390);
+			this.childCostBox.Location = new System.Drawing.Point(784, 364);
 			this.childCostBox.Name = "childCostBox";
 			this.childCostBox.Size = new System.Drawing.Size(100, 20);
 			this.childCostBox.TabIndex = 67;
@@ -762,7 +763,7 @@
 			// label32
 			// 
 			this.label32.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-			this.label32.Location = new System.Drawing.Point(629, 367);
+			this.label32.Location = new System.Drawing.Point(628, 341);
 			this.label32.Name = "label32";
 			this.label32.Size = new System.Drawing.Size(150, 13);
 			this.label32.TabIndex = 66;
@@ -772,7 +773,7 @@
 			// attackChanceBox
 			// 
 			this.attackChanceBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-			this.attackChanceBox.Location = new System.Drawing.Point(785, 364);
+			this.attackChanceBox.Location = new System.Drawing.Point(784, 338);
 			this.attackChanceBox.Name = "attackChanceBox";
 			this.attackChanceBox.Size = new System.Drawing.Size(100, 20);
 			this.attackChanceBox.TabIndex = 65;
@@ -782,7 +783,7 @@
 			// label33
 			// 
 			this.label33.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-			this.label33.Location = new System.Drawing.Point(629, 341);
+			this.label33.Location = new System.Drawing.Point(628, 315);
 			this.label33.Name = "label33";
 			this.label33.Size = new System.Drawing.Size(150, 13);
 			this.label33.TabIndex = 64;
@@ -792,7 +793,7 @@
 			// tradeChanceBox
 			// 
 			this.tradeChanceBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-			this.tradeChanceBox.Location = new System.Drawing.Point(785, 338);
+			this.tradeChanceBox.Location = new System.Drawing.Point(784, 312);
 			this.tradeChanceBox.Name = "tradeChanceBox";
 			this.tradeChanceBox.Size = new System.Drawing.Size(100, 20);
 			this.tradeChanceBox.TabIndex = 63;
@@ -802,7 +803,7 @@
 			// label35
 			// 
 			this.label35.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-			this.label35.Location = new System.Drawing.Point(629, 315);
+			this.label35.Location = new System.Drawing.Point(628, 289);
 			this.label35.Name = "label35";
 			this.label35.Size = new System.Drawing.Size(150, 13);
 			this.label35.TabIndex = 61;
@@ -812,7 +813,7 @@
 			// mingleChanceBox
 			// 
 			this.mingleChanceBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-			this.mingleChanceBox.Location = new System.Drawing.Point(785, 312);
+			this.mingleChanceBox.Location = new System.Drawing.Point(784, 286);
 			this.mingleChanceBox.Name = "mingleChanceBox";
 			this.mingleChanceBox.Size = new System.Drawing.Size(100, 20);
 			this.mingleChanceBox.TabIndex = 60;
@@ -822,7 +823,7 @@
 			// label36
 			// 
 			this.label36.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-			this.label36.Location = new System.Drawing.Point(629, 263);
+			this.label36.Location = new System.Drawing.Point(628, 237);
 			this.label36.Name = "label36";
 			this.label36.Size = new System.Drawing.Size(150, 13);
 			this.label36.TabIndex = 74;
@@ -832,7 +833,7 @@
 			// tradeRoundoffBox
 			// 
 			this.tradeRoundoffBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-			this.tradeRoundoffBox.Location = new System.Drawing.Point(785, 260);
+			this.tradeRoundoffBox.Location = new System.Drawing.Point(784, 234);
 			this.tradeRoundoffBox.Name = "tradeRoundoffBox";
 			this.tradeRoundoffBox.Size = new System.Drawing.Size(100, 20);
 			this.tradeRoundoffBox.TabIndex = 73;
@@ -842,7 +843,7 @@
 			// label37
 			// 
 			this.label37.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-			this.label37.Location = new System.Drawing.Point(629, 237);
+			this.label37.Location = new System.Drawing.Point(628, 211);
 			this.label37.Name = "label37";
 			this.label37.Size = new System.Drawing.Size(150, 13);
 			this.label37.TabIndex = 72;
@@ -852,7 +853,7 @@
 			// middleAgeBox
 			// 
 			this.middleAgeBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-			this.middleAgeBox.Location = new System.Drawing.Point(785, 234);
+			this.middleAgeBox.Location = new System.Drawing.Point(784, 208);
 			this.middleAgeBox.Name = "middleAgeBox";
 			this.middleAgeBox.Size = new System.Drawing.Size(100, 20);
 			this.middleAgeBox.TabIndex = 71;
@@ -862,7 +863,7 @@
 			// label38
 			// 
 			this.label38.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-			this.label38.Location = new System.Drawing.Point(366, 497);
+			this.label38.Location = new System.Drawing.Point(365, 497);
 			this.label38.Name = "label38";
 			this.label38.Size = new System.Drawing.Size(150, 13);
 			this.label38.TabIndex = 70;
@@ -872,7 +873,7 @@
 			// discoveryRateBox
 			// 
 			this.discoveryRateBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-			this.discoveryRateBox.Location = new System.Drawing.Point(522, 494);
+			this.discoveryRateBox.Location = new System.Drawing.Point(521, 494);
 			this.discoveryRateBox.Name = "discoveryRateBox";
 			this.discoveryRateBox.Size = new System.Drawing.Size(100, 20);
 			this.discoveryRateBox.TabIndex = 69;
@@ -882,7 +883,7 @@
 			// label39
 			// 
 			this.label39.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-			this.label39.Location = new System.Drawing.Point(629, 289);
+			this.label39.Location = new System.Drawing.Point(628, 263);
 			this.label39.Name = "label39";
 			this.label39.Size = new System.Drawing.Size(150, 13);
 			this.label39.TabIndex = 76;
@@ -892,7 +893,7 @@
 			// reproductionChanceBox
 			// 
 			this.reproductionChanceBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-			this.reproductionChanceBox.Location = new System.Drawing.Point(785, 286);
+			this.reproductionChanceBox.Location = new System.Drawing.Point(784, 260);
 			this.reproductionChanceBox.Name = "reproductionChanceBox";
 			this.reproductionChanceBox.Size = new System.Drawing.Size(100, 20);
 			this.reproductionChanceBox.TabIndex = 75;
@@ -902,7 +903,7 @@
 			// label40
 			// 
 			this.label40.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-			this.label40.Location = new System.Drawing.Point(629, 445);
+			this.label40.Location = new System.Drawing.Point(628, 419);
 			this.label40.Name = "label40";
 			this.label40.Size = new System.Drawing.Size(150, 13);
 			this.label40.TabIndex = 80;
@@ -912,7 +913,7 @@
 			// inheritanceBox
 			// 
 			this.inheritanceBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-			this.inheritanceBox.Location = new System.Drawing.Point(785, 442);
+			this.inheritanceBox.Location = new System.Drawing.Point(784, 416);
 			this.inheritanceBox.Name = "inheritanceBox";
 			this.inheritanceBox.Size = new System.Drawing.Size(100, 20);
 			this.inheritanceBox.TabIndex = 79;
@@ -922,7 +923,7 @@
 			// label41
 			// 
 			this.label41.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-			this.label41.Location = new System.Drawing.Point(629, 419);
+			this.label41.Location = new System.Drawing.Point(628, 393);
 			this.label41.Name = "label41";
 			this.label41.Size = new System.Drawing.Size(150, 13);
 			this.label41.TabIndex = 78;
@@ -932,7 +933,7 @@
 			// infantMortalityBox
 			// 
 			this.infantMortalityBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-			this.infantMortalityBox.Location = new System.Drawing.Point(785, 416);
+			this.infantMortalityBox.Location = new System.Drawing.Point(784, 390);
 			this.infantMortalityBox.Name = "infantMortalityBox";
 			this.infantMortalityBox.Size = new System.Drawing.Size(100, 20);
 			this.infantMortalityBox.TabIndex = 77;
@@ -942,7 +943,7 @@
 			// label34
 			// 
 			this.label34.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-			this.label34.Location = new System.Drawing.Point(629, 211);
+			this.label34.Location = new System.Drawing.Point(365, 523);
 			this.label34.Name = "label34";
 			this.label34.Size = new System.Drawing.Size(150, 13);
 			this.label34.TabIndex = 82;
@@ -952,18 +953,38 @@
 			// knowledgeTransferRateBox
 			// 
 			this.knowledgeTransferRateBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-			this.knowledgeTransferRateBox.Location = new System.Drawing.Point(785, 208);
+			this.knowledgeTransferRateBox.Location = new System.Drawing.Point(521, 520);
 			this.knowledgeTransferRateBox.Name = "knowledgeTransferRateBox";
 			this.knowledgeTransferRateBox.Size = new System.Drawing.Size(100, 20);
 			this.knowledgeTransferRateBox.TabIndex = 81;
 			this.knowledgeTransferRateBox.Text = "0.00005";
 			this.knowledgeTransferRateBox.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
 			// 
+			// label42
+			// 
+			this.label42.Location = new System.Drawing.Point(9, 211);
+			this.label42.Name = "label42";
+			this.label42.Size = new System.Drawing.Size(150, 13);
+			this.label42.TabIndex = 84;
+			this.label42.Text = "Random Seed:";
+			this.label42.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+			// 
+			// randomSeedBox
+			// 
+			this.randomSeedBox.Location = new System.Drawing.Point(165, 208);
+			this.randomSeedBox.Name = "randomSeedBox";
+			this.randomSeedBox.Size = new System.Drawing.Size(100, 20);
+			this.randomSeedBox.TabIndex = 83;
+			this.randomSeedBox.Text = "1";
+			this.randomSeedBox.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+			// 
 			// SettingsForm
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.ClientSize = new System.Drawing.Size(897, 541);
+			this.ClientSize = new System.Drawing.Size(897, 567);
+			this.Controls.Add(this.label42);
+			this.Controls.Add(this.randomSeedBox);
 			this.Controls.Add(this.label34);
 			this.Controls.Add(this.knowledgeTransferRateBox);
 			this.Controls.Add(this.label40);
@@ -1142,5 +1163,7 @@
 		private System.Windows.Forms.TextBox infantMortalityBox;
 		private System.Windows.Forms.Label label34;
 		private System.Windows.Forms.TextBox knowledgeTransferRateBox;
+		private System.Windows.Forms.Label label42;
+		private System.Windows.Forms.TextBox randomSeedBox;
 	}
 }

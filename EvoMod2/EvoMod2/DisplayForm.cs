@@ -15,7 +15,7 @@ namespace EvoMod2
 	public partial class DisplayForm : Form
 	{
 		// Global values
-		public static Random GLOBALRANDOM = new Random(); // Global random number generator
+		public static Random GLOBALRANDOM; // Global random number generator
 		public static int SCALE;   // Scale of domain for positions
 		public static double SIZESCALING; // Scales rate of change of dot sizes wrt wealth
 		public static double OPACITYSCALING; // Scales rate of change of dot opacity wrt health
@@ -58,6 +58,7 @@ namespace EvoMod2
 				if (result == DialogResult.OK)
 				{
 					// Read in simulation inputs
+					GLOBALRANDOM = new Random(settings.RandomSeed);
 					SCALE = settings.DomainScale;
 					BOUNDARYCOLLISIONS = settings.BoundCollisions;
 					ELEMENTCOUNT = settings.EleCount;
@@ -138,6 +139,7 @@ namespace EvoMod2
 				else
 				{
 					// Use default values
+					GLOBALRANDOM = new Random();
 					SCALE = 5000;
 					BOUNDARYCOLLISIONS = true;
 					ELEMENTCOUNT = 1250;
@@ -160,7 +162,7 @@ namespace EvoMod2
 					Element.RELATIONSHIPSCALE = 25.0f;
 					Element.FOODREQUIREMENT = 0.25f;
 					Element.STARTRESOURCES = 15.0f;
-					Element.MAXRELATIONSHIPS = 10;
+					Element.MAXRELATIONSHIPS = ELEMENTCOUNT;
 					Element.MAXLOCATIONSCOUNT = 10;
 					Element.MAXRESOURCECOUNT = 15;
 					Element.MAXACTIONSCOUNT = 15;
