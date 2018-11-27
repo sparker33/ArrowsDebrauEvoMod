@@ -20,6 +20,7 @@ namespace EvoMod2
 		public static double OPACITYSCALING; // Scales rate of change of dot opacity wrt health
 		public static Random GLOBALRANDOM; // Global random number generator
 		public static int ELEMENTCOUNT; // Number of elements
+		public static float POPULATIONENFORCEMENT; // Scales how strictly the maximum population is enforced
 		public static float DEATHCHANCE; // Scales the health treashold for death
 
 		// Private objects
@@ -56,33 +57,40 @@ namespace EvoMod2
 				if (result == DialogResult.OK)
 				{
 					GLOBALRANDOM = new Random();
-					ELEMENTCOUNT = 225;
-					DEATHCHANCE = 0.01f;
+					ELEMENTCOUNT = 1250;
+					POPULATIONENFORCEMENT = 0.0f;
+					DEATHCHANCE = 0.0225f;
 					SIZESCALING = 7.0f;
-					OPACITYSCALING = 4.0f;
-					Kinematics.DEFAULTDAMPING = 0.02f;
+					OPACITYSCALING = 2.0f;
+					Kinematics.DEFAULTDAMPING = 0.2f;
 					Kinematics.TIMESTEP = 0.05f;
-					Kinematics.SPEEDLIMIT = SCALE / 25.0f;
+					Kinematics.SPEEDLIMIT = SCALE / 17.5f;
 					ResourceKernel.RESOURCESPEED = 3.0f;
 					ResourceKernel.SPREADRATE = 0.0f;
-					Element.COLORMUTATIONRATE = 0.25f;
+					Element.COLORMUTATIONRATE = 0.15f;
 					Element.TRAITSPREAD = 3.75f;
-					Element.INTERACTCOUNT = ELEMENTCOUNT / 5.0f;
-					Element.INTERACTRANGE = SCALE / 1000;
-					Element.ELESPEED = SCALE / 1.75f;
-					Element.RELATIONSHIPSCALE = 10.0f;
+					Element.INTERACTCOUNT = ELEMENTCOUNT / 50.0f;
+					Element.INTERACTRANGE = SCALE / 750;
+					Element.ELESPEED = SCALE / 5.0f;
+					Element.ACTIONCHOICESCALE = 10.0f;
+					Element.RELATIONSHIPSCALE = 25.0f;
 					Element.FOODREQUIREMENT = 0.25f;
-					Element.STARTRESOURCES = 75.0f;
+					Element.STARTRESOURCES = 15.0f;
 					Element.MAXRELATIONSHIPS = 10;
 					Element.MAXLOCATIONSCOUNT = 10;
 					Element.MAXRESOURCECOUNT = 15;
 					Element.MAXACTIONSCOUNT = 15;
-					Element.DISCOVERYRATE = 0.0001f;
+					Element.DISCOVERYRATE = 0.00005f;
 					Element.MIDDLEAGE = 500;
 					Element.TRADEROUNDOFF = 0.0001f;
-					Element.REPRODUCTIONCHANCE = 0.3f;
+					Element.REPRODUCTIONCHANCE = 0.01f;
+					Element.MINGLECHANCE = 0.6f;
+					Element.TRADECHANCE = 1.5f;
+					Element.ATTACKCHANCE = 0.1f;
 					Element.CHILDCOST = 0.5f;
-					Element.INHERITANCE = false;
+					Element.INFANTMORTALITY = 0.05f;
+					Element.INHERITANCE = 1.0f;
+					Element.INCESTALLOWED = false;
 					displayBmp = new Bitmap(panel1.Width, panel1.Height);
 					elements = new List<Element>();
 					resources = new List<Resource>();
@@ -173,9 +181,10 @@ namespace EvoMod2
 			// Update elements
 			int n = 0;
 			List<Element> children = new List<Element>();
+			float deathHealthThreshold = (DEATHCHANCE * Element.MIDDLEAGE) * (float)Math.Exp(POPULATIONENFORCEMENT * (elements.Count - ELEMENTCOUNT));
 			while (n < elements.Count)
 			{
-				elements[n].CheckForDeath((float)Math.Exp(DEATHCHANCE * (elements.Count + children.Count - ELEMENTCOUNT)));
+				elements[n].CheckForDeath((float)GLOBALRANDOM.NextDouble() * deathHealthThreshold);
 				if (elements[n].IsDead)
 				{
 					elements.RemoveAt(n);

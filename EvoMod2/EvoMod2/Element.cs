@@ -19,6 +19,7 @@ namespace EvoMod2
 		public static float INTERACTCOUNT;
 		public static int INTERACTRANGE;
 		public static double RELATIONSHIPSCALE;
+		public static float ACTIONCHOICESCALE;
 		public static float FOODREQUIREMENT;
 		public static float STARTRESOURCES;
 		public static int MAXRELATIONSHIPS;
@@ -28,8 +29,13 @@ namespace EvoMod2
 		public static float DISCOVERYRATE;
 		public static float TRADEROUNDOFF;
 		public static float REPRODUCTIONCHANCE;
+		public static float MINGLECHANCE;
+		public static float TRADECHANCE;
+		public static float ATTACKCHANCE;
 		public static float CHILDCOST;
-		public static bool INHERITANCE;
+		public static float INFANTMORTALITY;
+		public static float INHERITANCE;
+		public static bool INCESTALLOWED;
 		public static List<FoodResourceData> FoodResources = new List<FoodResourceData>();
 
 		// Private fields
@@ -53,13 +59,14 @@ namespace EvoMod2
 
 		// Public objects
 		// Fixed traits
+		public int Name { get; private set; }
 		public float Intelligence { get; private set; }
 		public float Conscientiousness { get; private set; }
 		public float Agreeableness { get; private set; }
 		public float Neuroticism { get; private set; }
 		public float Openness { get; private set; }
 		public float Extraversion { get; private set; }
-		public Element[] Parents = new Element[2];
+		public int[] Parents = new int[2];
 		private float _health;
 		// Dynamic traits
 		public float Happiness { get; private set; }
@@ -97,9 +104,8 @@ namespace EvoMod2
 		public Vector Inventory { get => inventory; }
 		// Display data and general accessors
 		public PointF Position { get => position; }
-		//public int Size { get => (int)(22.0 * StatFunctions.Sigmoid(wealthHappiness / happinessWeights.Wealth, DisplayForm.SIZESCALING, 0.5) + 5.0); }
 		public int Size { get => (int)(22.0 * StatFunctions.Sigmoid(0.5 * Age / MIDDLEAGE, -DisplayForm.SIZESCALING, 0.5) + 5.0); }
-		public int Opacity { get => (int)(255.0 * StatFunctions.Sigmoid(healthHappiness / happinessWeights.Health, DisplayForm.OPACITYSCALING, 0.5)); }
+		public int Opacity { get => (int)(255.0 * StatFunctions.Sigmoid(healthHappiness / happinessWeights.Health, -DisplayForm.OPACITYSCALING, 0.5)); }
 		public Color ElementColor { get; private set; }
 
 		/// <summary>
@@ -116,8 +122,9 @@ namespace EvoMod2
 		/// <param name="random"> Randomizer. </param>
 		public Element(Random random, List<Resource> environmentResources)
 		{
-			Parents[0] = this;
-			Parents[1] = this;
+			Name = random.Next();
+			Parents[0] = this.Name;
+			Parents[1] = this.Name;
 			Age = 0;
 			IsDead = false;
 			lethalityBonus = 0.0f;
@@ -146,7 +153,7 @@ namespace EvoMod2
 			Extraversion = (float)StatFunctions.GaussRandom(rand, TRAITSPREAD, TRAITSPREAD);
 
 			rand = random.NextDouble();
-			Health = MIDDLEAGE / 4.0f * (float)StatFunctions.GaussRandom(rand, TRAITSPREAD, TRAITSPREAD) / 10.0f;
+			Health = MIDDLEAGE / 40.0f * (float)StatFunctions.GaussRandom(rand, TRAITSPREAD, TRAITSPREAD);
 			Mobility = 1.0f;
 
 			happinessWeights[0] = (float)StatFunctions.GaussRandom(rand, TRAITSPREAD, TRAITSPREAD);
@@ -472,7 +479,7 @@ namespace EvoMod2
 					// Check for new Action discovery (can discover either Harvest or Refinement Action)
 					if (Math.Exp(DISCOVERYRATE * (KnownActions.Count - MAXACTIONSCOUNT))
 						< StatFunctions.GaussRandom(DisplayForm.GLOBALRANDOM.NextDouble(), 5.0 * (Intelligence + Openness), 20.0 / (Intelligence + Openness))
-						&& Action.ActionTypesCount < DisplayForm.ELEMENTCOUNT * MAXACTIONSCOUNT / 10.0f)
+						&& Action.ActionTypesCount < DisplayForm.ELEMENTCOUNT * MAXACTIONSCOUNT)
 					{
 						if (DisplayForm.GLOBALRANDOM.NextDouble() > 0.5)
 						{
@@ -488,7 +495,7 @@ namespace EvoMod2
 				if (!didAction
 					&& Math.Exp(DISCOVERYRATE * (KnownActions.Count - MAXACTIONSCOUNT))
 					< StatFunctions.GaussRandom(DisplayForm.GLOBALRANDOM.NextDouble(), 5.0 * (Intelligence + Openness), 20.0 / (Intelligence + Openness))
-					&& Action.ActionTypesCount < DisplayForm.ELEMENTCOUNT * MAXACTIONSCOUNT / 20.0f)
+					&& Action.ActionTypesCount < DisplayForm.ELEMENTCOUNT * MAXACTIONSCOUNT / 4.0f)
 				{
 					KnownActions.Add(new HarvestAction(inventory.Count, DisplayForm.GLOBALRANDOM, localResourceLevels));
 				}
@@ -541,29 +548,29 @@ namespace EvoMod2
 						Mingle(otherElement, otherElement.HappinessWeights);
 					}
 					double actionChoice = StatFunctions.GaussRandom(random.NextDouble(),
-						RELATIONSHIPSCALE + relationships[otherElement],
-						RELATIONSHIPSCALE - relationships[otherElement]);
+						ACTIONCHOICESCALE + relationships[otherElement],
+						ACTIONCHOICESCALE - relationships[otherElement]);
 					if (actionChoice > 1.0f / (1.0f + REPRODUCTIONCHANCE)
 						&& this != otherElement
-						&& this != otherElement.Parents[0]
-						&& this != otherElement.Parents[1]
-						&& this.Parents[0] != otherElement
-						&& this.Parents[1] != otherElement
-						&& this._health > MIDDLEAGE / 4.0f
-						&& otherElement._health > MIDDLEAGE / 4.0f)
+						&& this.Age > MIDDLEAGE / 4.0f
+						&& otherElement.Age > MIDDLEAGE / 4.0f
+						&& (INCESTALLOWED || (Parents[0] != otherElement.Name
+							&& Parents[1] != otherElement.Name
+							&& otherElement.Parents[0] != this.Name
+							&& otherElement.Parents[1] != this.Name)))
 					{
 						// Mate
 						Element child = new Element(this, otherElement);
-						relationships.Add(child, (float)RELATIONSHIPSCALE * Conscientiousness);
+						relationships.Add(child, Conscientiousness * ACTIONCHOICESCALE);
 						children.Add(child);
 						_health -= Age / MIDDLEAGE;
 					}
-					else if (actionChoice > 0.6)
+					if (actionChoice > 1.0f / (1.0f + MINGLECHANCE))
 					{
 						// Mingle
 						Mingle(otherElement, otherElement.HappinessWeights);
 					}
-					else if (actionChoice > 0.4)
+					if (actionChoice > 1.0f / (1.0f + TRADECHANCE))
 					{
 						// Trade
 						// 1. Create trade proposal based on resource desires (use) and prices
@@ -588,7 +595,8 @@ namespace EvoMod2
 						ExecuteTrade(direction * tradeProposal);
 						otherElement.ExecuteTrade(-1.0f * direction * tradeProposal);
 					}
-					else if (actionChoice < 0.1 && Lethality > otherElement.Health)
+					if (actionChoice < ATTACKCHANCE
+						&& Lethality > otherElement.Health)
 					{
 						// Attack
 						if (random.NextDouble() * Lethality > random.NextDouble() * otherElement.Lethality)
@@ -623,25 +631,23 @@ namespace EvoMod2
 			float tradeValue = tradeProposal * prices;
 
 			// Update relationship and check for social interaction;
-			if (this.Parents[0] == sender || this.Parents[1] == sender)
+			if (this.Parents[0] == sender.Name || this.Parents[1] == sender.Name)
 			{
 				if (!relationships.ContainsKey(sender))
 				{
-					relationships.Add(sender, ((float)RELATIONSHIPSCALE / (1.0f + (float)Math.Exp(MIDDLEAGE / 2.0 - Age)) - (float)RELATIONSHIPSCALE) / 2.0f);
+					relationships.Add(sender, (float)(ACTIONCHOICESCALE * StatFunctions.Sigmoid(MIDDLEAGE / 2.0, 1.0 / MIDDLEAGE, Age) - 0.5 * ACTIONCHOICESCALE));
 				}
 				else
 				{
-					relationships[sender] += (float)RELATIONSHIPSCALE / (2.0f * Age + 1.0f);
+					relationships[sender] += (float)RELATIONSHIPSCALE / (Age + 2.0f * MIDDLEAGE * INTERACTCOUNT / DisplayForm.ELEMENTCOUNT);
 				}
 			}
 			if (!relationships.ContainsKey(sender))
 			{
-				relationships.Add(sender, ((float)RELATIONSHIPSCALE / 10.0f) * (float)StatFunctions.Sigmoid(tradeValue, 1.0, 0.0) - ((float)RELATIONSHIPSCALE / 20.0f));
+				relationships.Add(sender, Openness - Neuroticism);
 			}
-			else
-			{
-				relationships[sender] += ((float)RELATIONSHIPSCALE / 50.0f) * (float)StatFunctions.Sigmoid(tradeValue, 1.0, 0.0) - ((float)RELATIONSHIPSCALE / 100.0f);
-			}
+			relationships[sender] += (2.0f * (float)RELATIONSHIPSCALE / (2.0f * MIDDLEAGE * INTERACTCOUNT / DisplayForm.ELEMENTCOUNT)
+				* (float)StatFunctions.Sigmoid(tradeValue, 1.0, 0.0) - ((float)RELATIONSHIPSCALE / (2.0f * MIDDLEAGE * INTERACTCOUNT / DisplayForm.ELEMENTCOUNT)));
 
 			if (Extraversion > DisplayForm.GLOBALRANDOM.NextDouble())
 			{
@@ -700,16 +706,8 @@ namespace EvoMod2
 			RefineTradeProposal(sender, ref thisTradeProposal);
 			float targetVal = relationships[sender] / (float)RELATIONSHIPSCALE;
 
-			//if (((tradeValue - targetVal) / targetVal) > (1.0f - Agreeableness)
-			//	|| ((tradeProposal * thisTradeProposal) / (tradeProposal.Magnitude * thisTradeProposal.Magnitude)) > (1.0f - Agreeableness))
-
 			if (((tradeValue - targetVal) / targetVal) > (1.0f - Agreeableness)
-				&& ((tradeProposal * thisTradeProposal) / (tradeProposal.Magnitude * thisTradeProposal.Magnitude)) > (1.0f - Agreeableness))
-
-			//if (((tradeProposal * thisTradeProposal) / (tradeProposal.Magnitude * thisTradeProposal.Magnitude)) > (1.0f - Agreeableness))
-
-			//if (((tradeValue - targetVal) / targetVal) > (1.0f - Agreeableness))
-
+				|| ((tradeProposal * thisTradeProposal) / (tradeProposal.Magnitude * thisTradeProposal.Magnitude)) > (1.0f - Agreeableness))
 			{
 				ScaleTrade(ref tradeProposal);
 				return true;
@@ -832,10 +830,12 @@ namespace EvoMod2
 			{
 				relationships.Add(otherElement, Openness - Neuroticism);
 			}
-			relationships[otherElement] += (values[0] * happinessWeights[0] + values[1] * happinessWeights[1] + values[2] * happinessWeights[2]) / 3.0f;
+			relationships[otherElement] += (float)RELATIONSHIPSCALE / (2.0f * MIDDLEAGE * INTERACTCOUNT / DisplayForm.ELEMENTCOUNT)
+				 * ((values[0] * happinessWeights[0] + values[1] * happinessWeights[1] + values[2] * happinessWeights[2]) / 3.0f);
 			if (otherElement.Age != 0)
 			{
-				relationships[otherElement] -= (float)RELATIONSHIPSCALE * (otherElement.TurnsSinceMurder - otherElement.Age) / otherElement.Age;
+				relationships[otherElement] -= ((float)RELATIONSHIPSCALE / (2.0f * MIDDLEAGE * INTERACTCOUNT / DisplayForm.ELEMENTCOUNT)
+					* (otherElement.Age - otherElement.TurnsSinceMurder) / otherElement.Age);
 			}
 
 			happinessWeights[0] += Agreeableness * Openness * (values[0] - happinessWeights[0]);
@@ -949,29 +949,26 @@ namespace EvoMod2
 		/// </summary>
 		public void Die()
 		{
-			if (INHERITANCE)
+			float maxOpinion = Single.MinValue;
+			Element inheretor = this;
+			for (int i = 0; i < relationships.Keys.Count; i++)
 			{
-				float maxOpinion = Single.MinValue;
-				Element inheretor = this;
-				for (int i = 0; i < relationships.Keys.Count; i++)
+				Element e = relationships.Keys.ToArray()[i];
+				if (e.IsDead)
 				{
-					Element e = relationships.Keys.ToArray()[i];
-					if (e.IsDead)
-					{
-						relationships.Remove(e);
-						continue;
-					}
-					if (relationships[e] > maxOpinion)
-					{
-						inheretor = e;
-						maxOpinion = relationships[e];
-					}
+					relationships.Remove(e);
+					continue;
 				}
-				if (inheretor != this)
+				if (relationships[e] > maxOpinion)
 				{
-					inheretor.ExecuteTrade(inventory);
-					this.ExecuteTrade(-inventory);
+					inheretor = e;
+					maxOpinion = relationships[e];
 				}
+			}
+			if (inheretor != this)
+			{
+				inheretor.ExecuteTrade(INHERITANCE * inventory);
+				this.ExecuteTrade(-INHERITANCE * inventory);
 			}
 			this.IsDead = true;
 		}
@@ -983,8 +980,9 @@ namespace EvoMod2
 		/// <param name="parent2"> Parent 2. </param>
 		private Element(Element parent1, Element parent2)
 		{
-			Parents[0] = parent1;
-			Parents[1] = parent2;
+			Parents[0] = parent1.Name;
+			Parents[1] = parent2.Name;
+			Name = DisplayForm.GLOBALRANDOM.Next();
 			Age = 0;
 			IsDead = false;
 			lethalityBonus = 0.0f;
@@ -1028,7 +1026,9 @@ namespace EvoMod2
 				+ 0.25f * parent2.Extraversion;
 
 			rand = DisplayForm.GLOBALRANDOM.NextDouble();
-			Health = MIDDLEAGE / 4.0f * (float)StatFunctions.GaussRandom(rand, TRAITSPREAD, TRAITSPREAD);
+			Health = ((parent1.Health / parent1.Age + parent2.Health / parent2.Age)
+				+ (float)StatFunctions.GaussRandom(rand, TRAITSPREAD, TRAITSPREAD))
+				/ INFANTMORTALITY;
 			Mobility = 1.0f;
 
 			rand = DisplayForm.GLOBALRANDOM.NextDouble();
