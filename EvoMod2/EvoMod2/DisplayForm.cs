@@ -15,10 +15,11 @@ namespace EvoMod2
 	public partial class DisplayForm : Form
 	{
 		// Global values
-		public const int SCALE = 5000;   // Scale of domain for positions
+		public static Random GLOBALRANDOM; // Global random number generator
+		public static int SCALE;   // Scale of domain for positions
 		public static double SIZESCALING; // Scales rate of change of dot sizes wrt wealth
 		public static double OPACITYSCALING; // Scales rate of change of dot opacity wrt health
-		public static Random GLOBALRANDOM; // Global random number generator
+		public static bool BOUNDARYCOLLISIONS; // Forces elements to remain within viewable area when true
 		public static int ELEMENTCOUNT; // Number of elements
 		public static float POPULATIONENFORCEMENT; // Scales how strictly the maximum population is enforced
 		public static float DEATHCHANCE; // Scales the health treashold for death
@@ -57,6 +58,8 @@ namespace EvoMod2
 				if (result == DialogResult.OK)
 				{
 					GLOBALRANDOM = new Random();
+					SCALE = 5000;
+					BOUNDARYCOLLISIONS = true;
 					ELEMENTCOUNT = 1250;
 					POPULATIONENFORCEMENT = 0.0f;
 					DEATHCHANCE = 0.0225f;
@@ -72,6 +75,7 @@ namespace EvoMod2
 					Element.INTERACTCOUNT = ELEMENTCOUNT / 50.0f;
 					Element.INTERACTRANGE = SCALE / 750;
 					Element.ELESPEED = SCALE / 5.0f;
+					Element.DESTINATIONACCEL = 2.0f;
 					Element.ACTIONCHOICESCALE = 10.0f;
 					Element.RELATIONSHIPSCALE = 25.0f;
 					Element.FOODREQUIREMENT = 0.25f;

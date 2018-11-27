@@ -44,10 +44,11 @@ namespace EvoMod2
 		}
 
 		/// <summary>
-		/// Method to get percent of trip yet to be completed.
+		/// Method to get decimal percent of trip completed.
 		/// </summary>
 		/// <param name="currentLocation"> Current location PointF. </param>
-		/// <returns> Float between 0.0 (arrived at destination) and 1.0 (at starting point). </returns>
+		/// <returns> Float is 0.0 when at radius of initial trip length around the origin.
+		/// Value of 1.0 is returned when located at destination. </returns>
 		public float GetProgress(PointF currentLocation)
 		{
 			float progress = 0.0f;
@@ -55,7 +56,7 @@ namespace EvoMod2
 			{
 				float xDist = destination.X - currentLocation.X;
 				float yDist = destination.Y - currentLocation.Y;
-				progress = (float)Math.Sqrt(xDist * xDist + yDist * yDist) / startDistance;
+				progress = (startDistance - (float)Math.Sqrt(xDist * xDist + yDist * yDist)) / startDistance;
 			}
 			else
 			{

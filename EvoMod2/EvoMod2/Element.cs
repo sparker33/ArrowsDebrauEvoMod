@@ -14,6 +14,7 @@ namespace EvoMod2
 		// Public static fields
 		public static float MIDDLEAGE;
 		public static float ELESPEED;
+		public static float DESTINATIONACCEL;
 		public static float COLORMUTATIONRATE;
 		public static float TRAITSPREAD;
 		public static float INTERACTCOUNT;
@@ -274,10 +275,6 @@ namespace EvoMod2
 				destination.Set(this.position, newLocation);
 			}
 			float progress = destination.GetProgress(position);
-			if (!destination.IsEmpty && StatFunctions.Sigmoid(DisplayForm.GLOBALRANDOM.NextDouble(), 5.0, progress) < 0.01)
-			{
-				destination.Clear();
-			}
 
 			if (destination.IsEmpty)
 			{
@@ -285,18 +282,15 @@ namespace EvoMod2
 				temp[0] = 0.0f;
 				temp[1] = 0.0f;
 			}
-			else if (progress == 0.0f)
-			{
-				kinematics.Damping = Kinematics.DEFAULTDAMPING;
-				destination.Clear();
-				temp[0] = 0.0f;
-				temp[1] = 0.0f;
-			}
 			else
 			{
-				kinematics.Damping = Kinematics.DEFAULTDAMPING / (Math.Min(progress, 1.5f) + 0.5f);
+				kinematics.Damping = Kinematics.DEFAULTDAMPING * (DESTINATIONACCEL / (2.0f - progress));
 				temp[0] = (destination.X - position.X) / DisplayForm.SCALE;
 				temp[1] = (destination.Y - position.Y) / DisplayForm.SCALE;
+			}
+			if (progress > 0.99)
+			{
+				destination.Clear();
 			}
 
 			// Update Happiness
@@ -372,26 +366,29 @@ namespace EvoMod2
 			position.Y += temp[1];
 
 			// Handle domain boundary collisions with elastic collisions (impacts performance)
-			//if (position.X < 0.0f)
-			//{
-			//	position.X = 0.0f;
-			//	kinematics.ReverseDirection(0);
-			//}
-			//else if (position.X > DisplayForm.SCALE)
-			//{
-			//	position.X = (float)DisplayForm.SCALE;
-			//	kinematics.ReverseDirection(0);
-			//}
-			//if (position.Y < 0.0f)
-			//{
-			//	position.Y = 0.0f;
-			//	kinematics.ReverseDirection(1);
-			//}
-			//else if (position.Y > DisplayForm.SCALE)
-			//{
-			//	position.Y = (float)DisplayForm.SCALE;
-			//	kinematics.ReverseDirection(1);
-			//}
+			if (DisplayForm.BOUNDARYCOLLISIONS)
+			{
+				if (position.X < 0.0f)
+				{
+					position.X = 0.0f;
+					kinematics.ReverseDirection(0);
+				}
+				else if (position.X > DisplayForm.SCALE)
+				{
+					position.X = (float)DisplayForm.SCALE;
+					kinematics.ReverseDirection(0);
+				}
+				if (position.Y < 0.0f)
+				{
+					position.Y = 0.0f;
+					kinematics.ReverseDirection(1);
+				}
+				else if (position.Y > DisplayForm.SCALE)
+				{
+					position.Y = (float)DisplayForm.SCALE;
+					kinematics.ReverseDirection(1);
+				}
+			}
 		}
 
 		/// <summary>
