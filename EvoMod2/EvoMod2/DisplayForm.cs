@@ -85,6 +85,7 @@ namespace EvoMod2
 					Element.MAXACTIONSCOUNT = settings.MaxActions;
 					Element.MAXRESOURCECOUNT = settings.MaxResourceCount;
 					Element.DISCOVERYRATE = settings.DiscoveryRate;
+					Element.DISCOVERYRATE = settings.KnowledgeTransferRate;
 					Element.MIDDLEAGE = settings.MiddleAge;
 					Element.TRADEROUNDOFF = settings.TradeRoundoff;
 					Element.REPRODUCTIONCHANCE = settings.ReproductionChance;
@@ -164,6 +165,7 @@ namespace EvoMod2
 					Element.MAXRESOURCECOUNT = 15;
 					Element.MAXACTIONSCOUNT = 15;
 					Element.DISCOVERYRATE = 0.00005f;
+					Element.KNOWLEDGETRANSFERRATE = Element.MIDDLEAGE;
 					Element.MIDDLEAGE = 500;
 					Element.TRADEROUNDOFF = 0.0001f;
 					Element.REPRODUCTIONCHANCE = 0.01f;
@@ -300,11 +302,6 @@ namespace EvoMod2
 						(int)(element.Position.Y * panel1.ClientRectangle.Height / SCALE) - size / 2,
 						size,
 						size);
-					//g.FillEllipse(b,
-					//	(int)(element.Position.X * panel1.ClientRectangle.Width / SCALE) - 10 / 2,
-					//	(int)(element.Position.Y * panel1.ClientRectangle.Height / SCALE) - 10 / 2,
-					//	10,
-					//	10);
 				}
 			}
 			e.Result = display;

@@ -28,6 +28,7 @@ namespace EvoMod2
 		public static int MAXACTIONSCOUNT;
 		public static int MAXRESOURCECOUNT;
 		public static float DISCOVERYRATE;
+		public static float KNOWLEDGETRANSFERRATE;
 		public static float TRADEROUNDOFF;
 		public static float REPRODUCTIONCHANCE;
 		public static float MINGLECHANCE;
@@ -839,7 +840,7 @@ namespace EvoMod2
 			happinessWeights[1] += Agreeableness * Openness * (values[1] - happinessWeights[1]);
 			happinessWeights[2] += Agreeableness * Openness * (values[2] - happinessWeights[2]);
 
-			if (Math.Exp(KnownActions.Count - MAXACTIONSCOUNT)
+			if (Math.Exp(KNOWLEDGETRANSFERRATE * (KnownActions.Count - MAXACTIONSCOUNT))
 				< StatFunctions.GaussRandom(DisplayForm.GLOBALRANDOM.NextDouble(), 10.0f * Intelligence, 10.0 / Intelligence))
 			{
 				if (otherElement.KnownActions.Count > 2)
@@ -851,12 +852,12 @@ namespace EvoMod2
 					this.LearnAction(otherElement.KnownActions[0]);
 				}
 			}
-			if (Math.Exp(KnownLocations.Count - MAXLOCATIONSCOUNT)
+			if (Math.Exp(KNOWLEDGETRANSFERRATE * (KnownLocations.Count - MAXLOCATIONSCOUNT))
 				< StatFunctions.GaussRandom(DisplayForm.GLOBALRANDOM.NextDouble(), 10.0 * Openness, 10.0 / Openness))
 			{
 				this.LearnLocation(otherElement.KnownLocations[DisplayForm.GLOBALRANDOM.Next(otherElement.KnownLocations.Count - 1)]);
 			}
-			if (Math.Exp(relationships.Count - MAXRELATIONSHIPS)
+			if (Math.Exp(KNOWLEDGETRANSFERRATE * (relationships.Count - MAXRELATIONSHIPS))
 				< StatFunctions.GaussRandom(DisplayForm.GLOBALRANDOM.NextDouble(), 10.0 * (Extraversion), 10.0 / (Extraversion)))
 			{
 				Element subject = relationships.Keys.ToArray()[DisplayForm.GLOBALRANDOM.Next(relationships.Count() - 1)];

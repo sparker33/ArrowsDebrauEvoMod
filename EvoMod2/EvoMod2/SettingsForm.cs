@@ -45,6 +45,7 @@ namespace EvoMod2
 		public int MaxLocations { get => Int32.Parse(maxLocationsCountBox.Text); }
 		public int MaxActions { get => Int32.Parse(maxActionsCountBox.Text); }
 		public float DiscoveryRate { get => Single.Parse(discoveryRateBox.Text); }
+		public float KnowledgeTransferRate { get => Single.Parse(knowledgeTransferRateBox.Text); }
 		public int MiddleAge { get => Int32.Parse(middleAgeBox.Text); }
 		public float TradeRoundoff { get => Single.Parse(tradeRoundoffBox.Text); }
 		public float ReproductionChance { get => Single.Parse(reproductionChanceBox.Text); }
