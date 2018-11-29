@@ -38,6 +38,7 @@ namespace EvoMod2
 		public float TraitSpread { get => Single.Parse(traitSpreadBox.Text); }
 		public float InteractCount { get => Single.Parse(interactCountBox.Text); }
 		public float InteractRange { get => Single.Parse(interactRangeBox.Text); }
+		public double ActionLearnRate { get => Double.Parse(actionLearnRateBox.Text); }
 		public float InteractionChoiceScale { get => Single.Parse(interactChoiceScaleBox.Text); }
 		public float RelationShipScale { get => Single.Parse(relationshipScaleBox.Text); }
 		public float FoodRequirement { get => Single.Parse(foodRequirementBox.Text); }

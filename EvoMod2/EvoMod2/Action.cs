@@ -10,6 +10,7 @@ namespace EvoMod2
 	public class Action
 	{
 		// Static objects
+		public static double ACTIONLEARNRATE;
 		public static int ActionTypesCount = 0;
 
 		// Private objects
@@ -24,6 +25,7 @@ namespace EvoMod2
 		protected float proficiencyBonus;
 
 		// Public objects
+		public int UseCount { get; private set; }
 		public int ActionID { get; protected set; }
 		public Vector Cost { get => (1.0f / proficiencyBonus) * baseCost; protected set => baseCost = value; }
 		public float HappinessBonus { get; protected set; }
@@ -37,6 +39,7 @@ namespace EvoMod2
 		/// <param name="totalResourceCount"> Integer number of resource types to be considered. </param>
 		public Action(int totalResourceCount)
 		{
+			UseCount = 0;
 			ActionID = ActionTypesCount++;
 			localResourcesDecision = new Vector(DisplayForm.NaturalResourceTypesCount);
 			for (int i = 0; i < DisplayForm.NaturalResourceTypesCount; i++)
@@ -74,6 +77,7 @@ namespace EvoMod2
 		/// <param name="baseAction"> The base Action being coppied. </param>
 		protected Action(Vector cost, Vector production, MatrixMath.Matrix productionMod, Action baseAction)
 		{
+			UseCount = 0;
 			proficiencyBonus = 1.0f;
 			ActionID = baseAction.ActionID;
 			localResourcesDecision = new Vector(DisplayForm.NaturalResourceTypesCount);
@@ -141,9 +145,11 @@ namespace EvoMod2
 			}
 
 			lastDecisionLocalResources = new Vector(localResources);
+			lastDecisionLocalResources.Magnitude = 1.0f;
 			lastDecisionInventoryResources = new Vector(inventory);
+			lastDecisionInventoryResources.Magnitude = 1.0f;
 
-			return (bias + localResourcesDecision * localResources + inventoryResourcesDecision * inventory);
+			return (bias + localResourcesDecision * lastDecisionLocalResources + inventoryResourcesDecision * lastDecisionInventoryResources);
 		}
 
 		/// <summary>
@@ -154,6 +160,7 @@ namespace EvoMod2
 		/// <returns></returns>
 		public Vector DoAction(Vector localResources, float intelligence)
 		{
+			UseCount++;
 			Vector returns = proficiencyBonus * (baseProduction + localResourceLevelsProductionModifier * localResources);
 			proficiencyBonus += proficiencyBonus / (100.0f * (1.0f - intelligence) + (float)Math.Exp(100.0 * (proficiencyBonus - 1.0)));
 			return returns;
@@ -163,45 +170,25 @@ namespace EvoMod2
 		/// Trains this Action priority decision based upon most recent GetActionPriority() request inputs.
 		/// </summary>
 		/// <param name="deltaHappiness"> Super-signed percent change in Happiness as a result of having chosen this action. </param>
-		public void Learn(float deltaHappiness)
+		/// <param name="plasticity"> Input between zero and one to control slope of learning sigmoid function. </param>
+		public void Learn(float deltaHappiness, float plasticity)
 		{
 			float learnCoeff;
 			// Train dependence on localResourceLevels
 			for (int i = 0; i < localResourcesDecision.Count; i++)
 			{
 				learnCoeff = deltaHappiness * lastDecisionLocalResources[i];
-				if (localResourcesDecision[i] == 0.0f)
-				{
-					localResourcesDecision[i] = learnCoeff;
-				}
-				else
-				{
-					localResourcesDecision[i] += learnCoeff / localResourcesDecision[i];
-				}
+				localResourcesDecision[i] = 2.0f * (float)StatFunctions.Sigmoid(localResourcesDecision[i] + learnCoeff, -ACTIONLEARNRATE * plasticity, 0.0) - 1.0f;
 			}
 			// Train dependence on inventoryResourceLevels
 			for (int i = 0; i < inventoryResourcesDecision.Count; i++)
 			{
 				learnCoeff = deltaHappiness * lastDecisionInventoryResources[i];
-				if (inventoryResourcesDecision[i] == 0.0f)
-				{
-					inventoryResourcesDecision[i] = learnCoeff;
-				}
-				else
-				{
-					inventoryResourcesDecision[i] += learnCoeff / inventoryResourcesDecision[i];
-				}
+				lastDecisionInventoryResources[i] = 2.0f * (float)StatFunctions.Sigmoid(lastDecisionInventoryResources[i] + learnCoeff, -ACTIONLEARNRATE * plasticity, 0.0) - 1.0f;
 			}
 			// Train general bias
 			learnCoeff = deltaHappiness * bias;
-			if (bias == 0.0f)
-			{
-				bias = learnCoeff;
-			}
-			else
-			{
-				bias += learnCoeff / bias;
-			}
+			bias = 2.0f * (float)StatFunctions.Sigmoid(bias + learnCoeff, -ACTIONLEARNRATE * plasticity, 0.0) - 1.0f;
 		}
 	}
 }
