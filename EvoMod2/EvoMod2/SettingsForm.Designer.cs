@@ -289,7 +289,7 @@
 			this.deathChanceBox.Name = "deathChanceBox";
 			this.deathChanceBox.Size = new System.Drawing.Size(100, 20);
 			this.deathChanceBox.TabIndex = 12;
-			this.deathChanceBox.Text = "0.0225";
+			this.deathChanceBox.Text = "0.23";
 			this.deathChanceBox.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
 			// 
 			// label7

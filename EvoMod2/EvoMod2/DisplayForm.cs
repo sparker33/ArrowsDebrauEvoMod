@@ -143,9 +143,9 @@ namespace EvoMod2
 					GLOBALRANDOM = new Random();
 					SCALE = 5000;
 					BOUNDARYCOLLISIONS = true;
-					ELEMENTCOUNT = 1250;
-					POPULATIONENFORCEMENT = 0.0f;
-					DEATHCHANCE = 0.023f;
+					ELEMENTCOUNT = 600;
+					POPULATIONENFORCEMENT = 1.0f;
+					DEATHCHANCE = 0.0235f;
 					SIZESCALING = 7.0f;
 					OPACITYSCALING = 2.0f;
 					Kinematics.DEFAULTDAMPING = 0.175f;
@@ -177,7 +177,7 @@ namespace EvoMod2
 					Element.TRADECHANCE = 1.5f;
 					Element.ATTACKCHANCE = 0.075f;
 					Element.CHILDCOST = 0.5f;
-					Element.INFANTMORTALITY = 0.01f;
+					Element.INFANTMORTALITY = 0.0175f;
 					Element.INHERITANCE = 1.0f;
 					Element.INCESTALLOWED = false;
 

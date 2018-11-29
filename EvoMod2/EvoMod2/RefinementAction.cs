@@ -33,11 +33,11 @@ namespace EvoMod2
 			{
 				if (Math.Abs(resourceUsageLevels[i] / maxUse) > random.NextDouble())
 				{
-					baseCost[i] = (float)random.NextDouble();
+					baseCost[i] = 1.0f - (float)random.NextDouble();
 				}
-				else
+				else if (Math.Abs(resourceUsageLevels[i] / maxUse) < random.NextDouble())
 				{
-					baseProduction[i] = (float)random.NextDouble();
+					baseProduction[i] = 1.0f - (float)random.NextDouble();
 				}
 				localResourceLevelsProductionModifier[i] = new MatrixMath.Vector(DisplayForm.NaturalResourceTypesCount);
 				inventoryResourcesDecision[i] = 0.0f;
