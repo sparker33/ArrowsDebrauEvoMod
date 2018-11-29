@@ -14,10 +14,7 @@ namespace EvoMod2
 			float maxUse = 0.01f;
 			foreach (float lvl in resourceUsageLevels)
 			{
-				if (Math.Abs(lvl) > maxUse)
-				{
-					maxUse = Math.Abs(lvl);
-				}
+				maxUse += Math.Abs(lvl);
 			}
 
 			for (int i = 0; i < DisplayForm.NaturalResourceTypesCount; i++)
@@ -48,10 +45,10 @@ namespace EvoMod2
 			baseProduction.Magnitude = magnitude;
 
 			bias = 0.0f;
-			HappinessBonus = 2.0f * (float)StatFunctions.GaussRandom(random.NextDouble(), 10.0, 10.0) - 1.0f;
-			HealthBonus = 2.0f * (float)StatFunctions.GaussRandom(random.NextDouble(), 10.0, 10.0) - 1.0f;
-			MobilityBonus = 2.0f * (float)StatFunctions.GaussRandom(random.NextDouble(), 10.0, 10.0) - 1.0f;
-			LethalityBonus = 10.0f * (float)StatFunctions.GaussRandom(random.NextDouble(), 0.0, 10.0);
+			HappinessBonus = 2.0f * (float)StatFunctions.GaussRandom(random.NextDouble(), Element.TRAITSPREAD, Element.TRAITSPREAD) - 1.0f;
+			HealthBonus = 2.0f * (float)StatFunctions.GaussRandom(random.NextDouble(), Element.TRAITSPREAD, Element.TRAITSPREAD) - 1.0f;
+			MobilityBonus = 2.0f * (float)StatFunctions.GaussRandom(random.NextDouble(), Element.TRAITSPREAD, Element.TRAITSPREAD) - 1.0f;
+			LethalityBonus = 10.0f * (float)StatFunctions.GaussRandom(random.NextDouble(), 0.0, Element.TRAITSPREAD);
 		}
 	}
 }

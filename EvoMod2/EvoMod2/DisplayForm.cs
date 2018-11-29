@@ -156,7 +156,7 @@ namespace EvoMod2
 					Element.COLORMUTATIONRATE = 0.15f;
 					Element.TRAITSPREAD = 3.75f;
 					Element.INTERACTCOUNT = ELEMENTCOUNT / 10.0f;
-					Element.INTERACTRANGE = SCALE / 750.0f;
+					Element.INTERACTRANGE = SCALE / 75.0f;
 					Element.ELESPEED = SCALE / 5.0f;
 					Element.DESTINATIONACCEL = 5.0f;
 					Action.ACTIONLEARNRATE = 5.0;
@@ -168,11 +168,11 @@ namespace EvoMod2
 					Element.MAXLOCATIONSCOUNT = 30;
 					Element.MAXRESOURCECOUNT = 15;
 					Element.MAXACTIONSCOUNT = 15;
-					Element.DISCOVERYRATE = 0.0001f;
+					Element.DISCOVERYRATE = 0.00045f;
 					Element.KNOWLEDGETRANSFERRATE = 0.075f;
 					Element.MIDDLEAGE = 500;
 					Element.TRADEROUNDOFF = 0.0001f;
-					Element.REPRODUCTIONCHANCE = 0.1f;
+					Element.REPRODUCTIONCHANCE = 0.25f;
 					Element.MINGLECHANCE = 1.3f;
 					Element.TRADECHANCE = 1.5f;
 					Element.ATTACKCHANCE = 0.075f;

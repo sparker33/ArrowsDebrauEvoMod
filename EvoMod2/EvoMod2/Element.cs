@@ -456,9 +456,9 @@ namespace EvoMod2
 					Vector productionUtilityVector = KnownActions[actionChoice].DoAction(localResourceLevels, Intelligence);
 					inventory += productionUtilityVector;
 					resourceUse -= productionUtilityVector;
-					happinessBonus += KnownActions[actionChoice].HappinessBonus;
+					happinessBonus += FOODREQUIREMENT * KnownActions[actionChoice].HappinessBonus;
 					Health += KnownActions[actionChoice].HealthBonus;
-					Mobility += KnownActions[actionChoice].MobilityBonus;
+					Mobility += KnownActions[actionChoice].MobilityBonus / MIDDLEAGE;
 					lethalityBonus += KnownActions[actionChoice].LethalityBonus;
 					// Update resource usage information and apply learning to action
 					if (learnMetric != 0.0f)
