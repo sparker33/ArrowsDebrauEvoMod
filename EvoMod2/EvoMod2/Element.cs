@@ -106,7 +106,7 @@ namespace EvoMod2
 		public Vector Inventory { get => inventory; }
 		// Display data and general accessors
 		public PointF Position { get => position; }
-		public int Size { get => (int)(22.0 * StatFunctions.Sigmoid(0.5 * Age / MIDDLEAGE, -DisplayForm.SIZESCALING, 0.5) + 5.0); }
+		public int Size { get => (int)(17.0 * StatFunctions.Sigmoid(0.5 * Age / MIDDLEAGE, -DisplayForm.SIZESCALING, 0.5) + 3.0); }
 		public int Opacity { get => (int)(255.0 * StatFunctions.Sigmoid(healthHappiness / happinessWeights.Health, -DisplayForm.OPACITYSCALING, 0.5)); }
 		public Color ElementColor { get; private set; }
 

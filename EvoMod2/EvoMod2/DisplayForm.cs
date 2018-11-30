@@ -143,25 +143,25 @@ namespace EvoMod2
 					GLOBALRANDOM = new Random();
 					SCALE = 5000;
 					BOUNDARYCOLLISIONS = true;
-					ELEMENTCOUNT = 600;
-					POPULATIONENFORCEMENT = 1.0f;
-					DEATHCHANCE = 0.0235f;
-					SIZESCALING = 7.0f;
-					OPACITYSCALING = 2.0f;
-					Kinematics.DEFAULTDAMPING = 0.175f;
+					ELEMENTCOUNT = 450;
+					POPULATIONENFORCEMENT = 2.0f;
+					DEATHCHANCE = 0.01f;
+					SIZESCALING = 2.5f;
+					OPACITYSCALING = 2.5f;
+					Kinematics.DEFAULTDAMPING = 0.12f;
 					Kinematics.TIMESTEP = 0.05f;
-					Kinematics.SPEEDLIMIT = SCALE / 17.5f;
+					Kinematics.SPEEDLIMIT = SCALE / 5.0f;
 					ResourceKernel.RESOURCESPEED = 3.0f;
 					ResourceKernel.SPREADRATE = 0.0f;
 					Element.COLORMUTATIONRATE = 0.15f;
 					Element.TRAITSPREAD = 3.75f;
-					Element.INTERACTCOUNT = ELEMENTCOUNT / 10.0f;
-					Element.INTERACTRANGE = SCALE / 75.0f;
-					Element.ELESPEED = SCALE / 5.0f;
-					Element.DESTINATIONACCEL = 5.0f;
+					Element.INTERACTCOUNT = ELEMENTCOUNT / 5.0f;
+					Element.INTERACTRANGE = SCALE / 100.0f;
+					Element.ELESPEED = SCALE / 35.0f;
+					Element.DESTINATIONACCEL = 10.0f;
 					Action.ACTIONLEARNRATE = 5.0;
 					Element.INTERACTIONCHOICESCALE = 10.0f;
-					Element.RELATIONSHIPSCALE = 25.0f;
+					Element.RELATIONSHIPSCALE = 75.0f;
 					Element.FOODREQUIREMENT = 0.25f;
 					Element.STARTRESOURCES = 15.0f;
 					Element.MAXRELATIONSHIPS = ELEMENTCOUNT;
@@ -172,12 +172,12 @@ namespace EvoMod2
 					Element.KNOWLEDGETRANSFERRATE = 0.075f;
 					Element.MIDDLEAGE = 500;
 					Element.TRADEROUNDOFF = 0.0001f;
-					Element.REPRODUCTIONCHANCE = 0.25f;
+					Element.REPRODUCTIONCHANCE = 0.75f;
 					Element.MINGLECHANCE = 1.3f;
 					Element.TRADECHANCE = 1.5f;
-					Element.ATTACKCHANCE = 0.075f;
+					Element.ATTACKCHANCE = 0.1f;
 					Element.CHILDCOST = 0.5f;
-					Element.INFANTMORTALITY = 0.0175f;
+					Element.INFANTMORTALITY = 0.01f;
 					Element.INHERITANCE = 1.0f;
 					Element.INCESTALLOWED = false;
 
@@ -231,9 +231,9 @@ namespace EvoMod2
 			// Update elements
 			int n = 0;
 			List<Element> children = new List<Element>();
-			float deathHealthThreshold = (DEATHCHANCE * Element.MIDDLEAGE) * (float)Math.Exp(POPULATIONENFORCEMENT * (elements.Count - ELEMENTCOUNT));
 			while (n < elements.Count)
 			{
+				float deathHealthThreshold = (DEATHCHANCE * Element.MIDDLEAGE) * (float)Math.Exp(POPULATIONENFORCEMENT * (elements.Count + children.Count - ELEMENTCOUNT));
 				elements[n].CheckForDeath((float)GLOBALRANDOM.NextDouble() * deathHealthThreshold);
 				if (elements[n].IsDead)
 				{
