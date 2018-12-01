@@ -118,6 +118,8 @@
 			this.randomSeedBox = new System.Windows.Forms.TextBox();
 			this.label43 = new System.Windows.Forms.Label();
 			this.actionLearnRateBox = new System.Windows.Forms.TextBox();
+			this.label44 = new System.Windows.Forms.Label();
+			this.destinationAcquisitionRateBox = new System.Windows.Forms.TextBox();
 			((System.ComponentModel.ISupportInitialize)(this.natResourcesDataGrid)).BeginInit();
 			this.SuspendLayout();
 			// 
@@ -1000,11 +1002,33 @@
 			this.actionLearnRateBox.Text = "5.0";
 			this.actionLearnRateBox.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
 			// 
+			// label44
+			// 
+			this.label44.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+			this.label44.Location = new System.Drawing.Point(366, 523);
+			this.label44.Name = "label44";
+			this.label44.Size = new System.Drawing.Size(150, 13);
+			this.label44.TabIndex = 88;
+			this.label44.Text = "Destination Acquisition Rate:";
+			this.label44.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+			// 
+			// destinationAcquisitionRateBox
+			// 
+			this.destinationAcquisitionRateBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+			this.destinationAcquisitionRateBox.Location = new System.Drawing.Point(522, 520);
+			this.destinationAcquisitionRateBox.Name = "destinationAcquisitionRateBox";
+			this.destinationAcquisitionRateBox.Size = new System.Drawing.Size(100, 20);
+			this.destinationAcquisitionRateBox.TabIndex = 87;
+			this.destinationAcquisitionRateBox.Text = "0.01";
+			this.destinationAcquisitionRateBox.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+			// 
 			// SettingsForm
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.ClientSize = new System.Drawing.Size(897, 567);
+			this.Controls.Add(this.label44);
+			this.Controls.Add(this.destinationAcquisitionRateBox);
 			this.Controls.Add(this.label43);
 			this.Controls.Add(this.actionLearnRateBox);
 			this.Controls.Add(this.label42);
@@ -1191,5 +1215,7 @@
 		private System.Windows.Forms.TextBox randomSeedBox;
 		private System.Windows.Forms.Label label43;
 		private System.Windows.Forms.TextBox actionLearnRateBox;
+		private System.Windows.Forms.Label label44;
+		private System.Windows.Forms.TextBox destinationAcquisitionRateBox;
 	}
 }

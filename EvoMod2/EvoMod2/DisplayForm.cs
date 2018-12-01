@@ -76,6 +76,7 @@ namespace EvoMod2
 					Element.INTERACTCOUNT = settings.InteractCount;
 					Element.INTERACTRANGE = settings.InteractRange;
 					Element.ELESPEED = settings.EleSpeed;
+					Element.DESTINATIONACQUISITIONTHRESHOLD = settings.DestinationAcquisitionThreshold;
 					Element.DESTINATIONACCEL = settings.DestinationAccel;
 					Action.ACTIONLEARNRATE = settings.ActionLearnRate;
 					Element.INTERACTIONCHOICESCALE = settings.InteractionChoiceScale;
@@ -144,8 +145,8 @@ namespace EvoMod2
 					SCALE = 5000;
 					BOUNDARYCOLLISIONS = true;
 					ELEMENTCOUNT = 450;
-					POPULATIONENFORCEMENT = 2.0f;
-					DEATHCHANCE = 0.01f;
+					POPULATIONENFORCEMENT = 1.0f;
+					DEATHCHANCE = 0.02f;
 					SIZESCALING = 2.5f;
 					OPACITYSCALING = 2.5f;
 					Kinematics.DEFAULTDAMPING = 0.12f;
@@ -157,11 +158,12 @@ namespace EvoMod2
 					Element.TRAITSPREAD = 3.75f;
 					Element.INTERACTCOUNT = ELEMENTCOUNT / 5.0f;
 					Element.INTERACTRANGE = SCALE / 100.0f;
-					Element.ELESPEED = SCALE / 35.0f;
+					Element.ELESPEED = SCALE / 4.0f;
+					Element.DESTINATIONACQUISITIONTHRESHOLD = 0.99;
 					Element.DESTINATIONACCEL = 10.0f;
 					Action.ACTIONLEARNRATE = 5.0;
 					Element.INTERACTIONCHOICESCALE = 10.0f;
-					Element.RELATIONSHIPSCALE = 75.0f;
+					Element.RELATIONSHIPSCALE = 125.0f;
 					Element.FOODREQUIREMENT = 0.25f;
 					Element.STARTRESOURCES = 15.0f;
 					Element.MAXRELATIONSHIPS = ELEMENTCOUNT;
@@ -172,7 +174,7 @@ namespace EvoMod2
 					Element.KNOWLEDGETRANSFERRATE = 0.075f;
 					Element.MIDDLEAGE = 500;
 					Element.TRADEROUNDOFF = 0.0001f;
-					Element.REPRODUCTIONCHANCE = 0.75f;
+					Element.REPRODUCTIONCHANCE = 0.15f;
 					Element.MINGLECHANCE = 1.3f;
 					Element.TRADECHANCE = 1.5f;
 					Element.ATTACKCHANCE = 0.1f;

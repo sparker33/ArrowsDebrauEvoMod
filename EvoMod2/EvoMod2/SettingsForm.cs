@@ -36,6 +36,7 @@ namespace EvoMod2
 		// Element settings
 		public float ColorMutation { get => Single.Parse(colorMutationRateBox.Text); }
 		public float TraitSpread { get => Single.Parse(traitSpreadBox.Text); }
+		public double DestinationAcquisitionThreshold { get => (1.0 / (1.0 + Double.Parse(destinationAcquisitionRateBox.Text))); }
 		public float InteractCount { get => Single.Parse(interactCountBox.Text); }
 		public float InteractRange { get => Single.Parse(interactRangeBox.Text); }
 		public double ActionLearnRate { get => Double.Parse(actionLearnRateBox.Text); }

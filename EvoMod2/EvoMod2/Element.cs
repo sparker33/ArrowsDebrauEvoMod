@@ -14,6 +14,7 @@ namespace EvoMod2
 		// Public static fields
 		public static float MIDDLEAGE;
 		public static float ELESPEED;
+		public static double DESTINATIONACQUISITIONTHRESHOLD;
 		public static float DESTINATIONACCEL;
 		public static float COLORMUTATIONRATE;
 		public static float TRAITSPREAD;
@@ -96,7 +97,7 @@ namespace EvoMod2
 		}
 		public float Mobility { get; private set; }
 		public int Age { get; private set; }
-		public List<PointF> KnownLocations { get; private set; }
+		public List<KnownLocation> KnownLocations { get; private set; }
 		public List<Action> KnownActions { get; private set; }
 		private int ActionsTakenTotal;
 		public bool IsDead { get; private set; }
@@ -134,8 +135,8 @@ namespace EvoMod2
 
 			position.X = (float)(random.NextDouble() * DisplayForm.SCALE);
 			position.Y = (float)(random.NextDouble() * DisplayForm.SCALE);
-			KnownLocations = new List<PointF>();
-			KnownLocations.Add(position);
+			KnownLocations = new List<KnownLocation>();
+			KnownLocations.Add(new KnownLocation(position));
 			int r = (int)(255.0 / (1.0 + Math.Exp((15.0 / DisplayForm.SCALE) * (position.X - DisplayForm.SCALE / 2.0))));
 			int g = (int)(255.0 / (1.0 + Math.Exp((15.0 / DisplayForm.SCALE) * (position.X * position.Y / (2 * DisplayForm.SCALE * DisplayForm.SCALE)))));
 			int b = (int)(255.0 / (1.0 + Math.Exp((15.0 / DisplayForm.SCALE) * (position.Y - DisplayForm.SCALE / 2.0))));
@@ -264,22 +265,99 @@ namespace EvoMod2
 		/// </summary>
 		public void Move()
 		{
-			float[] temp = new float[2]; // Utility array to hold destination distance, accelleration, and displacement
+			/* Update Happiness */
+			// Determine environment happiness
+			float environmentHappiness = 0.0f;
+			for (int i = 0; i < relationships.Keys.Count; i++)
+			{
+				if (relationships.Keys.ToArray()[i].IsDead)
+				{
+					relationships.Remove(relationships.Keys.ToArray()[i]);
+				}
+			}
+			foreach (Element e in relationships.Keys)
+			{
+				try
+				{
+					environmentHappiness += relationships[e]
+							* (float)Math.Sqrt((position.X - e.Position.X) * (position.X - e.Position.X)
+								+ (position.Y - e.Position.Y) * (position.Y - e.Position.Y))
+							/ (INTERACTRANGE * INTERACTIONCHOICESCALE * relationships.Count);
+				}
+				catch (NullReferenceException)
+				{
+					continue;
+				}
+			}
+			environmentHappiness = environmentHappiness * happinessWeights[2];
+			// Calculate updated happiness
+			float nextHappiness = timePreference * (happinessBonus
+				+ wealthHappiness
+				+ healthHappiness
+				+ environmentHappiness) / 4.0f
+				+ (1.0f - timePreference) * Happiness;
+			// Determine percent change (with thresholding) and update Happiness
+			if (Happiness <= 0.1f && Happiness >= -0.1f)
+			{
+				happinessPercentChangeHistory = Math.Sign(nextHappiness - Happiness) * 0.001f;
+			}
+			else
+			{
+				happinessPercentChangeHistory = (nextHappiness - Happiness) / Happiness;
+			}
+			Happiness = nextHappiness;
+
+			// Update KnownLocation preferences
+			float maxPref = Single.MinValue;
+			float minPref = Single.MaxValue;
+			for (int i = 0; i < KnownLocations.Count; i++)
+			{
+				KnownLocations[i].UpdatePreference(position, happinessPercentChangeHistory);
+				if (KnownLocations[i].Preference > maxPref)
+				{
+					maxPref = KnownLocations[i].Preference;
+				}
+				if (KnownLocations[i].Preference < minPref)
+				{
+					minPref = KnownLocations[i].Preference;
+				}
+			}
 
 			// Check for destination acquisition
-			double destinationAcquisitionCheck = StatFunctions.GaussRandom(DisplayForm.GLOBALRANDOM.NextDouble(), 10.0 * Openness, 1.0 / Openness);
-			if (destination.IsEmpty && destinationAcquisitionCheck > 0.99)
+			float[] temp = new float[2]; // Utility array to hold destination distance, accelleration, and displacement
+			double destinationAcquisitionCheck = StatFunctions.GaussRandom(DisplayForm.GLOBALRANDOM.NextDouble(), 10.0 * Openness, 10.0 * (1.0 - Openness));
+			if (destination.IsEmpty && destinationAcquisitionCheck > DESTINATIONACQUISITIONTHRESHOLD)
 			{
 				PointF newLocation;
-				if (Math.Exp(DISCOVERYRATE * (KnownLocations.Count - MAXLOCATIONSCOUNT)) < destinationAcquisitionCheck)
+				if (Math.Exp(DISCOVERYRATE * (KnownLocations.Count - MAXLOCATIONSCOUNT))
+					< ((1.0 / (1.0 - DESTINATIONACQUISITIONTHRESHOLD)) * (destinationAcquisitionCheck - DESTINATIONACQUISITIONTHRESHOLD)))
 				{
 					newLocation = new PointF((float)(DisplayForm.GLOBALRANDOM.NextDouble() * DisplayForm.SCALE),
 						(float)(DisplayForm.GLOBALRANDOM.NextDouble() * DisplayForm.SCALE));
-					KnownLocations.Add(newLocation);
+					KnownLocations.Add(new KnownLocation(newLocation));
 				}
 				else
 				{
-					newLocation = KnownLocations[DisplayForm.GLOBALRANDOM.Next(KnownLocations.Count - 1)];
+					if (maxPref == minPref)
+					{
+						newLocation = KnownLocations[DisplayForm.GLOBALRANDOM.Next(KnownLocations.Count - 1)].Location;
+					}
+					else
+					{
+						int destinationChoice = 0;
+						float maxLocationPriority = Single.MinValue;
+						float priority;
+						for (int i = 0; i < KnownLocations.Count; i++)
+						{
+							priority = (float)DisplayForm.GLOBALRANDOM.NextDouble() * (KnownLocations[i].Preference - minPref) / (maxPref - minPref);
+							if (priority > maxLocationPriority)
+							{
+								destinationChoice = i;
+								maxLocationPriority = priority;
+							}
+						}
+						newLocation = KnownLocations[destinationChoice].Location;
+					}
 				}
 				destination.Set(this.position, newLocation);
 			}
@@ -301,47 +379,6 @@ namespace EvoMod2
 			{
 				destination.Clear();
 			}
-
-			// Update Happiness
-			float environmentHappiness = 0.0f;
-			for (int i = 0; i < relationships.Keys.Count; i++)
-			{
-				if (relationships.Keys.ToArray()[i].IsDead)
-				{
-					relationships.Remove(relationships.Keys.ToArray()[i]);
-				}
-			}
-			foreach (Element e in relationships.Keys)
-			{
-				try
-				{
-					environmentHappiness += relationships[e]
-							* (float)Math.Sqrt((position.X - e.Position.X) * (position.X - e.Position.X)
-								+ (position.Y - e.Position.Y) * (position.Y - e.Position.Y))
-							/ (INTERACTRANGE * MAXRELATIONSHIPS * (float)RELATIONSHIPSCALE);
-				}
-				catch (NullReferenceException)
-				{
-					continue;
-				}
-			}
-
-			environmentHappiness = environmentHappiness * happinessWeights[2];
-			float nextHappiness = timePreference * (happinessBonus
-				+ wealthHappiness
-				+ healthHappiness
-				+ environmentHappiness) / 4.0f
-				+ (1.0f - timePreference) * Happiness;
-
-			if (Happiness <= 0.1f && Happiness >= -0.1f)
-			{
-				happinessPercentChangeHistory = Math.Sign(nextHappiness - Happiness) * 0.001f;
-			}
-			else
-			{
-				happinessPercentChangeHistory = (nextHappiness - Happiness) / Happiness;
-			}
-			Happiness = nextHappiness;
 
 			// Determine driving force vector
 			if (temp[0] == 0.0f && temp[1] == 0.0f)
@@ -457,7 +494,7 @@ namespace EvoMod2
 					inventory += productionUtilityVector;
 					resourceUse -= productionUtilityVector;
 					happinessBonus += FOODREQUIREMENT * KnownActions[actionChoice].HappinessBonus;
-					Health += KnownActions[actionChoice].HealthBonus;
+					Health += KnownActions[actionChoice].HealthBonus / (0.1f * MIDDLEAGE);
 					Mobility += KnownActions[actionChoice].MobilityBonus / MIDDLEAGE;
 					lethalityBonus += KnownActions[actionChoice].LethalityBonus;
 					// Update resource usage information and apply learning to action
@@ -911,12 +948,16 @@ namespace EvoMod2
 		/// Method to add a new location to this Element's KnownLocations list
 		/// </summary>
 		/// <param name="location"> Location to add. </param>
-		public void LearnLocation(PointF location)
+		public void LearnLocation(KnownLocation location)
 		{
-			if (!KnownLocations.Contains(location))
+			foreach (KnownLocation l in KnownLocations)
 			{
-				KnownLocations.Add(location);
+				if (l.Location.X == location.Location.X && l.Location.Y == location.Location.Y)
+				{
+					return;
+				}
 			}
+			KnownLocations.Add(new KnownLocation(location));
 		}
 
 		/// <summary>
@@ -941,7 +982,7 @@ namespace EvoMod2
 		public void CheckForDeath(float deathChance)
 		{
 			Age++;
-			Health += 2.0f * (float)StatFunctions.Sigmoid((Age - MIDDLEAGE), MIDDLEAGE, MIDDLEAGE) - 1.0f;
+			Health += 2.0f * (float)StatFunctions.Sigmoid(Age, MIDDLEAGE, MIDDLEAGE) - 1.0f;
 			if (Health < deathChance)
 			{
 				this.Die();
@@ -994,8 +1035,8 @@ namespace EvoMod2
 
 			position.X = parent1.Position.X;
 			position.Y = parent1.Position.Y;
-			KnownLocations = new List<PointF>();
-			KnownLocations.Add(position);
+			KnownLocations = new List<KnownLocation>();
+			KnownLocations.Add(new KnownLocation(position));
 			int r = (int)((1.0 - COLORMUTATIONRATE) * (parent1.ElementColor.R + parent2.ElementColor.R) / 2);
 			int g = (int)((1.0 - COLORMUTATIONRATE) * (parent1.ElementColor.G + parent2.ElementColor.G) / 2);
 			int b = (int)((1.0 - COLORMUTATIONRATE) * (parent1.ElementColor.B + parent2.ElementColor.B) / 2);
