@@ -101,7 +101,7 @@ namespace EvoMod2
 		public List<Action> KnownActions { get; private set; }
 		private int ActionsTakenTotal;
 		public bool IsDead { get; private set; }
-		public int TurnsSinceMurder { get; private set; }
+		public List<int> RecentAttacks { get; private set; }
 		public float Lethality { get => Health + lethalityBonus; }
 		public HappinessWeights HappinessWeights { get => happinessWeights; }
 		public Vector Inventory { get => inventory; }
@@ -130,8 +130,7 @@ namespace EvoMod2
 			Parents[1] = this.Name;
 			Age = 0;
 			IsDead = false;
-			lethalityBonus = 0.0f;
-			TurnsSinceMurder = 0;
+			RecentAttacks = new List<int>();
 
 			position.X = (float)(random.NextDouble() * DisplayForm.SCALE);
 			position.Y = (float)(random.NextDouble() * DisplayForm.SCALE);
@@ -157,6 +156,7 @@ namespace EvoMod2
 
 			rand = random.NextDouble();
 			Health = MIDDLEAGE / 40.0f * (float)StatFunctions.GaussRandom(rand, TRAITSPREAD, TRAITSPREAD);
+			lethalityBonus = Health;
 			Mobility = 1.0f;
 
 			happinessWeights[0] = (float)StatFunctions.GaussRandom(rand, TRAITSPREAD, TRAITSPREAD);
@@ -500,14 +500,17 @@ namespace EvoMod2
 					// Update resource usage information and apply learning to action
 					if (learnMetric != 0.0f)
 					{
-						learnMetric = happinessWeights.Wealth * (learnMetric - inventory * prices) / learnMetric;
+						learnMetric += happinessWeights.Wealth * (learnMetric - inventory * prices) / learnMetric;
 					}
 					if (Happiness != 0.0f)
 					{
-						learnMetric += (KnownActions[actionChoice].HappinessBonus
-							+ HappinessWeights.Health * KnownActions[actionChoice].HealthBonus)
-							/ Math.Abs(Happiness);
+						learnMetric += KnownActions[actionChoice].HappinessBonus / Math.Abs(Happiness);
 					}
+					if (learnMetric != 0.0f)
+					{
+						learnMetric += KnownActions[actionChoice].HealthBonus / Math.Abs(Health);
+					}
+					learnMetric += happinessPercentChangeHistory;
 					KnownActions[actionChoice].Learn(learnMetric, (1.0f - Openness));
 					// Check for new Resource discovery
 					if (Math.Exp(DISCOVERYRATE * (inventory.Count - MAXRESOURCECOUNT))
@@ -556,6 +559,9 @@ namespace EvoMod2
 		/// <returns> A List of new child Elements. </returns>
 		public List<Element> DoInteraction(Random random, List<Element> otherElements)
 		{
+			// Clear recent kills
+			RecentAttacks.Clear();
+
 			// Update resourceUse. This portion must be called every turn. Used to drive trade decisions
 			for (int i = 0; i < resourceUse.Count; i++)
 			{
@@ -570,7 +576,6 @@ namespace EvoMod2
 			}
 
 			List<Element> children = new List<Element>();
-			TurnsSinceMurder++;
 			int interactionsPerTurn = (int)(Extraversion * INTERACTCOUNT);
 			while (interactionsPerTurn-- > 0)
 			{
@@ -648,14 +653,13 @@ namespace EvoMod2
 							inventory = inventory + otherElement.GetRobbed();
 							otherElement.Die();
 							lethalityBonus *= (1.0f + 5.0f / (1.0f + (float)Math.Exp(lethalityBonus)));
-							TurnsSinceMurder = 1;
 						}
 						else if (random.NextDouble() * Lethality < random.NextDouble() * otherElement.Lethality)
 						{
 							this.Die();
 							return children;
 						}
-						TurnsSinceMurder--;
+						RecentAttacks.Add(otherElement.Name);
 					}
 				}
 			}
@@ -865,19 +869,25 @@ namespace EvoMod2
 				relationships.Add(otherElement, Openness - Neuroticism);
 			}
 			relationships[otherElement] += (float)RELATIONSHIPSCALE / (2.0f * MIDDLEAGE * INTERACTCOUNT / DisplayForm.ELEMENTCOUNT)
-				 * ((otherElement.HappinessWeights[0] * happinessWeights[0]
-					+ otherElement.HappinessWeights[1] * happinessWeights[1]
-					+ otherElement.HappinessWeights[2] * happinessWeights[2]) / 3.0f);
-			if (otherElement.Age != 0)
+				 * (4.0f * ((otherElement.HappinessWeights[0] - 0.5f) * (happinessWeights[0] - 0.5f)
+					+ (otherElement.HappinessWeights[1] - 0.5f) * (happinessWeights[1] - 0.5f)
+					+ (otherElement.HappinessWeights[2] - 0.5f) * (happinessWeights[2] - 0.5f)) / 3.0f);
+			foreach (int victim in otherElement.RecentAttacks)
 			{
-				relationships[otherElement] -= ((float)RELATIONSHIPSCALE / (2.0f * MIDDLEAGE * INTERACTCOUNT / DisplayForm.ELEMENTCOUNT)
-					* (otherElement.Age - otherElement.TurnsSinceMurder) / otherElement.Age);
+				foreach (Element relation in relationships.Keys)
+				{
+					if (relation.Name == victim)
+					{
+						relationships[otherElement] -= relationships[relation];
+						break;
+					}
+				}
 			}
 
 			// Update "moral values"
-			happinessWeights[0] += Agreeableness * Openness * (otherElement.HappinessWeights[0] - happinessWeights[0]);
-			happinessWeights[1] += Agreeableness * Openness * (otherElement.HappinessWeights[1] - happinessWeights[1]);
-			happinessWeights[2] += Agreeableness * Openness * (otherElement.HappinessWeights[2] - happinessWeights[2]);
+			happinessWeights[0] += Agreeableness * Openness * (otherElement.HappinessWeights[0] - happinessWeights[0]) / (2.0f * MIDDLEAGE * INTERACTCOUNT / DisplayForm.ELEMENTCOUNT);
+			happinessWeights[1] += Agreeableness * Openness * (otherElement.HappinessWeights[1] - happinessWeights[1]) / (2.0f * MIDDLEAGE * INTERACTCOUNT / DisplayForm.ELEMENTCOUNT);
+			happinessWeights[2] += Agreeableness * Openness * (otherElement.HappinessWeights[2] - happinessWeights[2]) / (2.0f * MIDDLEAGE * INTERACTCOUNT / DisplayForm.ELEMENTCOUNT);
 
 			// Check for learning actions, locations, and relationships
 			if (Math.Exp(KNOWLEDGETRANSFERRATE * (KnownActions.Count - MAXACTIONSCOUNT))
@@ -1030,8 +1040,7 @@ namespace EvoMod2
 			Name = DisplayForm.GLOBALRANDOM.Next();
 			Age = 0;
 			IsDead = false;
-			lethalityBonus = 0.0f;
-			TurnsSinceMurder = 0;
+			RecentAttacks = new List<int>();
 
 			position.X = parent1.Position.X;
 			position.Y = parent1.Position.Y;
@@ -1074,6 +1083,7 @@ namespace EvoMod2
 			Health = ((parent1.Health / parent1.Age + parent2.Health / parent2.Age)
 				+ (float)StatFunctions.GaussRandom(rand, TRAITSPREAD, TRAITSPREAD))
 				/ INFANTMORTALITY;
+			lethalityBonus = Health;
 			Mobility = 1.0f;
 
 			rand = DisplayForm.GLOBALRANDOM.NextDouble();
