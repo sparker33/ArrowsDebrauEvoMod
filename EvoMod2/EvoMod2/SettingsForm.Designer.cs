@@ -251,7 +251,7 @@
 			this.eleCountBox.Name = "eleCountBox";
 			this.eleCountBox.Size = new System.Drawing.Size(100, 20);
 			this.eleCountBox.TabIndex = 8;
-			this.eleCountBox.Text = "1250";
+			this.eleCountBox.Text = "450";
 			this.eleCountBox.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
 			// 
 			// label5
@@ -269,7 +269,7 @@
 			this.popEnforceBox.Name = "popEnforceBox";
 			this.popEnforceBox.Size = new System.Drawing.Size(100, 20);
 			this.popEnforceBox.TabIndex = 10;
-			this.popEnforceBox.Text = "0.0";
+			this.popEnforceBox.Text = "1.0";
 			this.popEnforceBox.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
 			// 
 			// label6
@@ -287,7 +287,7 @@
 			this.deathChanceBox.Name = "deathChanceBox";
 			this.deathChanceBox.Size = new System.Drawing.Size(100, 20);
 			this.deathChanceBox.TabIndex = 12;
-			this.deathChanceBox.Text = "0.23";
+			this.deathChanceBox.Text = "0.01";
 			this.deathChanceBox.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
 			// 
 			// label7
@@ -305,7 +305,7 @@
 			this.sizeScaleBox.Name = "sizeScaleBox";
 			this.sizeScaleBox.Size = new System.Drawing.Size(100, 20);
 			this.sizeScaleBox.TabIndex = 14;
-			this.sizeScaleBox.Text = "7.0";
+			this.sizeScaleBox.Text = "2.5";
 			this.sizeScaleBox.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
 			// 
 			// label8
@@ -323,7 +323,7 @@
 			this.opacityScaleBox.Name = "opacityScaleBox";
 			this.opacityScaleBox.Size = new System.Drawing.Size(100, 20);
 			this.opacityScaleBox.TabIndex = 16;
-			this.opacityScaleBox.Text = "2.0";
+			this.opacityScaleBox.Text = "2.5";
 			this.opacityScaleBox.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
 			// 
 			// label9
@@ -341,7 +341,7 @@
 			this.dampingBox.Name = "dampingBox";
 			this.dampingBox.Size = new System.Drawing.Size(100, 20);
 			this.dampingBox.TabIndex = 18;
-			this.dampingBox.Text = "0.175";
+			this.dampingBox.Text = "0.125";
 			this.dampingBox.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
 			// 
 			// label10
@@ -387,7 +387,7 @@
 			this.speedLimitBox.Name = "speedLimitBox";
 			this.speedLimitBox.Size = new System.Drawing.Size(100, 20);
 			this.speedLimitBox.TabIndex = 23;
-			this.speedLimitBox.Text = "300.0";
+			this.speedLimitBox.Text = "1000.0";
 			this.speedLimitBox.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
 			// 
 			// label13
@@ -451,7 +451,7 @@
 			this.destinationAccelBox.Name = "destinationAccelBox";
 			this.destinationAccelBox.Size = new System.Drawing.Size(100, 20);
 			this.destinationAccelBox.TabIndex = 41;
-			this.destinationAccelBox.Text = "5.0";
+			this.destinationAccelBox.Text = "7.5";
 			this.destinationAccelBox.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
 			// 
 			// label17
@@ -469,7 +469,7 @@
 			this.eleSpeedBox.Name = "eleSpeedBox";
 			this.eleSpeedBox.Size = new System.Drawing.Size(100, 20);
 			this.eleSpeedBox.TabIndex = 39;
-			this.eleSpeedBox.Text = "1000.0";
+			this.eleSpeedBox.Text = "1250.0";
 			this.eleSpeedBox.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
 			// 
 			// label18
@@ -487,7 +487,7 @@
 			this.interactRangeBox.Name = "interactRangeBox";
 			this.interactRangeBox.Size = new System.Drawing.Size(100, 20);
 			this.interactRangeBox.TabIndex = 37;
-			this.interactRangeBox.Text = "6.7";
+			this.interactRangeBox.Text = "50.0";
 			this.interactRangeBox.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
 			// 
 			// label19
@@ -569,7 +569,7 @@
 			this.maxRelationshipsBox.Name = "maxRelationshipsBox";
 			this.maxRelationshipsBox.Size = new System.Drawing.Size(100, 20);
 			this.maxRelationshipsBox.TabIndex = 51;
-			this.maxRelationshipsBox.Text = "1000";
+			this.maxRelationshipsBox.Text = "450";
 			this.maxRelationshipsBox.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
 			// 
 			// label25
@@ -623,7 +623,7 @@
 			this.relationshipScaleBox.Name = "relationshipScaleBox";
 			this.relationshipScaleBox.Size = new System.Drawing.Size(100, 20);
 			this.relationshipScaleBox.TabIndex = 45;
-			this.relationshipScaleBox.Text = "25.0";
+			this.relationshipScaleBox.Text = "1500.0";
 			this.relationshipScaleBox.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
 			// 
 			// label28
@@ -724,7 +724,7 @@
 			this.childCostBox.Name = "childCostBox";
 			this.childCostBox.Size = new System.Drawing.Size(100, 20);
 			this.childCostBox.TabIndex = 67;
-			this.childCostBox.Text = "0.5";
+			this.childCostBox.Text = "0.6";
 			this.childCostBox.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
 			// 
 			// label32
@@ -742,7 +742,7 @@
 			this.attackChanceBox.Name = "attackChanceBox";
 			this.attackChanceBox.Size = new System.Drawing.Size(100, 20);
 			this.attackChanceBox.TabIndex = 65;
-			this.attackChanceBox.Text = "0.075";
+			this.attackChanceBox.Text = "0.035";
 			this.attackChanceBox.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
 			// 
 			// label33
@@ -760,7 +760,7 @@
 			this.tradeChanceBox.Name = "tradeChanceBox";
 			this.tradeChanceBox.Size = new System.Drawing.Size(100, 20);
 			this.tradeChanceBox.TabIndex = 63;
-			this.tradeChanceBox.Text = "1.5";
+			this.tradeChanceBox.Text = "1.6";
 			this.tradeChanceBox.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
 			// 
 			// label35
@@ -778,7 +778,7 @@
 			this.mingleChanceBox.Name = "mingleChanceBox";
 			this.mingleChanceBox.Size = new System.Drawing.Size(100, 20);
 			this.mingleChanceBox.TabIndex = 60;
-			this.mingleChanceBox.Text = "1.3";
+			this.mingleChanceBox.Text = "1.45";
 			this.mingleChanceBox.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
 			// 
 			// label36
@@ -832,7 +832,7 @@
 			this.discoveryRateBox.Name = "discoveryRateBox";
 			this.discoveryRateBox.Size = new System.Drawing.Size(100, 20);
 			this.discoveryRateBox.TabIndex = 69;
-			this.discoveryRateBox.Text = "0.0001";
+			this.discoveryRateBox.Text = "0.0005";
 			this.discoveryRateBox.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
 			// 
 			// label39
@@ -886,7 +886,7 @@
 			this.infantMortalityBox.Name = "infantMortalityBox";
 			this.infantMortalityBox.Size = new System.Drawing.Size(100, 20);
 			this.infantMortalityBox.TabIndex = 77;
-			this.infantMortalityBox.Text = "0.01";
+			this.infantMortalityBox.Text = "0.0075";
 			this.infantMortalityBox.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
 			// 
 			// label34
@@ -904,7 +904,7 @@
 			this.knowledgeTransferRateBox.Name = "knowledgeTransferRateBox";
 			this.knowledgeTransferRateBox.Size = new System.Drawing.Size(100, 20);
 			this.knowledgeTransferRateBox.TabIndex = 81;
-			this.knowledgeTransferRateBox.Text = "0.075";
+			this.knowledgeTransferRateBox.Text = "0.1";
 			this.knowledgeTransferRateBox.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
 			// 
 			// label42
@@ -940,7 +940,7 @@
 			this.actionLearnRateBox.Name = "actionLearnRateBox";
 			this.actionLearnRateBox.Size = new System.Drawing.Size(100, 20);
 			this.actionLearnRateBox.TabIndex = 85;
-			this.actionLearnRateBox.Text = "5.0";
+			this.actionLearnRateBox.Text = "4.0";
 			this.actionLearnRateBox.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
 			// 
 			// label44
@@ -958,7 +958,7 @@
 			this.destinationAcquisitionRateBox.Name = "destinationAcquisitionRateBox";
 			this.destinationAcquisitionRateBox.Size = new System.Drawing.Size(100, 20);
 			this.destinationAcquisitionRateBox.TabIndex = 87;
-			this.destinationAcquisitionRateBox.Text = "0.01";
+			this.destinationAcquisitionRateBox.Text = "0.031";
 			this.destinationAcquisitionRateBox.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
 			// 
 			// SettingsForm
