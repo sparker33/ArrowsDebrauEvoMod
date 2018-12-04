@@ -493,24 +493,24 @@ namespace EvoMod2
 					Vector productionUtilityVector = KnownActions[actionChoice].DoAction(localResourceLevels, Intelligence);
 					inventory += productionUtilityVector;
 					resourceUse -= productionUtilityVector;
-					happinessBonus += FOODREQUIREMENT * KnownActions[actionChoice].HappinessBonus;
+					happinessBonus += FOODREQUIREMENT * FOODREQUIREMENT * KnownActions[actionChoice].HappinessBonus;
 					Health += KnownActions[actionChoice].HealthBonus / (0.1f * MIDDLEAGE);
 					Mobility += KnownActions[actionChoice].MobilityBonus / MIDDLEAGE;
 					lethalityBonus += KnownActions[actionChoice].LethalityBonus;
 					// Update resource usage information and apply learning to action
 					if (learnMetric != 0.0f)
 					{
-						learnMetric += happinessWeights.Wealth * (learnMetric - inventory * prices) / learnMetric;
+						learnMetric = happinessWeights.Wealth * (learnMetric - inventory * prices) / learnMetric;
 					}
 					if (Happiness != 0.0f)
 					{
-						learnMetric += KnownActions[actionChoice].HappinessBonus / Math.Abs(Happiness);
+						learnMetric += FOODREQUIREMENT * FOODREQUIREMENT * KnownActions[actionChoice].HappinessBonus / Math.Abs(Happiness);
 					}
-					if (learnMetric != 0.0f)
+					if (Health != 0.0f)
 					{
 						learnMetric += KnownActions[actionChoice].HealthBonus / Math.Abs(Health);
 					}
-					learnMetric += happinessPercentChangeHistory;
+					learnMetric = (learnMetric + happinessPercentChangeHistory) / 4.0f;
 					KnownActions[actionChoice].Learn(learnMetric, (1.0f - Openness));
 					// Check for new Resource discovery
 					if (Math.Exp(DISCOVERYRATE * (inventory.Count - MAXRESOURCECOUNT))
