@@ -16,6 +16,7 @@ namespace EvoMod2
 			{
 				maxUse += Math.Abs(lvl);
 			}
+			maxUse /= resourceUsageLevels.Count;
 
 			for (int i = 0; i < DisplayForm.NaturalResourceTypesCount; i++)
 			{

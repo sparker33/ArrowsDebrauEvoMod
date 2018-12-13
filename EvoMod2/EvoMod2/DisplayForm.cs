@@ -187,7 +187,9 @@ namespace EvoMod2
 					resources.Add(new Resource(Color.Blue, 80000000));
 					Element.FoodResources.Add(new FoodResourceData(0, 1.0f - (float)GLOBALRANDOM.NextDouble()));
 					resources.Add(new Resource(Color.Red, 50000000));
+					Element.FoodResources.Add(new FoodResourceData(1, 1.0f - (float)GLOBALRANDOM.NextDouble()));
 					resources.Add(new Resource(Color.White, 12000000));
+					Element.FoodResources.Add(new FoodResourceData(2, 1.0f - (float)GLOBALRANDOM.NextDouble()));
 					resources.Add(new Resource(Color.Black, 30000000));
 					for (int i = 0; i < resources.Count; i++)
 					{
