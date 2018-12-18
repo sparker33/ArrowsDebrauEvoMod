@@ -567,11 +567,11 @@ namespace EvoMod2
 			{
 				if (resourceUse[i] > 0.0f)
 				{
-					resourceUse[i] = (1.0f - timePreference) * (1.0f / (2.0f * (Agreeableness + Single.Epsilon))) * resourceUse[i];
+					resourceUse[i] = (1.0f - timePreference) * (1.0f / (Agreeableness + 0.5f)) * resourceUse[i];
 				}
 				else
 				{
-					resourceUse[i] = (1.0f - timePreference) * (1.0f / (2.0f * (1.0f - Agreeableness + Single.Epsilon))) * resourceUse[i];
+					resourceUse[i] = (1.0f - timePreference) * (1.0f / (1.5f - Agreeableness)) * resourceUse[i];
 				}
 			}
 
