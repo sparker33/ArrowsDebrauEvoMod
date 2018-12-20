@@ -515,7 +515,7 @@ namespace EvoMod2
 					// Check for new Action discovery (can discover either Harvest or Refinement Action)
 					if (Math.Exp(DISCOVERYRATE * (KnownActions.Count - MAXACTIONSCOUNT))
 						< StatFunctions.GaussRandom(DisplayForm.GLOBALRANDOM.NextDouble(), 5.0 * (Intelligence + Openness), 20.0 / (Intelligence + Openness))
-						&& Action.ActionTypesCount < DisplayForm.ELEMENTCOUNT * MAXACTIONSCOUNT)
+						) //&& Action.ActionTypesCount < DisplayForm.ELEMENTCOUNT * MAXACTIONSCOUNT)
 					{
 						if (DisplayForm.GLOBALRANDOM.NextDouble() > 0.8)
 						{
@@ -524,7 +524,7 @@ namespace EvoMod2
 						else
 						{
 							// Check for new Resource discovery
-							if (Math.Exp(DISCOVERYRATE * (inventory.Count - MAXRESOURCECOUNT))
+							if (Math.Exp(0.1 * DisplayForm.ELEMENTCOUNT * DISCOVERYRATE * (inventory.Count - MAXRESOURCECOUNT))
 								< StatFunctions.GaussRandom(DisplayForm.GLOBALRANDOM.NextDouble(), 25.0 * (Intelligence + Openness), 100.0 / (Intelligence + Openness)))
 							{
 								resourceDiscovered = false; // Not a food resource (null is no resource)
@@ -543,7 +543,7 @@ namespace EvoMod2
 				if (!didAction
 					&& Math.Exp(0.1 * DISCOVERYRATE * (KnownActions.Count - MAXACTIONSCOUNT))
 					< StatFunctions.GaussRandom(DisplayForm.GLOBALRANDOM.NextDouble(), 5.0 * (Intelligence + Openness), 20.0 / (Intelligence + Openness))
-					&& Action.ActionTypesCount < DisplayForm.ELEMENTCOUNT * MAXACTIONSCOUNT / 4.0f)
+					) //&& Action.ActionTypesCount < DisplayForm.ELEMENTCOUNT * MAXACTIONSCOUNT / 4.0f)
 				{
 					KnownActions.Add(new HarvestAction(inventory.Count, DisplayForm.GLOBALRANDOM, localResourceLevels));
 				}

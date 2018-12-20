@@ -19,27 +19,22 @@ namespace EvoMod2
 			localResourceLevels.Magnitude = 1.0f;
 			for (int i = 0; i < DisplayForm.NaturalResourceTypesCount; i++)
 			{
-				if (random.Next() > random.Next())
-				{
-					baseProduction[i] = 1.0f - (float)random.NextDouble();
-				}
+				baseProduction[i] = 0.0f;
 			}
 			for (int i = 0; i < DisplayForm.NaturalResourceTypesCount; i++)
 			{
 				localResourceLevelsProductionModifier[i] = new MatrixMath.Vector(DisplayForm.NaturalResourceTypesCount);
 				for (int j = 0; j < DisplayForm.NaturalResourceTypesCount; j++)
 				{
-					localResourceLevelsProductionModifier[i][j] = baseProduction[j] / (1.0f + localResourceLevels[i]);
+					if (random.Next() > random.Next())
+					{
+						localResourceLevelsProductionModifier[i][j] = (1.0f - (float)random.NextDouble()) * localResourceLevels[i] / DisplayForm.NaturalResourceTypesCount;
+					}
 				}
 				localResourcesDecision[i] = 0.0f;
 				inventoryResourcesDecision[i] = 0.0f;
 			}
-			for (int i = 0; i < DisplayForm.NaturalResourceTypesCount; i++)
-			{
-				baseProduction[i] = 0.0f;
-			}
 
-			// 
 			for (int i = DisplayForm.NaturalResourceTypesCount; i < totalResourceCount; i++)
 			{
 				if (random.Next() > random.Next())
