@@ -512,28 +512,29 @@ namespace EvoMod2
 					}
 					learnMetric = (learnMetric + happinessPercentChangeHistory) / 4.0f;
 					KnownActions[actionChoice].Learn(learnMetric, (1.0f - Openness));
-					// Check for new Resource discovery
-					if (Math.Exp(DISCOVERYRATE * (inventory.Count - MAXRESOURCECOUNT))
-						< StatFunctions.GaussRandom(DisplayForm.GLOBALRANDOM.NextDouble(), 25.0 * (Intelligence + Openness), 100.0 / (Intelligence + Openness)))
-					{
-						resourceDiscovered = false; // Not a food resource (null is no resource)
-						if (DisplayForm.GLOBALRANDOM.NextDouble() > 0.8)
-						{
-							FoodResources.Add(new FoodResourceData(inventory.Count - 1, 1.0f - (float)DisplayForm.GLOBALRANDOM.NextDouble()));
-							resourceDiscovered = true; // Is a food resource (null is no resource)
-						}
-					}
 					// Check for new Action discovery (can discover either Harvest or Refinement Action)
 					if (Math.Exp(DISCOVERYRATE * (KnownActions.Count - MAXACTIONSCOUNT))
 						< StatFunctions.GaussRandom(DisplayForm.GLOBALRANDOM.NextDouble(), 5.0 * (Intelligence + Openness), 20.0 / (Intelligence + Openness))
 						&& Action.ActionTypesCount < DisplayForm.ELEMENTCOUNT * MAXACTIONSCOUNT)
 					{
-						if (DisplayForm.GLOBALRANDOM.NextDouble() > 0.5)
+						if (DisplayForm.GLOBALRANDOM.NextDouble() > 0.8)
 						{
 							KnownActions.Add(new HarvestAction(inventory.Count, DisplayForm.GLOBALRANDOM, localResourceLevels));
 						}
 						else
 						{
+							// Check for new Resource discovery
+							if (Math.Exp(DISCOVERYRATE * (inventory.Count - MAXRESOURCECOUNT))
+								< StatFunctions.GaussRandom(DisplayForm.GLOBALRANDOM.NextDouble(), 25.0 * (Intelligence + Openness), 100.0 / (Intelligence + Openness)))
+							{
+								resourceDiscovered = false; // Not a food resource (null is no resource)
+								if (DisplayForm.GLOBALRANDOM.NextDouble() > 0.8)
+								{
+									FoodResources.Add(new FoodResourceData(inventory.Count - 1, 1.0f - (float)DisplayForm.GLOBALRANDOM.NextDouble()));
+									resourceDiscovered = true; // Is a food resource (null is no resource)
+								}
+							}
+							// Add newly invented Action
 							KnownActions.Add(new RefinementAction(inventory.Count, DisplayForm.GLOBALRANDOM, productionUtilityVector));
 						}
 					}

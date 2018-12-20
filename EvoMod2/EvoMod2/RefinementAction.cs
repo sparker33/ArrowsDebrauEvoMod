@@ -20,7 +20,10 @@ namespace EvoMod2
 
 			for (int i = 0; i < DisplayForm.NaturalResourceTypesCount; i++)
 			{
-				baseCost[i] = (float)random.NextDouble();
+				if (Math.Abs(resourceUsageLevels[i] / maxUse) > random.NextDouble())
+				{
+					baseCost[i] = 1.0f - (float)random.NextDouble();
+				}
 				baseProduction[i] = 0.0f;
 				localResourceLevelsProductionModifier[i] = new MatrixMath.Vector(DisplayForm.NaturalResourceTypesCount);
 				localResourcesDecision[i] = 0.0f;

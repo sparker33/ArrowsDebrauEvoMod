@@ -179,7 +179,7 @@ namespace EvoMod2
 					Element.TRADECHANCE = 1.6f;
 					Element.ATTACKCHANCE = 0.035f;
 					Element.CHILDCOST = 0.6f;
-					Element.INFANTMORTALITY = 0.0075f;
+					Element.INFANTMORTALITY = 0.05f;
 					Element.INHERITANCE = 1.0f;
 					Element.INCESTALLOWED = false;
 
