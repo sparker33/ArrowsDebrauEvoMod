@@ -287,7 +287,7 @@
 			this.deathChanceBox.Name = "deathChanceBox";
 			this.deathChanceBox.Size = new System.Drawing.Size(100, 20);
 			this.deathChanceBox.TabIndex = 12;
-			this.deathChanceBox.Text = "0.01";
+			this.deathChanceBox.Text = "0.0215";
 			this.deathChanceBox.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
 			// 
 			// label7
@@ -742,7 +742,7 @@
 			this.attackChanceBox.Name = "attackChanceBox";
 			this.attackChanceBox.Size = new System.Drawing.Size(100, 20);
 			this.attackChanceBox.TabIndex = 65;
-			this.attackChanceBox.Text = "0.035";
+			this.attackChanceBox.Text = "0.1";
 			this.attackChanceBox.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
 			// 
 			// label33
@@ -850,7 +850,7 @@
 			this.reproductionChanceBox.Name = "reproductionChanceBox";
 			this.reproductionChanceBox.Size = new System.Drawing.Size(100, 20);
 			this.reproductionChanceBox.TabIndex = 75;
-			this.reproductionChanceBox.Text = "0.1";
+			this.reproductionChanceBox.Text = "0.01";
 			this.reproductionChanceBox.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
 			// 
 			// label40
@@ -886,7 +886,7 @@
 			this.infantMortalityBox.Name = "infantMortalityBox";
 			this.infantMortalityBox.Size = new System.Drawing.Size(100, 20);
 			this.infantMortalityBox.TabIndex = 77;
-			this.infantMortalityBox.Text = "0.0075";
+			this.infantMortalityBox.Text = "0.1";
 			this.infantMortalityBox.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
 			// 
 			// label34
@@ -958,7 +958,7 @@
 			this.destinationAcquisitionRateBox.Name = "destinationAcquisitionRateBox";
 			this.destinationAcquisitionRateBox.Size = new System.Drawing.Size(100, 20);
 			this.destinationAcquisitionRateBox.TabIndex = 87;
-			this.destinationAcquisitionRateBox.Text = "0.031";
+			this.destinationAcquisitionRateBox.Text = "0.025";
 			this.destinationAcquisitionRateBox.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
 			// 
 			// SettingsForm

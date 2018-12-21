@@ -122,18 +122,17 @@ namespace EvoMod2
 		/// <summary>
 		/// Basic class constructor with initial physics configuration
 		/// </summary>
-		/// <param name="random"> Randomizer. </param>
-		public Element(Random random, List<Resource> environmentResources)
+		public Element(List<Resource> environmentResources)
 		{
-			Name = random.Next();
+			Name = DisplayForm.GLOBALRANDOM.Next();
 			Parents[0] = this.Name;
 			Parents[1] = this.Name;
 			Age = 0;
 			IsDead = false;
 			RecentAttacks = new List<int>();
 
-			position.X = (float)(random.NextDouble() * DisplayForm.SCALE);
-			position.Y = (float)(random.NextDouble() * DisplayForm.SCALE);
+			position.X = (float)(DisplayForm.GLOBALRANDOM.NextDouble() * DisplayForm.SCALE);
+			position.Y = (float)(DisplayForm.GLOBALRANDOM.NextDouble() * DisplayForm.SCALE);
 			KnownLocations = new List<KnownLocation>();
 			KnownLocations.Add(new KnownLocation(position));
 			int r = (int)(255.0 / (1.0 + Math.Exp((15.0 / DisplayForm.SCALE) * (position.X - DisplayForm.SCALE / 2.0))));
@@ -141,41 +140,41 @@ namespace EvoMod2
 			int b = (int)(255.0 / (1.0 + Math.Exp((15.0 / DisplayForm.SCALE) * (position.Y - DisplayForm.SCALE / 2.0))));
 			ElementColor = Color.FromArgb(r, g, b);
 
-			double rand = 1.0 - random.NextDouble();
+			double rand = 1.0 - DisplayForm.GLOBALRANDOM.NextDouble();
 			Intelligence = (float)StatFunctions.GaussRandom(rand, TRAITSPREAD, TRAITSPREAD);
-			rand = 1.0 - random.NextDouble();
+			rand = 1.0 - DisplayForm.GLOBALRANDOM.NextDouble();
 			Conscientiousness = (float)StatFunctions.GaussRandom(rand, TRAITSPREAD, TRAITSPREAD);
-			rand = 1.0 - random.NextDouble();
+			rand = 1.0 - DisplayForm.GLOBALRANDOM.NextDouble();
 			Agreeableness = (float)StatFunctions.GaussRandom(rand, TRAITSPREAD, TRAITSPREAD);
-			rand = 1.0 - random.NextDouble();
+			rand = 1.0 - DisplayForm.GLOBALRANDOM.NextDouble();
 			Neuroticism = (float)StatFunctions.GaussRandom(rand, TRAITSPREAD, TRAITSPREAD);
-			rand = 1.0 - random.NextDouble();
+			rand = 1.0 - DisplayForm.GLOBALRANDOM.NextDouble();
 			Openness = (float)StatFunctions.GaussRandom(rand, TRAITSPREAD, TRAITSPREAD);
-			rand = 1.0 - random.NextDouble();
+			rand = 1.0 - DisplayForm.GLOBALRANDOM.NextDouble();
 			Extraversion = (float)StatFunctions.GaussRandom(rand, TRAITSPREAD, TRAITSPREAD);
 
-			rand = random.NextDouble();
+			rand = DisplayForm.GLOBALRANDOM.NextDouble();
 			Health = MIDDLEAGE / 40.0f * (float)StatFunctions.GaussRandom(rand, TRAITSPREAD, TRAITSPREAD);
 			lethalityBonus = Health;
 			Mobility = 1.0f;
 
 			happinessWeights[0] = (float)StatFunctions.GaussRandom(rand, TRAITSPREAD, TRAITSPREAD);
-			rand = random.NextDouble();
+			rand = DisplayForm.GLOBALRANDOM.NextDouble();
 			happinessWeights[1] = (float)StatFunctions.GaussRandom(rand, TRAITSPREAD, TRAITSPREAD);
-			rand = random.NextDouble();
+			rand = DisplayForm.GLOBALRANDOM.NextDouble();
 			happinessWeights[2] = (float)StatFunctions.GaussRandom(rand, TRAITSPREAD, TRAITSPREAD);
 
 			inventory = new Vector(DisplayForm.NaturalResourceTypesCount);
 			for (int i = 0; i < inventory.Count; i++)
 			{
-				rand = random.NextDouble();
+				rand = DisplayForm.GLOBALRANDOM.NextDouble();
 				inventory[i] = STARTRESOURCES * (float)StatFunctions.GaussRandom(rand, TRAITSPREAD, TRAITSPREAD);
 			}
 			prices = new Vector(DisplayForm.NaturalResourceTypesCount);
 			cumulativePriceExperience = new Vector(DisplayForm.NaturalResourceTypesCount);
 			for (int i = 0; i < inventory.Count; i++)
 			{
-				rand = 1.0 - random.NextDouble();
+				rand = 1.0 - DisplayForm.GLOBALRANDOM.NextDouble();
 				prices[i] = (float)StatFunctions.GaussRandom(rand, TRAITSPREAD, TRAITSPREAD);
 				cumulativePriceExperience[i] = inventory[i];
 			}
@@ -187,7 +186,14 @@ namespace EvoMod2
 			timePreference = (float)StatFunctions.GaussRandom(Intelligence, TRAITSPREAD, TRAITSPREAD);
 			resourceUse = new Vector(DisplayForm.NaturalResourceTypesCount);
 			KnownActions = new List<Action>();
-			KnownActions.Add(new HarvestAction(inventory.Count, DisplayForm.GLOBALRANDOM, GetLocalResourceLevels(environmentResources)));
+			if (DisplayForm.GLOBALRANDOM.Next() < DisplayForm.GLOBALRANDOM.Next())
+			{
+				KnownActions.Add(new HarvestAction(inventory.Count, DisplayForm.GLOBALRANDOM, GetLocalResourceLevels(environmentResources)));
+			}
+			else
+			{
+				KnownActions.Add(new RefinementAction(inventory.Count, DisplayForm.GLOBALRANDOM, (1.0f / STARTRESOURCES) * inventory));
+			}
 		}
 
 		/// <summary>
@@ -237,10 +243,14 @@ namespace EvoMod2
 			happinessBonus -= timePreference * temp0 + (1.0f - timePreference) * happinessBonus;
 
 			float wealthPctChg = (prevWealthHappiness - wealthHappiness) / prevWealthHappiness;
-			float trainingMetric = 0.0f;
-			if (Math.Abs(wealthPctChg * prevHealthHappiness) > 0.001f)
+			float trainingMetric = prevHealthHappiness * wealthPctChg;
+			if (Math.Abs(trainingMetric) < 0.001f)
 			{
-				trainingMetric = (healthHappiness - prevHealthHappiness) / (prevHealthHappiness * wealthPctChg);
+				trainingMetric = (healthHappiness - prevHealthHappiness) / 0.001f;
+			}
+			else
+			{
+				trainingMetric = (healthHappiness - prevHealthHappiness) / (Math.Sign(trainingMetric) * 0.001f + trainingMetric);
 			}
 			for (int i = 0; i < foodConsumptionRates.Count; i++)
 			{
@@ -312,7 +322,9 @@ namespace EvoMod2
 			float minPref = Single.MaxValue;
 			for (int i = 0; i < KnownLocations.Count; i++)
 			{
-				KnownLocations[i].UpdatePreference(position, happinessPercentChangeHistory);
+				float proximity = 1.0f / (1.0f + (float)Math.Sqrt((KnownLocations[i].Location.X - position.X) * (KnownLocations[i].Location.X - position.X)
+					+ (KnownLocations[i].Location.Y - position.Y) * (KnownLocations[i].Location.Y - position.Y)));
+				KnownLocations[i].Preference += proximity * happinessPercentChangeHistory;
 				if (KnownLocations[i].Preference > maxPref)
 				{
 					maxPref = KnownLocations[i].Preference;
@@ -504,11 +516,11 @@ namespace EvoMod2
 					}
 					if (Happiness != 0.0f)
 					{
-						learnMetric += FOODREQUIREMENT * FOODREQUIREMENT * KnownActions[actionChoice].HappinessBonus / Math.Abs(Happiness);
+						learnMetric += FOODREQUIREMENT * KnownActions[actionChoice].HappinessBonus / Math.Abs(Happiness);
 					}
 					if (Health != 0.0f)
 					{
-						learnMetric += KnownActions[actionChoice].HealthBonus / Math.Abs(Health);
+						learnMetric += happinessWeights.Health * KnownActions[actionChoice].HealthBonus / Math.Abs(Health);
 					}
 					learnMetric = (learnMetric + happinessPercentChangeHistory) / 4.0f;
 					KnownActions[actionChoice].Learn(learnMetric, (1.0f - Openness));
@@ -517,18 +529,18 @@ namespace EvoMod2
 						< StatFunctions.GaussRandom(DisplayForm.GLOBALRANDOM.NextDouble(), 5.0 * (Intelligence + Openness), 20.0 / (Intelligence + Openness))
 						) //&& Action.ActionTypesCount < DisplayForm.ELEMENTCOUNT * MAXACTIONSCOUNT)
 					{
-						if (DisplayForm.GLOBALRANDOM.NextDouble() > 0.8)
+						if (DisplayForm.GLOBALRANDOM.NextDouble() > 0.75)
 						{
 							KnownActions.Add(new HarvestAction(inventory.Count, DisplayForm.GLOBALRANDOM, localResourceLevels));
 						}
 						else
 						{
 							// Check for new Resource discovery
-							if (Math.Exp(0.1 * DisplayForm.ELEMENTCOUNT * DISCOVERYRATE * (inventory.Count - MAXRESOURCECOUNT))
+							if (Math.Exp(3.0 * DISCOVERYRATE * (inventory.Count - MAXRESOURCECOUNT))
 								< StatFunctions.GaussRandom(DisplayForm.GLOBALRANDOM.NextDouble(), 25.0 * (Intelligence + Openness), 100.0 / (Intelligence + Openness)))
 							{
 								resourceDiscovered = false; // Not a food resource (null is no resource)
-								if (DisplayForm.GLOBALRANDOM.NextDouble() > 0.8)
+								if (DisplayForm.GLOBALRANDOM.NextDouble() > 0.5)
 								{
 									FoodResources.Add(new FoodResourceData(inventory.Count - 1, 1.0f - (float)DisplayForm.GLOBALRANDOM.NextDouble()));
 									resourceDiscovered = true; // Is a food resource (null is no resource)
@@ -986,14 +998,15 @@ namespace EvoMod2
 		/// <param name="location"> Location to add. </param>
 		public void LearnLocation(KnownLocation location)
 		{
-			foreach (KnownLocation l in KnownLocations)
+			for (int i = 0; i < KnownLocations.Count; i++)
 			{
-				if (l.Location.X == location.Location.X && l.Location.Y == location.Location.Y)
+				if (KnownLocations[i].Location.X == location.Location.X && KnownLocations[i].Location.Y == location.Location.Y)
 				{
+					KnownLocations[i].Preference = (1.0f - Agreeableness) * KnownLocations[i].Preference + Agreeableness * location.Preference;
 					return;
 				}
 			}
-			KnownLocations.Add(new KnownLocation(location));
+			KnownLocations.Add(new KnownLocation(location, Agreeableness));
 		}
 
 		/// <summary>

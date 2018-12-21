@@ -145,8 +145,8 @@ namespace EvoMod2
 					SCALE = 5000;
 					BOUNDARYCOLLISIONS = true;
 					ELEMENTCOUNT = 450;
-					POPULATIONENFORCEMENT = 1.0f;
-					DEATHCHANCE = 0.01f;
+					POPULATIONENFORCEMENT = 0.0f;
+					DEATHCHANCE = 0.0175f;
 					SIZESCALING = 2.5f;
 					OPACITYSCALING = 2.5f;
 					Kinematics.DEFAULTDAMPING = 0.2f;
@@ -159,25 +159,25 @@ namespace EvoMod2
 					Element.INTERACTCOUNT = ELEMENTCOUNT / 5.0f;
 					Element.INTERACTRANGE = SCALE / 100.0f;
 					Element.ELESPEED = SCALE / 2.0f;
-					Element.DESTINATIONACQUISITIONTHRESHOLD = 0.97;
+					Element.DESTINATIONACQUISITIONTHRESHOLD = 0.975;
 					Element.DESTINATIONACCEL = 10.0f;
 					Action.ACTIONLEARNRATE = 4.0;
 					Element.INTERACTIONCHOICESCALE = 10.0f;
 					Element.RELATIONSHIPSCALE = 1500.0f;
-					Element.FOODREQUIREMENT = 0.25f;
-					Element.STARTRESOURCES = 15.0f;
+					Element.FOODREQUIREMENT = 0.025f;
+					Element.STARTRESOURCES = 5.0f;
 					Element.MAXRELATIONSHIPS = ELEMENTCOUNT;
 					Element.MAXLOCATIONSCOUNT = 30;
 					Element.MAXRESOURCECOUNT = 15;
 					Element.MAXACTIONSCOUNT = 15;
-					Element.DISCOVERYRATE = 0.0005f;
+					Element.DISCOVERYRATE = 0.00175f;
 					Element.KNOWLEDGETRANSFERRATE = 0.1f;
 					Element.MIDDLEAGE = 500;
 					Element.TRADEROUNDOFF = 0.0001f;
-					Element.REPRODUCTIONCHANCE = 0.1f;
+					Element.REPRODUCTIONCHANCE = 0.05f;
 					Element.MINGLECHANCE = 1.45f;
 					Element.TRADECHANCE = 1.6f;
-					Element.ATTACKCHANCE = 0.035f;
+					Element.ATTACKCHANCE = 0.075f;
 					Element.CHILDCOST = 0.6f;
 					Element.INFANTMORTALITY = 0.05f;
 					Element.INHERITANCE = 1.0f;
@@ -211,7 +211,8 @@ namespace EvoMod2
 			// Populate initial generation of elements
 			while (elements.Count < ELEMENTCOUNT)
 			{
-				elements.Add(new Element(GLOBALRANDOM, resources));
+				elements.Add(new Element(resources));
+				elements.Last().AddResource(false);
 			}
 			// Begin simulation
 			worker.RunWorkerAsync();
