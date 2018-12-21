@@ -909,7 +909,32 @@ namespace EvoMod2
 			if (Math.Exp(KNOWLEDGETRANSFERRATE * (KnownLocations.Count - MAXLOCATIONSCOUNT))
 				< StatFunctions.GaussRandom(DisplayForm.GLOBALRANDOM.NextDouble(), 10.0 * Openness, 10.0 / Openness))
 			{
-				this.LearnLocation(otherElement.KnownLocations[DisplayForm.GLOBALRANDOM.Next(otherElement.KnownLocations.Count - 1)]);
+				double randomNumber = DisplayForm.GLOBALRANDOM.NextDouble();
+				double maxChance = 0.0f;
+				foreach (KnownLocation location in otherElement.KnownLocations)
+				{
+					if (location.Preference > 0.0f)
+					{
+						maxChance += location.Preference;
+					}
+				}
+				if (maxChance != 0.0f)
+				{
+					double cumulativeChance = 0.0f;
+					foreach (KnownLocation location in otherElement.KnownLocations)
+					{
+						if (location.Preference < 0.0f)
+						{
+							continue;
+						}
+						cumulativeChance += location.Preference;
+						if (randomNumber < cumulativeChance / maxChance)
+						{
+							this.LearnLocation(location);
+							break;
+						}
+					}
+				}
 			}
 			if (Math.Exp(KNOWLEDGETRANSFERRATE * (relationships.Count - MAXRELATIONSHIPS))
 				< StatFunctions.GaussRandom(DisplayForm.GLOBALRANDOM.NextDouble(), 10.0 * Extraversion, 10.0 / Extraversion))
