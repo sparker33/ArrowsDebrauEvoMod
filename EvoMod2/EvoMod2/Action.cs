@@ -51,6 +51,7 @@ namespace EvoMod2
 			{
 				inventoryResourcesDecision[i] = 0.0f;
 			}
+			bias = 1.0f;
 			baseCost = new Vector(totalResourceCount);
 			baseProduction = new Vector(totalResourceCount);
 			localResourceLevelsProductionModifier = new Matrix(totalResourceCount, DisplayForm.NaturalResourceTypesCount);
@@ -90,6 +91,7 @@ namespace EvoMod2
 			{
 				inventoryResourcesDecision[i] = 0.0f;
 			}
+			bias = 1.0f;
 			baseProduction = new Vector(production);
 			localResourceLevelsProductionModifier = new MatrixMath.Matrix(productionMod);
 			baseCost = new Vector(cost);

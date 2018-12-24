@@ -243,7 +243,7 @@ namespace EvoMod2
 			happinessBonus -= timePreference * temp0 + (1.0f - timePreference) * happinessBonus;
 
 			float wealthPctChg = (prevWealthHappiness - wealthHappiness) / prevWealthHappiness;
-			float trainingMetric = prevHealthHappiness * wealthPctChg;
+			float trainingMetric = prevHealthHappiness / wealthPctChg;
 			if (Math.Abs(trainingMetric) < 0.001f)
 			{
 				trainingMetric = (healthHappiness - prevHealthHappiness) / 0.001f;

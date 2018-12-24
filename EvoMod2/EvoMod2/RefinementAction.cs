@@ -22,7 +22,7 @@ namespace EvoMod2
 			{
 				if (Math.Abs(resourceUsageLevels[i] / maxUse) > random.NextDouble())
 				{
-					baseCost[i] = 1.0f - (float)random.NextDouble();
+					baseCost[i] = (1.0f - (float)random.NextDouble()) * resourceUsageLevels[i];
 				}
 				baseProduction[i] = 0.0f;
 				localResourceLevelsProductionModifier[i] = new MatrixMath.Vector(DisplayForm.NaturalResourceTypesCount);
@@ -34,7 +34,7 @@ namespace EvoMod2
 			{
 				if (Math.Abs(resourceUsageLevels[i] / maxUse) > random.NextDouble())
 				{
-					baseCost[i] = 1.0f - (float)random.NextDouble();
+					baseCost[i] = (1.0f - (float)random.NextDouble()) * resourceUsageLevels[i];
 				}
 				else if (Math.Abs(resourceUsageLevels[i] / maxUse) < random.NextDouble())
 				{
@@ -44,11 +44,10 @@ namespace EvoMod2
 				inventoryResourcesDecision[i] = 0.0f;
 			}
 
-			float magnitude = (baseCost.Magnitude + baseProduction.Magnitude) / 2.0f;
+			float magnitude = 1.0f; //(baseCost.Magnitude + baseProduction.Magnitude) / 2.0f;
 			baseCost.Magnitude = magnitude;
 			baseProduction.Magnitude = magnitude;
 
-			bias = 0.0f;
 			HappinessBonus = 2.0f * (float)StatFunctions.GaussRandom(random.NextDouble(), Element.TRAITSPREAD, Element.TRAITSPREAD) - 1.0f;
 			HealthBonus = 2.0f * (float)StatFunctions.GaussRandom(random.NextDouble(), Element.TRAITSPREAD, Element.TRAITSPREAD) - 1.0f;
 			MobilityBonus = 2.0f * (float)StatFunctions.GaussRandom(random.NextDouble(), Element.TRAITSPREAD, Element.TRAITSPREAD) - 1.0f;
