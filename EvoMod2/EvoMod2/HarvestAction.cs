@@ -9,7 +9,7 @@ namespace EvoMod2
 {
 	public class HarvestAction : Action
 	{
-		public HarvestAction(int totalResourceCount, Random random, Vector localResourceLevels) : base(totalResourceCount)
+		public HarvestAction(int totalResourceCount, Random random, Vector localResourceLevels, Vector inventoryResourceLevels) : base(totalResourceCount)
 		{
 			/*
 			 * Initializes baseProduction in order to determine resource production priorities.
@@ -35,9 +35,15 @@ namespace EvoMod2
 				inventoryResourcesDecision[i] = 0.0f;
 			}
 
+			float maxUse = 0.01f;
+			foreach (float lvl in inventoryResourceLevels)
+			{
+				maxUse += lvl;
+			}
+			maxUse /= inventoryResourceLevels.Count;
 			for (int i = DisplayForm.NaturalResourceTypesCount; i < totalResourceCount; i++)
 			{
-				if (random.NextDouble() > 0.5)
+				if (inventoryResourceLevels[i] / maxUse > random.NextDouble())
 				{
 					baseCost[i] = 1.0f - (float)random.NextDouble();
 					// If derived resources are being used in this action, then some baseProduction is possible

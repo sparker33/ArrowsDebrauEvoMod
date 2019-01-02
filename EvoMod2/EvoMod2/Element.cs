@@ -188,7 +188,7 @@ namespace EvoMod2
 			KnownActions = new List<Action>();
 			if (DisplayForm.GLOBALRANDOM.Next() < DisplayForm.GLOBALRANDOM.Next())
 			{
-				KnownActions.Add(new HarvestAction(inventory.Count, DisplayForm.GLOBALRANDOM, GetLocalResourceLevels(environmentResources)));
+				KnownActions.Add(new HarvestAction(inventory.Count, DisplayForm.GLOBALRANDOM, GetLocalResourceLevels(environmentResources), inventory));
 			}
 			else
 			{
@@ -531,7 +531,7 @@ namespace EvoMod2
 					{
 						if (DisplayForm.GLOBALRANDOM.NextDouble() > 0.75)
 						{
-							KnownActions.Add(new HarvestAction(inventory.Count, DisplayForm.GLOBALRANDOM, localResourceLevels));
+							KnownActions.Add(new HarvestAction(inventory.Count, DisplayForm.GLOBALRANDOM, localResourceLevels, inventory));
 						}
 						else
 						{
@@ -547,7 +547,7 @@ namespace EvoMod2
 								}
 							}
 							// Add newly invented Action
-							KnownActions.Add(new RefinementAction(inventory.Count, DisplayForm.GLOBALRANDOM, productionUtilityVector));
+							KnownActions.Add(new RefinementAction(inventory.Count, DisplayForm.GLOBALRANDOM, inventory));
 						}
 					}
 				}
@@ -557,7 +557,7 @@ namespace EvoMod2
 					< StatFunctions.GaussRandom(DisplayForm.GLOBALRANDOM.NextDouble(), 5.0 * (Intelligence + Openness), 20.0 / (Intelligence + Openness))
 					) //&& Action.ActionTypesCount < DisplayForm.ELEMENTCOUNT * MAXACTIONSCOUNT / 4.0f)
 				{
-					KnownActions.Add(new HarvestAction(inventory.Count, DisplayForm.GLOBALRANDOM, localResourceLevels));
+					KnownActions.Add(new HarvestAction(inventory.Count, DisplayForm.GLOBALRANDOM, localResourceLevels, inventory));
 				}
 			}
 

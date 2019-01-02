@@ -174,7 +174,7 @@ namespace EvoMod2
 					Element.KNOWLEDGETRANSFERRATE = 0.1f;
 					Element.MIDDLEAGE = 500;
 					Element.TRADEROUNDOFF = 0.0001f;
-					Element.REPRODUCTIONCHANCE = 0.0725f;
+					Element.REPRODUCTIONCHANCE = 0.0715f;
 					Element.MINGLECHANCE = 1.45f;
 					Element.TRADECHANCE = 1.6f;
 					Element.ATTACKCHANCE = 0.075f;
