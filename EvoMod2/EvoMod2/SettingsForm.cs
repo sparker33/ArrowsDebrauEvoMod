@@ -14,6 +14,7 @@ namespace EvoMod2
 	{
 		/* Accessors for inputs */
 		// General settings
+		public bool DefaultSeedIsRandom { get => defaultSeedIsRandomCheckBox.Checked; }
 		public int RandomSeed { get => Int32.Parse(randomSeedBox.Text); }
 		public int DomainScale { get => Int32.Parse(scaleBox.Text); }
 		public int EleCount { get => Int32.Parse(eleCountBox.Text); }

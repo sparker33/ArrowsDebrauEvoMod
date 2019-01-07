@@ -44,7 +44,7 @@ namespace EvoMod2
 		}
 		public Rectangle GetBoundingBox(float widthScaling, float heightScaling)
 		{
-			int dia = (int)(Volume / DisplayForm.SCALE);
+			float dia = 3.0f * Volume * H[0][0] * H[1][1] / ((float)DisplayForm.SCALE * DisplayForm.SCALE * DisplayForm.SCALE * DisplayForm.SCALE);
 			Rectangle rect = new Rectangle((int)((mu[0] - dia / 2.0f) * widthScaling),
 			(int)((mu[1] - dia / 2.0f) * heightScaling),
 			(int)(dia * widthScaling),
@@ -82,8 +82,8 @@ namespace EvoMod2
 			Volume = volume;
 			mu[0] = position.X;
 			mu[1] = position.Y;
-			H[0][0] = DisplayForm.SCALE * DisplayForm.SCALE;
-			H[1][1] = DisplayForm.SCALE * DisplayForm.SCALE;
+			H[0][0] = 100.0f * DisplayForm.SCALE;
+			H[1][1] = 100.0f * DisplayForm.SCALE;
 			H[0][1] = 0.0f;
 			H[1][0] = 0.0f;
 			moveMatrix = new Matrix(2, 2);

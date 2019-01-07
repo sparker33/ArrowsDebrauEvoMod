@@ -141,7 +141,14 @@ namespace EvoMod2
 				else
 				{
 					// Use default values
-					GLOBALRANDOM = new Random();
+					if (settings.DefaultSeedIsRandom)
+					{
+						GLOBALRANDOM = new Random();
+					}
+					else
+					{
+						GLOBALRANDOM = new Random(settings.RandomSeed);
+					}
 					SCALE = 5000;
 					BOUNDARYCOLLISIONS = true;
 					ELEMENTCOUNT = 450;
@@ -158,39 +165,38 @@ namespace EvoMod2
 					Element.TRAITSPREAD = 4.0f;
 					Element.INTERACTCOUNT = ELEMENTCOUNT / 5.0f;
 					Element.INTERACTRANGE = SCALE / 100.0f;
-					Element.ELESPEED = SCALE / 2.0f;
-					Element.DESTINATIONACQUISITIONTHRESHOLD = 0.97;
-					Element.DESTINATIONACCEL = 10.0f;
+					Element.ELESPEED = SCALE / 1.85f;
+					Element.DESTINATIONACQUISITIONTHRESHOLD = 0.95;
+					Element.DESTINATIONACCEL = 15.0f;
 					Action.ACTIONLEARNRATE = 3.5;
 					Element.INTERACTIONCHOICESCALE = 10.0f;
-					Element.RELATIONSHIPSCALE = 1500.0f;
-					Element.FOODREQUIREMENT = 0.025f;
+					Element.RELATIONSHIPSCALE = 1350.0f;
+					Element.FOODREQUIREMENT = 0.1f;
 					Element.STARTRESOURCES = 5.0f;
 					Element.MAXRELATIONSHIPS = ELEMENTCOUNT;
 					Element.MAXLOCATIONSCOUNT = 30;
 					Element.MAXRESOURCECOUNT = 15;
 					Element.MAXACTIONSCOUNT = 15;
-					Element.DISCOVERYRATE = 0.00175f;
+					Element.DISCOVERYRATE = 0.00125f;
 					Element.KNOWLEDGETRANSFERRATE = 0.1f;
 					Element.MIDDLEAGE = 500;
 					Element.TRADEROUNDOFF = 0.0001f;
-					Element.REPRODUCTIONCHANCE = 0.0715f;
+					Element.REPRODUCTIONCHANCE = 0.065f;
 					Element.MINGLECHANCE = 1.45f;
 					Element.TRADECHANCE = 1.6f;
 					Element.ATTACKCHANCE = 0.075f;
-					Element.CHILDCOST = 0.6f;
-					Element.INFANTMORTALITY = 0.05f;
+					Element.CHILDCOST = 0.5f;
+					Element.INFANTMORTALITY = 0.025f;
 					Element.INHERITANCE = 1.0f;
 					Element.INCESTALLOWED = false;
 
 					// Set up default background resources
-					resources.Add(new Resource(Color.Blue, 80000000));
+					resources.Add(new Resource(Color.Blue, 9000000));
 					Element.FoodResources.Add(new FoodResourceData(0, 1.0f - (float)GLOBALRANDOM.NextDouble()));
-					resources.Add(new Resource(Color.Red, 50000000));
+					resources.Add(new Resource(Color.Red, 4500000));
 					Element.FoodResources.Add(new FoodResourceData(1, 1.0f - (float)GLOBALRANDOM.NextDouble()));
-					resources.Add(new Resource(Color.White, 12000000));
-					Element.FoodResources.Add(new FoodResourceData(2, 1.0f - (float)GLOBALRANDOM.NextDouble()));
-					resources.Add(new Resource(Color.Black, 30000000));
+					resources.Add(new Resource(Color.White, 2250000));
+					resources.Add(new Resource(Color.Black, 3000000));
 					for (int i = 0; i < resources.Count; i++)
 					{
 						float[] pcts = new float[3];
@@ -212,8 +218,9 @@ namespace EvoMod2
 			while (elements.Count < ELEMENTCOUNT)
 			{
 				elements.Add(new Element(resources));
-				elements.Last().AddResource(false);
+				elements.Last().AddResource(true);
 			}
+			Element.FoodResources.Add(new FoodResourceData(resources.Count, 1.0f - (float)GLOBALRANDOM.NextDouble()));
 			// Begin simulation
 			worker.RunWorkerAsync();
 			timer1.Start();
@@ -276,7 +283,8 @@ namespace EvoMod2
 				for (int j = 0; j < resources[i].Count; j++)
 				{
 					resources[i][j].Update(GLOBALRANDOM);
-					Rectangle rect = resources[i][j].GetBoundingBox((float)panel1.ClientRectangle.Width / SCALE, (float)panel1.ClientRectangle.Height / SCALE);
+					Rectangle rect = resources[i][j].GetBoundingBox((float)panel1.ClientRectangle.Width / SCALE,
+						(float)panel1.ClientRectangle.Height / SCALE);
 					if (rect.Size.Height == 0 || rect.Size.Width == 0)
 					{
 						continue;

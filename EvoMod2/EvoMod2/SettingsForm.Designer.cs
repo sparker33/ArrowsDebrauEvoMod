@@ -120,6 +120,7 @@
 			this.actionLearnRateBox = new System.Windows.Forms.TextBox();
 			this.label44 = new System.Windows.Forms.Label();
 			this.destinationAcquisitionRateBox = new System.Windows.Forms.TextBox();
+			this.defaultSeedIsRandomCheckBox = new System.Windows.Forms.CheckBox();
 			((System.ComponentModel.ISupportInitialize)(this.natResourcesDataGrid)).BeginInit();
 			this.SuspendLayout();
 			// 
@@ -496,7 +497,7 @@
 			this.label19.Name = "label19";
 			this.label19.Size = new System.Drawing.Size(150, 13);
 			this.label19.TabIndex = 36;
-			this.label19.Text = "Interactions per Turn:";
+			this.label19.Text = "Max Actions per Turn:";
 			this.label19.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
 			// 
 			// interactCountBox
@@ -961,11 +962,25 @@
 			this.destinationAcquisitionRateBox.Text = "0.025";
 			this.destinationAcquisitionRateBox.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
 			// 
+			// defaultSeedIsRandomCheckBox
+			// 
+			this.defaultSeedIsRandomCheckBox.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
+			this.defaultSeedIsRandomCheckBox.Checked = true;
+			this.defaultSeedIsRandomCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
+			this.defaultSeedIsRandomCheckBox.Location = new System.Drawing.Point(693, 108);
+			this.defaultSeedIsRandomCheckBox.Name = "defaultSeedIsRandomCheckBox";
+			this.defaultSeedIsRandomCheckBox.Size = new System.Drawing.Size(167, 17);
+			this.defaultSeedIsRandomCheckBox.TabIndex = 89;
+			this.defaultSeedIsRandomCheckBox.Text = "Random Default Seed: ";
+			this.defaultSeedIsRandomCheckBox.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+			this.defaultSeedIsRandomCheckBox.UseVisualStyleBackColor = true;
+			// 
 			// SettingsForm
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.ClientSize = new System.Drawing.Size(897, 567);
+			this.Controls.Add(this.defaultSeedIsRandomCheckBox);
 			this.Controls.Add(this.label44);
 			this.Controls.Add(this.destinationAcquisitionRateBox);
 			this.Controls.Add(this.label43);
@@ -1156,5 +1171,6 @@
 		private System.Windows.Forms.TextBox actionLearnRateBox;
 		private System.Windows.Forms.Label label44;
 		private System.Windows.Forms.TextBox destinationAcquisitionRateBox;
+		private System.Windows.Forms.CheckBox defaultSeedIsRandomCheckBox;
 	}
 }

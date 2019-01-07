@@ -476,11 +476,10 @@ namespace EvoMod2
 		public bool? DoAction(List<Resource> environmentResources, List<Element> elements)
 		{
 			bool? resourceDiscovered = null;
-			if (DisplayForm.GLOBALRANDOM.NextDouble() < Conscientiousness)
+			Vector localResourceLevels = GetLocalResourceLevels(environmentResources);
+			int actionsThisTurn = (int)(2.0 * DisplayForm.GLOBALRANDOM.NextDouble() * Conscientiousness * MAXACTIONSCOUNT);
+			while (actionsThisTurn-- > 0)
 			{
-				bool didAction = false;
-				// Populate the local resource levels
-				Vector localResourceLevels = GetLocalResourceLevels(environmentResources);
 				// Decide which action to do
 				float maxActionPriority = -1.0f;
 				int actionChoice = 0;
@@ -496,7 +495,6 @@ namespace EvoMod2
 				// If any actions are available, execute the preferred action
 				if (maxActionPriority > -Single.Epsilon)
 				{
-					didAction = true;
 					ActionsTakenTotal++;
 					// Apply action effects
 					float learnMetric = inventory * prices;
@@ -526,8 +524,7 @@ namespace EvoMod2
 					KnownActions[actionChoice].Learn(learnMetric, (1.0f - Openness));
 					// Check for new Action discovery (can discover either Harvest or Refinement Action)
 					if (Math.Exp(DISCOVERYRATE * (KnownActions.Count - MAXACTIONSCOUNT))
-						< StatFunctions.GaussRandom(DisplayForm.GLOBALRANDOM.NextDouble(), 5.0 * (Intelligence + Openness), 20.0 / (Intelligence + Openness))
-						) //&& Action.ActionTypesCount < DisplayForm.ELEMENTCOUNT * MAXACTIONSCOUNT)
+						< StatFunctions.GaussRandom(DisplayForm.GLOBALRANDOM.NextDouble(), 5.0 * (Intelligence + Openness), 20.0 / (Intelligence + Openness)))
 					{
 						if (DisplayForm.GLOBALRANDOM.NextDouble() > 0.75)
 						{
@@ -537,7 +534,8 @@ namespace EvoMod2
 						{
 							// Check for new Resource discovery
 							if (Math.Exp(3.0 * DISCOVERYRATE * (inventory.Count - MAXRESOURCECOUNT))
-								< StatFunctions.GaussRandom(DisplayForm.GLOBALRANDOM.NextDouble(), 25.0 * (Intelligence + Openness), 100.0 / (Intelligence + Openness)))
+								< StatFunctions.GaussRandom(DisplayForm.GLOBALRANDOM.NextDouble(), 25.0 * (Intelligence + Openness), 100.0 / (Intelligence + Openness))
+								&& !resourceDiscovered.HasValue)
 							{
 								resourceDiscovered = false; // Not a food resource (null is no resource)
 								if (DisplayForm.GLOBALRANDOM.NextDouble() > 0.5)
@@ -550,14 +548,6 @@ namespace EvoMod2
 							KnownActions.Add(new RefinementAction(inventory.Count, DisplayForm.GLOBALRANDOM, inventory));
 						}
 					}
-				}
-				// Check for new HarvestAction discovery
-				if (!didAction
-					&& Math.Exp(0.1 * DISCOVERYRATE * (KnownActions.Count - MAXACTIONSCOUNT))
-					< StatFunctions.GaussRandom(DisplayForm.GLOBALRANDOM.NextDouble(), 5.0 * (Intelligence + Openness), 20.0 / (Intelligence + Openness))
-					) //&& Action.ActionTypesCount < DisplayForm.ELEMENTCOUNT * MAXACTIONSCOUNT / 4.0f)
-				{
-					KnownActions.Add(new HarvestAction(inventory.Count, DisplayForm.GLOBALRANDOM, localResourceLevels, inventory));
 				}
 			}
 
@@ -1000,7 +990,9 @@ namespace EvoMod2
 		{
 			for (int i = 0; i < KnownLocations.Count; i++)
 			{
-				if (KnownLocations[i].Location.X == location.Location.X && KnownLocations[i].Location.Y == location.Location.Y)
+				if (Math.Sqrt((KnownLocations[i].Location.X - location.Location.X) * (KnownLocations[i].Location.X - location.Location.X)
+					+ (KnownLocations[i].Location.Y - location.Location.Y) * (KnownLocations[i].Location.Y - location.Location.Y))
+					< DisplayForm.SCALE / 100.0)
 				{
 					KnownLocations[i].Preference = (1.0f - Agreeableness) * KnownLocations[i].Preference + Agreeableness * location.Preference;
 					return;
