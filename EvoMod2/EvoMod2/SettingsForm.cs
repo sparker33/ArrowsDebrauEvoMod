@@ -30,6 +30,7 @@ namespace EvoMod2
 		public float EleSpeed { get => Single.Parse(eleSpeedBox.Text); }
 		public float DestinationAccel { get => Single.Parse(destinationAccelBox.Text); }
 		// Resources settings
+		public bool UseDefaultResources { get => defaultResourcesCheckBox.Checked; }
 		public float ResourceSpeed { get => Single.Parse(resourceSpeedBox.Text); }
 		public float ResourceSpread { get => Single.Parse(resourceSpreadBox.Text); }
 		public DataGridView NaturalResourcesDataGridView { get => natResourcesDataGrid; }

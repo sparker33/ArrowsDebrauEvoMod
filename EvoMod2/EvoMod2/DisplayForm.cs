@@ -58,7 +58,14 @@ namespace EvoMod2
 				if (result == DialogResult.OK)
 				{
 					// Read in simulation inputs
-					GLOBALRANDOM = new Random(settings.RandomSeed);
+					if (settings.DefaultSeedIsRandom)
+					{
+						GLOBALRANDOM = new Random();
+					}
+					else
+					{
+						GLOBALRANDOM = new Random(settings.RandomSeed);
+					}
 					SCALE = settings.DomainScale;
 					BOUNDARYCOLLISIONS = settings.BoundCollisions;
 					ELEMENTCOUNT = settings.EleCount;
@@ -88,7 +95,7 @@ namespace EvoMod2
 					Element.MAXACTIONSCOUNT = settings.MaxActions;
 					Element.MAXRESOURCECOUNT = settings.MaxResourceCount;
 					Element.DISCOVERYRATE = settings.DiscoveryRate;
-					Element.DISCOVERYRATE = settings.KnowledgeTransferRate;
+					Element.KNOWLEDGETRANSFERRATE = settings.KnowledgeTransferRate;
 					Element.MIDDLEAGE = settings.MiddleAge;
 					Element.TRADEROUNDOFF = settings.TradeRoundoff;
 					Element.REPRODUCTIONCHANCE = settings.ReproductionChance;
@@ -100,41 +107,48 @@ namespace EvoMod2
 					Element.INHERITANCE = settings.Inheritance;
 					Element.INCESTALLOWED = settings.IncestAllowed;
 
-					// Set up natural resources according to inputs table
-					for (int i = 0; i < settings.NaturalResourcesDataGridView.Rows.Count; i++)
+					// Set up natural resources
+					if (settings.UseDefaultResources)
 					{
-						float resourceVolume;
-						int nodeCount;
-						try
+						SetUpDefaultResources();
+					}
+					else
+					{
+						for (int i = 0; i < settings.NaturalResourcesDataGridView.Rows.Count; i++)
 						{
-							if (!Single.TryParse(settings.NaturalResourcesDataGridView.Rows[i].Cells[0].Value.ToString(), out resourceVolume)
-								|| !Int32.TryParse(settings.NaturalResourcesDataGridView.Rows[i].Cells[2].Value.ToString(), out nodeCount))
+							float resourceVolume;
+							int nodeCount;
+							try
+							{
+								if (!Single.TryParse(settings.NaturalResourcesDataGridView.Rows[i].Cells[0].Value.ToString(), out resourceVolume)
+									|| !Int32.TryParse(settings.NaturalResourcesDataGridView.Rows[i].Cells[2].Value.ToString(), out nodeCount))
+								{
+									continue;
+								}
+							}
+							catch (NullReferenceException)
 							{
 								continue;
 							}
-						}
-						catch (NullReferenceException)
-						{
-							continue;
-						}
-						resources.Add(new Resource(Color.FromName(settings.NaturalResourcesDataGridView.Rows[i].Cells[1].Value.ToString()), resourceVolume));
+							resources.Add(new Resource(Color.FromName(settings.NaturalResourcesDataGridView.Rows[i].Cells[1].Value.ToString()), resourceVolume));
 
-						float[] pcts = new float[nodeCount];
-						float sum = 0.0f;
-						for (int j = 0; j < pcts.Length; j++)
-						{
-							pcts[j] = (float)GLOBALRANDOM.NextDouble();
-							sum += pcts[j];
-						}
-						for (int j = 0; j < pcts.Length; j++)
-						{
-							resources[i].Add(pcts[j] / sum, new PointF((float)(GLOBALRANDOM.NextDouble() * SCALE), (float)(GLOBALRANDOM.NextDouble() * SCALE)));
-						}
+							float[] pcts = new float[nodeCount];
+							float sum = 0.0f;
+							for (int j = 0; j < pcts.Length; j++)
+							{
+								pcts[j] = (float)GLOBALRANDOM.NextDouble();
+								sum += pcts[j];
+							}
+							for (int j = 0; j < pcts.Length; j++)
+							{
+								resources[i].Add(pcts[j] / sum, new PointF((float)(GLOBALRANDOM.NextDouble() * SCALE), (float)(GLOBALRANDOM.NextDouble() * SCALE)));
+							}
 
-						DataGridViewCheckBoxCell isFoodCell = settings.NaturalResourcesDataGridView.Rows[i].Cells[3] as DataGridViewCheckBoxCell;
-						if (bool.Parse(isFoodCell.Value.ToString()))
-						{
-							Element.FoodResources.Add(new FoodResourceData(i, 1.0f - (float)GLOBALRANDOM.NextDouble()));
+							DataGridViewCheckBoxCell isFoodCell = settings.NaturalResourcesDataGridView.Rows[i].Cells[3] as DataGridViewCheckBoxCell;
+							if (bool.Parse(isFoodCell.Value.ToString()))
+							{
+								Element.FoodResources.Add(new FoodResourceData(i, 1.0f - (float)GLOBALRANDOM.NextDouble()));
+							}
 						}
 					}
 				}
@@ -180,7 +194,7 @@ namespace EvoMod2
 					Element.DISCOVERYRATE = 0.00125f;
 					Element.KNOWLEDGETRANSFERRATE = 0.1f;
 					Element.MIDDLEAGE = 500;
-					Element.TRADEROUNDOFF = 0.0001f;
+					Element.TRADEROUNDOFF = 0.00001f;
 					Element.REPRODUCTIONCHANCE = 0.065f;
 					Element.MINGLECHANCE = 1.45f;
 					Element.TRADECHANCE = 1.6f;
@@ -190,27 +204,7 @@ namespace EvoMod2
 					Element.INHERITANCE = 1.0f;
 					Element.INCESTALLOWED = false;
 
-					// Set up default background resources
-					resources.Add(new Resource(Color.Blue, 9000000));
-					Element.FoodResources.Add(new FoodResourceData(0, 1.0f - (float)GLOBALRANDOM.NextDouble()));
-					resources.Add(new Resource(Color.Red, 4500000));
-					Element.FoodResources.Add(new FoodResourceData(1, 1.0f - (float)GLOBALRANDOM.NextDouble()));
-					resources.Add(new Resource(Color.White, 2250000));
-					resources.Add(new Resource(Color.Black, 3000000));
-					for (int i = 0; i < resources.Count; i++)
-					{
-						float[] pcts = new float[3];
-						float sum = 0.0f;
-						for (int j = 0; j < pcts.Length; j++)
-						{
-							pcts[j] = (float)GLOBALRANDOM.NextDouble();
-							sum += pcts[j];
-						}
-						for (int j = 0; j < pcts.Length; j++)
-						{
-							resources[i].Add(pcts[j] / sum, new PointF((float)(GLOBALRANDOM.NextDouble() * SCALE), (float)(GLOBALRANDOM.NextDouble() * SCALE)));
-						}
-					}
+					SetUpDefaultResources();
 				}
 			}
 
@@ -224,6 +218,30 @@ namespace EvoMod2
 			// Begin simulation
 			worker.RunWorkerAsync();
 			timer1.Start();
+		}
+
+		private void SetUpDefaultResources()
+		{
+			resources.Add(new Resource(Color.Blue, 9000000));
+			Element.FoodResources.Add(new FoodResourceData(0, 1.0f - (float)GLOBALRANDOM.NextDouble()));
+			resources.Add(new Resource(Color.Red, 4500000));
+			Element.FoodResources.Add(new FoodResourceData(1, 1.0f - (float)GLOBALRANDOM.NextDouble()));
+			resources.Add(new Resource(Color.White, 2250000));
+			resources.Add(new Resource(Color.Black, 3000000));
+			for (int i = 0; i < resources.Count; i++)
+			{
+				float[] pcts = new float[3];
+				float sum = 0.0f;
+				for (int j = 0; j < pcts.Length; j++)
+				{
+					pcts[j] = (float)GLOBALRANDOM.NextDouble();
+					sum += pcts[j];
+				}
+				for (int j = 0; j < pcts.Length; j++)
+				{
+					resources[i].Add(pcts[j] / sum, new PointF((float)(GLOBALRANDOM.NextDouble() * SCALE), (float)(GLOBALRANDOM.NextDouble() * SCALE)));
+				}
+			}
 		}
 
 		private void worker_DoWork(object sender, DoWorkEventArgs e)

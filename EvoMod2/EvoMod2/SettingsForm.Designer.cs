@@ -121,6 +121,7 @@
 			this.label44 = new System.Windows.Forms.Label();
 			this.destinationAcquisitionRateBox = new System.Windows.Forms.TextBox();
 			this.defaultSeedIsRandomCheckBox = new System.Windows.Forms.CheckBox();
+			this.defaultResourcesCheckBox = new System.Windows.Forms.CheckBox();
 			((System.ComponentModel.ISupportInitialize)(this.natResourcesDataGrid)).BeginInit();
 			this.SuspendLayout();
 			// 
@@ -270,7 +271,7 @@
 			this.popEnforceBox.Name = "popEnforceBox";
 			this.popEnforceBox.Size = new System.Drawing.Size(100, 20);
 			this.popEnforceBox.TabIndex = 10;
-			this.popEnforceBox.Text = "1.0";
+			this.popEnforceBox.Text = "0.0";
 			this.popEnforceBox.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
 			// 
 			// label6
@@ -288,7 +289,7 @@
 			this.deathChanceBox.Name = "deathChanceBox";
 			this.deathChanceBox.Size = new System.Drawing.Size(100, 20);
 			this.deathChanceBox.TabIndex = 12;
-			this.deathChanceBox.Text = "0.0215";
+			this.deathChanceBox.Text = "0.02";
 			this.deathChanceBox.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
 			// 
 			// label7
@@ -342,7 +343,7 @@
 			this.dampingBox.Name = "dampingBox";
 			this.dampingBox.Size = new System.Drawing.Size(100, 20);
 			this.dampingBox.TabIndex = 18;
-			this.dampingBox.Text = "0.125";
+			this.dampingBox.Text = "0.2";
 			this.dampingBox.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
 			// 
 			// label10
@@ -388,7 +389,7 @@
 			this.speedLimitBox.Name = "speedLimitBox";
 			this.speedLimitBox.Size = new System.Drawing.Size(100, 20);
 			this.speedLimitBox.TabIndex = 23;
-			this.speedLimitBox.Text = "1000.0";
+			this.speedLimitBox.Text = "2500.0";
 			this.speedLimitBox.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
 			// 
 			// label13
@@ -452,7 +453,7 @@
 			this.destinationAccelBox.Name = "destinationAccelBox";
 			this.destinationAccelBox.Size = new System.Drawing.Size(100, 20);
 			this.destinationAccelBox.TabIndex = 41;
-			this.destinationAccelBox.Text = "7.5";
+			this.destinationAccelBox.Text = "15.0";
 			this.destinationAccelBox.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
 			// 
 			// label17
@@ -470,7 +471,7 @@
 			this.eleSpeedBox.Name = "eleSpeedBox";
 			this.eleSpeedBox.Size = new System.Drawing.Size(100, 20);
 			this.eleSpeedBox.TabIndex = 39;
-			this.eleSpeedBox.Text = "1250.0";
+			this.eleSpeedBox.Text = "2700.0";
 			this.eleSpeedBox.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
 			// 
 			// label18
@@ -506,7 +507,7 @@
 			this.interactCountBox.Name = "interactCountBox";
 			this.interactCountBox.Size = new System.Drawing.Size(100, 20);
 			this.interactCountBox.TabIndex = 35;
-			this.interactCountBox.Text = "100.0";
+			this.interactCountBox.Text = "90";
 			this.interactCountBox.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
 			// 
 			// label20
@@ -524,7 +525,7 @@
 			this.traitSpreadBox.Name = "traitSpreadBox";
 			this.traitSpreadBox.Size = new System.Drawing.Size(100, 20);
 			this.traitSpreadBox.TabIndex = 33;
-			this.traitSpreadBox.Text = "3.75";
+			this.traitSpreadBox.Text = "4.0";
 			this.traitSpreadBox.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
 			// 
 			// label21
@@ -588,7 +589,7 @@
 			this.startResourcesBox.Name = "startResourcesBox";
 			this.startResourcesBox.Size = new System.Drawing.Size(100, 20);
 			this.startResourcesBox.TabIndex = 49;
-			this.startResourcesBox.Text = "15.0";
+			this.startResourcesBox.Text = "5.0";
 			this.startResourcesBox.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
 			// 
 			// label26
@@ -606,7 +607,7 @@
 			this.foodRequirementBox.Name = "foodRequirementBox";
 			this.foodRequirementBox.Size = new System.Drawing.Size(100, 20);
 			this.foodRequirementBox.TabIndex = 47;
-			this.foodRequirementBox.Text = "0.25";
+			this.foodRequirementBox.Text = "0.1";
 			this.foodRequirementBox.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
 			// 
 			// label27
@@ -624,7 +625,7 @@
 			this.relationshipScaleBox.Name = "relationshipScaleBox";
 			this.relationshipScaleBox.Size = new System.Drawing.Size(100, 20);
 			this.relationshipScaleBox.TabIndex = 45;
-			this.relationshipScaleBox.Text = "1500.0";
+			this.relationshipScaleBox.Text = "1350.0";
 			this.relationshipScaleBox.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
 			// 
 			// label28
@@ -725,7 +726,7 @@
 			this.childCostBox.Name = "childCostBox";
 			this.childCostBox.Size = new System.Drawing.Size(100, 20);
 			this.childCostBox.TabIndex = 67;
-			this.childCostBox.Text = "0.6";
+			this.childCostBox.Text = "0.5";
 			this.childCostBox.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
 			// 
 			// label32
@@ -743,7 +744,7 @@
 			this.attackChanceBox.Name = "attackChanceBox";
 			this.attackChanceBox.Size = new System.Drawing.Size(100, 20);
 			this.attackChanceBox.TabIndex = 65;
-			this.attackChanceBox.Text = "0.1";
+			this.attackChanceBox.Text = "0.075";
 			this.attackChanceBox.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
 			// 
 			// label33
@@ -797,7 +798,7 @@
 			this.tradeRoundoffBox.Name = "tradeRoundoffBox";
 			this.tradeRoundoffBox.Size = new System.Drawing.Size(100, 20);
 			this.tradeRoundoffBox.TabIndex = 73;
-			this.tradeRoundoffBox.Text = "0.0001";
+			this.tradeRoundoffBox.Text = "0.00001";
 			this.tradeRoundoffBox.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
 			// 
 			// label37
@@ -833,7 +834,7 @@
 			this.discoveryRateBox.Name = "discoveryRateBox";
 			this.discoveryRateBox.Size = new System.Drawing.Size(100, 20);
 			this.discoveryRateBox.TabIndex = 69;
-			this.discoveryRateBox.Text = "0.0005";
+			this.discoveryRateBox.Text = "0.00125";
 			this.discoveryRateBox.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
 			// 
 			// label39
@@ -851,7 +852,7 @@
 			this.reproductionChanceBox.Name = "reproductionChanceBox";
 			this.reproductionChanceBox.Size = new System.Drawing.Size(100, 20);
 			this.reproductionChanceBox.TabIndex = 75;
-			this.reproductionChanceBox.Text = "0.01";
+			this.reproductionChanceBox.Text = "0.065";
 			this.reproductionChanceBox.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
 			// 
 			// label40
@@ -887,7 +888,7 @@
 			this.infantMortalityBox.Name = "infantMortalityBox";
 			this.infantMortalityBox.Size = new System.Drawing.Size(100, 20);
 			this.infantMortalityBox.TabIndex = 77;
-			this.infantMortalityBox.Text = "0.1";
+			this.infantMortalityBox.Text = "0.025";
 			this.infantMortalityBox.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
 			// 
 			// label34
@@ -941,7 +942,7 @@
 			this.actionLearnRateBox.Name = "actionLearnRateBox";
 			this.actionLearnRateBox.Size = new System.Drawing.Size(100, 20);
 			this.actionLearnRateBox.TabIndex = 85;
-			this.actionLearnRateBox.Text = "4.0";
+			this.actionLearnRateBox.Text = "3.5";
 			this.actionLearnRateBox.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
 			// 
 			// label44
@@ -959,7 +960,7 @@
 			this.destinationAcquisitionRateBox.Name = "destinationAcquisitionRateBox";
 			this.destinationAcquisitionRateBox.Size = new System.Drawing.Size(100, 20);
 			this.destinationAcquisitionRateBox.TabIndex = 87;
-			this.destinationAcquisitionRateBox.Text = "0.025";
+			this.destinationAcquisitionRateBox.Text = "0.05";
 			this.destinationAcquisitionRateBox.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
 			// 
 			// defaultSeedIsRandomCheckBox
@@ -975,11 +976,25 @@
 			this.defaultSeedIsRandomCheckBox.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
 			this.defaultSeedIsRandomCheckBox.UseVisualStyleBackColor = true;
 			// 
+			// defaultResourcesCheckBox
+			// 
+			this.defaultResourcesCheckBox.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
+			this.defaultResourcesCheckBox.Checked = true;
+			this.defaultResourcesCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
+			this.defaultResourcesCheckBox.Location = new System.Drawing.Point(373, 133);
+			this.defaultResourcesCheckBox.Name = "defaultResourcesCheckBox";
+			this.defaultResourcesCheckBox.Size = new System.Drawing.Size(167, 17);
+			this.defaultResourcesCheckBox.TabIndex = 90;
+			this.defaultResourcesCheckBox.Text = "Use Default Resources: ";
+			this.defaultResourcesCheckBox.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+			this.defaultResourcesCheckBox.UseVisualStyleBackColor = true;
+			// 
 			// SettingsForm
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.ClientSize = new System.Drawing.Size(897, 567);
+			this.Controls.Add(this.defaultResourcesCheckBox);
 			this.Controls.Add(this.defaultSeedIsRandomCheckBox);
 			this.Controls.Add(this.label44);
 			this.Controls.Add(this.destinationAcquisitionRateBox);
@@ -1172,5 +1187,6 @@
 		private System.Windows.Forms.Label label44;
 		private System.Windows.Forms.TextBox destinationAcquisitionRateBox;
 		private System.Windows.Forms.CheckBox defaultSeedIsRandomCheckBox;
+		private System.Windows.Forms.CheckBox defaultResourcesCheckBox;
 	}
 }
