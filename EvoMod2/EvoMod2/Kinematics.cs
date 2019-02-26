@@ -5,13 +5,14 @@ namespace EvoMod2
 {
 	public class Kinematics
     {
-        // Private fields
-        private float[] acceleration;
-        private float[] velocity;
-
-		// Public objects
+		// Static objects
 		public static float DEFAULTDAMPING;
 		public static float TIMESTEP;
+		public static float SPEEDLIMIT;
+
+		// Private fields
+		private float[] acceleration;
+        private float[] velocity;
 
         // Public properties
         public float Speed { get { return (float)Math.Sqrt(velocity[0] * velocity[0] + velocity[1] * velocity[1]); } }
@@ -38,20 +39,27 @@ namespace EvoMod2
             IEnumerator<float> forcesEnumerator = forceVector.GetEnumerator();
             for (int i = 0; forcesEnumerator.MoveNext(); i++)
             {
-                if (Double.IsInfinity(forcesEnumerator.Current)
-                    || Double.IsNaN(forcesEnumerator.Current))
-                {
-                    acceleration[i] = -(Damping * velocity[i]) / mass;
-                }
-                else
-                {
+				if (Math.Abs(0.5f * forcesEnumerator.Current / mass * TIMESTEP + velocity[i]) > SPEEDLIMIT)
+				{
+					acceleration[i] = -(DEFAULTDAMPING * velocity[i]) / mass;
+				}
+				else
+				{
                     acceleration[i] = (forcesEnumerator.Current - Damping * velocity[i]) / mass;
                 }
-                displacement.Add((velocity[i] * TIMESTEP + 0.5f * acceleration[i] * TIMESTEP * TIMESTEP));
+                displacement.Add(velocity[i] * TIMESTEP + 0.5f * acceleration[i] * TIMESTEP * TIMESTEP);
                 velocity[i] += acceleration[i] * TIMESTEP;
-            }
+			}
+			float currentSpeed = Speed;
+			if (currentSpeed > SPEEDLIMIT)
+			{
+				for (int i = 0; i < velocity.Length; i++)
+				{
+					velocity[i] = velocity[i] * SPEEDLIMIT / currentSpeed;
+				}
+			}
 
-            return displacement;
+			return displacement;
         }
 
 		public void ReverseDirection(int dimension)
