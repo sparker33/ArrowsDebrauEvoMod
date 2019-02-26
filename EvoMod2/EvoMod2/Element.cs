@@ -644,6 +644,14 @@ namespace EvoMod2
 							}
 						}
 
+						/*
+						 * Interrogation code (not functionally critical)
+						*/
+						float normTradeValue1 = direction * tradeProposal * prices / prices.Magnitude;
+						float normTradeValue2 = -1.0f * direction * tradeProposal * otherElement.prices / otherElement.prices.Magnitude;
+						float netValue = normTradeValue1 + normTradeValue2;
+						/*
+						*/
 						ExecuteTrade(direction * tradeProposal);
 						otherElement.ExecuteTrade(-1.0f * direction * tradeProposal);
 					}
@@ -687,7 +695,7 @@ namespace EvoMod2
 				relationships.Add(sender, Openness - Neuroticism);
 			}
 			relationships[sender] += (2.0f * (float)RELATIONSHIPSCALE / (2.0f * MIDDLEAGE * INTERACTCOUNT / DisplayForm.ELEMENTCOUNT)
-				* (float)StatFunctions.Sigmoid(tradeValue, -1.0, 0.0) - ((float)RELATIONSHIPSCALE / (2.0f * MIDDLEAGE * INTERACTCOUNT / DisplayForm.ELEMENTCOUNT)));
+				* ((float)StatFunctions.Sigmoid(tradeValue, -1.0, 0.0) - 0.5f));
 
 			if (Extraversion > DisplayForm.GLOBALRANDOM.NextDouble())
 			{
@@ -733,7 +741,7 @@ namespace EvoMod2
 			RefineTradeProposal(sender, ref thisTradeProposal);
 			float targetVal = relationships[sender] / (float)RELATIONSHIPSCALE;
 
-			if (((tradeValue - targetVal) / targetVal) > (1.0f - Agreeableness)
+			if ((tradeValue / (tradeProposal.Magnitude * prices.Magnitude) - targetVal) > (1.0f - Agreeableness)
 				|| ((tradeProposal * thisTradeProposal) / (tradeProposal.Magnitude * thisTradeProposal.Magnitude)) > (1.0f - Agreeableness))
 			{
 				ScaleTrade(ref tradeProposal);
